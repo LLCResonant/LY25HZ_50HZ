@@ -1,0 +1,158 @@
+//------Definition in Main DSP---------------------------------201104
+
+Calc_Result.
+{
+	float32	f32IGrid_Rrms;  
+	float32	f32Vbus;        
+ 	float32	f32GridFreq;    
+	float32	f32OutputWatt;  
+	float32	f32OutputEnergy;  
+	float32	f32HistoryOutputEnergy;   //   not handled now
+//	float32	f32Input1Watt;            // will be added in DiAnT
+//	float32	f32VPV1;                  // will be added in DiAnT
+//	float32	f32IPV1;                  // will be added in DiAnT
+//      float32	f32VGrid_Rrms;            // can get in slave DSP
+};
+
+g_SysFaultMessage.  
+{
+    struct
+    {
+        Uint16  byte0:8;
+        Uint16  byte1:8;
+        Uint16  byte2:8;
+        Uint16  byte3:8;
+        Uint16  byte4:8;	
+        Uint16  byte5:8;
+        Uint16  unrecover1:8; 
+        Uint16  unrecover2:8;                	
+    }Word;  
+
+    struct
+    {
+        //byte0
+        Uint16  VGridROverRating:1;     //B0
+        Uint16  VGridRUnderRating:1;     //B1   
+        Uint16  :1;    //B2
+        Uint16  :1;    //B3
+        Uint16  :1;    //B4
+        Uint16  :1;    //B5
+        Uint16  FreGridOverRating:1;    //B6 
+        Uint16  FreGridUnderRating:1;    //B7
+
+        //byte1
+        Uint16  Pv1VoltOvrFault:1;   //B0
+        Uint16  :1;    //B1
+        Uint16  PvVoltLowFault:1; //GFCIFault:1;    //B2
+        Uint16  PvVoltOvrFault:1;   //B3
+        Uint16  CommLoseFault:1;    //B4       
+        Uint16  RChipFault:1;//B5
+        Uint16  AuxPower_Fault:1;//B6
+        Uint16  OverTempFault:1;//B7  from second DSP
+
+        //byte2
+        Uint16  Pv1IsoFault:1;   //B0
+        Uint16  :1;    //B1
+        Uint16  :1;    //B2
+        Uint16  TempAmbient:1;    // handle by master DSP
+  	    Uint16  TempInvHeatsink:1;    // handle by master DSP
+        Uint16  OverLoad:1;    // added by Ken
+        Uint16  :1;    //:1;    //B3
+        Uint16  :1;    //B4       
+
+    		//byte3
+        Uint16  BusVoltLowFault:1;   //B0
+        Uint16  BusVoltOvrFault:1;    //B1
+        Uint16  :1;    //B2         
+        Uint16  HW_BusOVP_Fault:1;    //B3
+        Uint16  HW_OCP_AC:1;    //B4       
+        Uint16  HW_OCP_Boost:1;   //B5
+        Uint16  OCP_AC_RMS:1;   //B6
+        Uint16  :1;   //B7
+
+        //byte4
+        Uint16  DCIGridROverLimit:1;   //B0
+        Uint16  :1;    //B1
+        Uint16  :1;    //B2
+        Uint16  GFCIFault:1;    //B3
+        Uint16  GFCIJump1Fault:1;    //B4                 //xlx GFCI  
+        Uint16  GFCIJump2Fault:1;   //B5
+        Uint16  GFCIJump3Fault:1;   //B6
+        Uint16  GFCIOver300mAFault:1;   //B7
+
+        //byte5
+        Uint16  LcdEmergencyStop:1;    //B0
+        Uint16  FreGridROverRating:1;    //B1
+        Uint16  FreGridRUnderRating:1;     //B2
+        Uint16  :1;    //B3
+        Uint16  :1;    //B4
+        Uint16  :1;       //B5
+        Uint16  :1;     //B6
+        Uint16  EEpromRdWrFault:1;     //B7
+
+        //unrecover1
+        Uint16  :1;    //B0
+        Uint16  :1;   //B1 
+        Uint16  :1;         //B2       
+        Uint16  :1;    //B3               
+        Uint16  HWADFault:1;    //B4  
+        Uint16  RelayShort:1;    //B5
+        Uint16  RelayOpen:1;    //B6
+        Uint16  :1;    //B7  
+
+        //unrecover2
+        Uint16  unrecoverHW_OCP_AC:1;   //B0
+        Uint16  unrecoverBus_OVP_Fault:1;    //B2
+    	Uint16  unrecoverBoost_OCP:1;    //
+     	Uint16  :1;    //
+    	Uint16  unrecoverSW_OCP_AC:1;    //:1;    //B6
+        Uint16  :1;    //B7
+        Uint16  :1;    //B1  
+        Uint16  :1;    //     
+
+     }bit;
+};
+//--------------------------------------------------------------------------
+
+
+
+//-----------How to use in Slave DSP----------------------------------------
+
+Calc_Result.
+    {
+        i32TempAmbave;
+        i32TempINVave;
+        i32VGrid_Rrms;
+    }
+
+MasterCommData[x]
+    {
+	[0] = 'M';
+	[1] = 28;
+	[2] = g_StateCheck.bit.GFCI50mACheckOK;//GET_HBYTE_OF_WORD(g_Sys_Current_State);
+	[3] = GET_LBYTE_OF_WORD(g_Sys_Current_State);
+	[4] = g_SysFaultMessage.Word.byte0;
+	[5] = g_SysFaultMessage.Word.byte1;
+	[6] = g_SysFaultMessage.Word.byte2;
+	[7] = g_SysFaultMessage.Word.byte3;
+	[8] = g_SysFaultMessage.Word.byte4;
+	[9] = g_SysFaultMessage.Word.byte5;
+	[10] = g_SysFaultMessage.Word.unrecover1;
+	[11] = g_SysFaultMessage.Word.unrecover2;
+	[12] = GET_HBYTE_OF_WORD(((Uint16)Calc_Result.f32IGrid_Rrms)*10);
+	[13] = GET_LBYTE_OF_WORD(((Uint16)Calc_Result.f32IGrid_Rrms)*10);
+	[14] = GET_HBYTE_OF_WORD((Uint16)Calc_Result.f32Vbus);
+	[15] = GET_LBYTE_OF_WORD((Uint16)Calc_Result.f32Vbus);	
+	[16] = GET_HBYTE_OF_WORD(((Uint16)Calc_Result.f32GridFreq)*100);
+	[17] = GET_LBYTE_OF_WORD(((Uint16)Calc_Result.f32GridFreq)*100);
+	[18] = GET_HBYTE_OF_WORD((Uint16)Calc_Result.f32OutputWatt);
+	[19] = GET_LBYTE_OF_WORD((Uint16)Calc_Result.f32OutputWatt);
+	[20] = GET_HBYTE_OF_WORD((Uint16)Calc_Result.f32OutputEnergy);
+	[21] = GET_LBYTE_OF_WORD((Uint16)Calc_Result.f32OutputEnergy);
+	[22] = GET_HBYTE_OF_WORD((Uint16)Calc_Result.f32HistoryOutputEnergy);
+	[23] = GET_LBYTE_OF_WORD((Uint16)Calc_Result.f32HistoryOutputEnergy);
+  //24~29 not added now
+	[30] = GET_HBYTE_OF_WORD(u16Ret);
+	[31] = GET_LBYTE_OF_WORD(u16Ret);
+    }
+//--------------------------------------------------------------------------------------------
