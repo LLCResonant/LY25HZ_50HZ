@@ -185,19 +185,12 @@ extern SAFETY_PARAMETER_REG	SafetyReg;
 
 struct POWER_DERATE_REG
 {
-    float32   f32OutputPower_AmbientTLimit;
-    float32	  f32OutputPower_HeatsinkTLimit;
-    float32	  f32InputPower_HeatsinkTLimit;
-
     float32	  f32ACPowerDerating_VRate;
     float32	  f32ACPowerDerating_HTRate;
 
     float32	  f32Heatsink_OverTemperature_Limit;
     float32	  f32Heatsink_DeratingTemperature_Limit;
-
-    float32	  f32Ambient_OverTemperature_Limit;
 };
-
 extern  struct POWER_DERATE_REG  PowerDerate_Reg;
 
 
