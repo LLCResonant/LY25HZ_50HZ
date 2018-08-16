@@ -6,3 +6,5 @@ I am pursuing a Ph.D degree
 The last valid sentence must followed an 'Enter'
 I am 26 years old
 Nanjing is a beautiful city
+It is the capital of six dynasty
+
