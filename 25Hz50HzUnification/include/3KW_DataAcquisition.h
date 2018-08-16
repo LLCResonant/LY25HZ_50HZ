@@ -171,14 +171,6 @@ struct	AD_ACC_Reg1
 
 	float32 	f32Phase_Diff_ave;
 };
-
-struct FanCntl_REG
-{
-	Uint16 	u16Cnt_OnTime;
-	Uint16  u16Cnt_Period;
-};
-extern  struct FanCntl_REG  FanCntl_Reg;
-
 /*=================gloable varibles declaration====================*/
 extern	struct	AD_Sample_Reg1	GeneralADbuffer,  GetRealValue,  ADGain,  ADChannelOffset,  ADCalibration;
 extern	struct	AD_ACC_Reg1		AD_Acc, 	AD_Sum, 	Calc_Result;

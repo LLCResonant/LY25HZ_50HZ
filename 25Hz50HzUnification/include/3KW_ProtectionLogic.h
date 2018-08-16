@@ -180,6 +180,8 @@ typedef struct
 	float32 f32InvH_VoltRms_Ref_LCD;
 	float32 f32InvL_VoltRms_Ref_LCD;
 
+	Uint8 	u8Short_Restart_times;
+
 }SAFETY_PARAMETER_REG;
 extern SAFETY_PARAMETER_REG	SafetyReg;
 
@@ -192,15 +194,6 @@ struct POWER_DERATE_REG
     float32	  f32Heatsink_DeratingTemperature_Limit;
 };
 extern  struct POWER_DERATE_REG  PowerDerate_Reg;
-
-
-struct ShortCheck_REG
-{
-	float32  Restart_time_interval;
-	float32  Restart_times;
-};
-extern  struct ShortCheck_REG  ShortCheck_Reg;//ZJX 2017.11.06
-
 
 //===================== Global functions==================================
 
@@ -235,7 +228,7 @@ extern void InputPowerLimit(void);
 extern void OutputCurrentLimit(void);
 extern void OverTemperatureLimit(void);
 extern void InvSyncCheck(void);
-extern Uint16  Bruce_test_cnt;
+
 
 #endif
 //--- end of file -----------------------------------------------------

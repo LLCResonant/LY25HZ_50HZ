@@ -25,7 +25,6 @@
  *============================================================================*/
 struct	AD_Sample_Reg1		GeneralADbuffer, GetRealValue, ADGain,ADChannelOffset, ADCalibration;
 struct	AD_ACC_Reg1			AD_Acc, AD_Sum, Calc_Result;
-struct  FanCntl_REG  			FanCntl_Reg;
 float32						f32SumCounterReci = 0;
 float32						f32SumCounterInv = 0;
 int16 						i16Cnt_SysParaTemp = 0;
@@ -1340,26 +1339,28 @@ void FanCntl(void)
 {
 	static Uint8 u8Fan_Temp_Limit = 50;
 	static Uint8 u8Fan_Temp_Limit_Step = 5;
+	static Uint8 u8Fan_Cnt_Period = 0;
+	static Uint8 u8Fan_Cnt_OnTime = 5;
 
-	if(FanCntl_Reg.u16Cnt_Period<=9)
-		FanCntl_Reg.u16Cnt_Period++;
+	if(u8Fan_Cnt_Period<=9)
+		u8Fan_Cnt_Period++;
    else
-	   FanCntl_Reg.u16Cnt_Period=1;
+	   u8Fan_Cnt_Period=1;
 
 	if (Calc_Result.f32TempPFC > u8Fan_Temp_Limit) //50
-		FanCntl_Reg.u16Cnt_OnTime=10;
+		u8Fan_Cnt_OnTime=10;
 	else if(Calc_Result.f32TempPFC > (u8Fan_Temp_Limit - u8Fan_Temp_Limit_Step))//45
-		FanCntl_Reg.u16Cnt_OnTime=9;
+		u8Fan_Cnt_OnTime=9;
 	else if(Calc_Result.f32TempPFC > (u8Fan_Temp_Limit - 2 * u8Fan_Temp_Limit_Step))//40
-		FanCntl_Reg.u16Cnt_OnTime=8;
+		u8Fan_Cnt_OnTime=8;
 	else if(Calc_Result.f32TempPFC > (u8Fan_Temp_Limit - 3 * u8Fan_Temp_Limit_Step))//35
-		FanCntl_Reg.u16Cnt_OnTime=7;
+		u8Fan_Cnt_OnTime=7;
 	else if(Calc_Result.f32TempPFC > (u8Fan_Temp_Limit - 4 * u8Fan_Temp_Limit_Step))//30
-		FanCntl_Reg.u16Cnt_OnTime=6;
+		u8Fan_Cnt_OnTime=6;
 	else
-		FanCntl_Reg.u16Cnt_OnTime=5;
+		u8Fan_Cnt_OnTime=5;
 
-	if(FanCntl_Reg.u16Cnt_OnTime>=FanCntl_Reg.u16Cnt_Period)
+	if(u8Fan_Cnt_OnTime>=u8Fan_Cnt_Period)
 	{
 		DC_Fan_Enable;
 		DcFanSpeedSense();

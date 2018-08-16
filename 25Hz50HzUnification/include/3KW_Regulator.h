@@ -29,20 +29,14 @@
 /* 5us deadband with 75MHz TBCLK, 5*75 = 375 */	 
 #define DeadBand_Duration	50				//250*2=5us,375-->7.5us
 
-//#define CurrCon_K_alpha	 20.421f                   //3 * 50.421f	// 51.666f			//250*2=5us,375-->7.5us
-//#define CurrCon_K_beta	 20.421f                   //3 * 50.421f	// 50.421f			//250*2=5us,375-->7.5us
-#define CurrCon_K_alpha	 0.0051f //0.0078f                   //3 * 50.421f	// 51.666f			//250*2=5us,375-->7.5us
-#define CurrCon_K_beta	 0.0045f //0.0073f                   //3 * 50.421f	// 50.421f			//250*2=5us,375-->7.5us
+#define CurrCon_Kp	30.0f
+#define CurrCon_Ki	 	3.0f
 
+#define BusCon_Kp	0.2
+#define BusCon_Ki	0.001
 
-#define CurrCon_Kr_RC	0.8f								//250*2=5us,375-->7.5us
-
-#define BusCon_K_alpha	0.8  //0.111f// Ki= alpha-beta  Kp = beta0.0583//0.02415//0.03415//0.0587//0.0587f//51.666f				//250*2=5us,375-->7.5us
-#define BusCon_K_beta	0.2  // 0.11f//0.058//0.02413//0.03412//0.05865//0.058f				//250*2=5us,375-->7.5us
-
-
-#define PLLCon_K_alpha	5.588e-4f//2017.2.21 GX 5.588e-4f
-#define PLLCon_K_beta	5.571e-4f//2017.2.21 GX 5.571e-4f
+#define PLLCon_K_alpha	5.588e-4f
+#define PLLCon_K_beta	5.571e-4f
 
 
 /* General Purpose PID Controller, Data type */
@@ -57,24 +51,14 @@ struct BUS_CON_REG
   float32   f32BusVoltErr_Old;        	// before bus voltage error
   float32   f32IGridAmp_Ref;            	// final Idref command
   float32   f32IGrid_RefAmp_Limit;
-  float32	f32BusVol_Filter;
   float32	f32BusVoltDiffErr_New;
   float32	f32BusVoltDiffErr_Old;
   float32	f32BusVoltDiff_Out;
   float32   f32BusFliter;
-  Uint8     PWMen_or_dis;   //2017.6.8 GX
+  float32	f32Bus_Kp;
+  float32	f32Bus_Ki;
 };
 extern  struct BUS_CON_REG  BusCon_Reg;
-
-struct BUS_CON_PARA_REG
-{
-    float32	  f32Bus_K_alpha;
-    float32	  f32Bus_K_beta;
-    float32   f32Bus_Ref_Max;    // bus voltage reference max
-    float32   f32Bus_Ref_Min;     // bus voltage reference min
-};
-extern  struct BUS_CON_PARA_REG  BusConPara_Reg;
-
 
 struct CURRENTCONTREG	
 {  
@@ -85,85 +69,31 @@ struct CURRENTCONTREG
 	float32  f32PfcDuty_Con;
 	float32	 f32PfcDuty_ff;
 	float32  f32PfcDuty;
-	float32  f32PfcDuty_ff_factor;//2017.4.18 GX
+	float32  f32PfcDuty_ff_factor;
 	float32  f32Kp;
-	float32  f32Ki;//2018/5/23 GX
-
-	float32  f32RC_Dout;		// Variable: Proportional output 
-	float32  f32RC_Qout;		// Variable: Integral output 
-	int16  Cnt_RC_K;			// Variable: Derivative output	
-	int16  Cnt_RC_K1;			// Variable: Pre-saturated output
-	int16  Cnt_RC_K3;			// Parameter: Maximum output 
-	char   Driveopen;           //2017.4.18 GX
-
-	Uint16	 u16Flg_DriveOpen;
+	float32  f32Ki;
+	Uint8   	u8Drive_Open;
 };	            
 extern	struct	CURRENTCONTREG	CurrConReg;
-
-struct CURRENTCONTPARAREG	
-{  
-	float32  f32Kr_RC;   		// Input: Reference input 
-	float32  f32K_alpha;   		// Input: Feedback input 
-	float32  f32K_beta;		// Variable: Error 
-};	            
-extern	struct	CURRENTCONTPARAREG	CurrConParaReg;
 
 struct INVVOLTCONTREG
 {
 	float32  f32VoltRms_Ref;
 	float32	 f32VoltRms_Ref_Delta;
-	float32	 f32Drop_Coeff;
-	float32  f32VoltRms_Fdb;
-	float32  f32VoltRms_ErrOld;
-	float32	 f32VoltRms_ErrNew;
-	float32  f32VoltRms_Out;
-	float32	 f32VoltRms_OutMax;
-	float32	 f32VoltRms_OutMin;
 	float32  f32VoltInst_ErrOld;   		// Input: Reference input
 	float32  f32VoltInst_ErrNew;   			// Input: Feedback input
 	float32  f32VoltInst_ErrOut;
-	float32  f32VoltInst_OutMax;
-	float32  f32VoltInst_OutMin;
 	float32	 f32VoltInst_Ref;
 	float32	 f32VoltInst_Fdb;
 	float32	 f32VoltGain;
 	float32  f32VoltDutyUpLimit;
 	float32  f32VoltDutyLowLimit;
-	float32  Input[3];   //ZR 2017.7.12
-	float32  Output[3];  //ZR 2017.7.12
-	float32  MAC;        //ZR 2017.7.12
+	float32  Input[3];
+	float32  Output[3];
+	float32  MAC;
+	float32  f32InvDuty;
 };
 extern	struct	INVVOLTCONTREG	InvHVoltConReg, InvLVoltConReg;
-
-struct INVVOLTCONTPARAREG
-{
-	float32  f32Kr_RC;   		// Input: Reference input
-	float32  f32K_alpha;   		// Input: Feedback input
-	float32  f32K_beta;		// Variable: Error
-};
-extern	struct	INVVOLTCONTPARAREG	InvHVoltConParaReg, InvLVoltConParaReg;
-
-struct INVCURRCONTREG
-{
-	float32  f32InvCurr_Ref;
-	float32  f32InvCurr_Fdb;
-	float32  f32CurrInst_ErrOld;       //ZJX 2017.0711
-	float32  f32CurrInst_ErrNew;       //ZJX 2017.0711
-	float32  f32InvDuty_Con;
-	float32	 f32InvDuty_ff;
-	float32  f32InvDuty;
-
-	Uint16	 u16Flg_DriveOpen;
-};
-extern	struct	INVCURRCONTREG	InvHCurrConReg, InvLCurrConReg;
-
-struct INVCURRCONTPARAREG
-{
-	float32  f32Kr_RC;   		// Input: Reference input
-	float32  f32K_alpha;   		// Input: Feedback input
-	float32  f32K_beta;		// Variable: Error
-};
-extern	struct	INVCURRCONTPARAREG	InvHCurrConParaReg, InvLCurrConParaReg;
 
 struct PLLCONTREG	
 {  

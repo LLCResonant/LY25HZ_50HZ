@@ -140,7 +140,7 @@ void Broadcast(void)
 	if (g_Mod_Status == Master)
 	{
 		EcanP2A_Tx.P2AMail_id.bit.bus = 0x0;
- 		if ( ShortCheck_Reg.Restart_times == 0 && 0 == SYNC_COM2_LEVEL && NormalState == g_Sys_Current_State)//  //2018.4.3 GX
+ 		if ( SafetyReg.u8Short_Restart_times == 0 && 0 == SYNC_COM2_LEVEL && NormalState == g_Sys_Current_State)//  //2018.4.3 GX
  		{
  			Output_Revise(); //2018.4.3 GX
  			EcanP2A_Tx.P2AMail_data.Word.Word1= (Uint16)(SafetyReg.f32InvH_VoltRms_Ref_LCD * 10);
@@ -185,7 +185,7 @@ void Arbitrate(P2AMAIL P2A_RX)
 		}
 		else if (g_Mod_Status == Slave)
 		{
-			if ( ( ShortCheck_Reg.Restart_times == 0 ) && 0 == SYNC_COM2_LEVEL&& (NormalState == g_Sys_Current_State )  &&  P2A_RX.P2AMail_id.bit.bus == 0  )//
+			if ( ( SafetyReg.u8Short_Restart_times == 0 ) && 0 == SYNC_COM2_LEVEL&& (NormalState == g_Sys_Current_State )  &&  P2A_RX.P2AMail_id.bit.bus == 0  )//
 			{
 				if(P2A_RX.P2AMail_data.Word.Word1 > 2110 && P2A_RX.P2AMail_data.Word.Word1 < 2290 \
 					&& 	P2A_RX.P2AMail_data.Word.Word2> 1010 && P2A_RX.P2AMail_data.Word.Word2 < 1190)
@@ -881,8 +881,8 @@ void Coeff_Feedback()
 	Temp.Mailbox_id.all = id;
 	Temp.Mailbox_data.Byte.Current_frame = 0x06;//the seventh frame
 
-	Temp.Mailbox_data.Word.Data1 = (Uint16)(InvHVoltConReg.f32Drop_Coeff * 1000);
-	Temp.Mailbox_data.Word.Data2 = (Uint16)(InvLVoltConReg.f32Drop_Coeff * 1000);
+	Temp.Mailbox_data.Word.Data1 = (Uint16)(Parallel_Reg.f32VInvH_Comp_Coeff * 1000);
+	Temp.Mailbox_data.Word.Data2 = (Uint16)(Parallel_Reg.f32VInvL_Comp_Coeff * 1000);
 
 	check ^= XOR(Temp);
 	Temp.Mailbox_data.Byte.byte7 = check;

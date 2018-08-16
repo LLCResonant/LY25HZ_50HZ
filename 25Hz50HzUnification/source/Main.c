@@ -183,8 +183,8 @@ void SysParamDefault(void)
 	SafetyReg.f32IInvL_HiLimitBackTime = IInvHiLimitBackTime;
 
 	SafetyReg.f32IGrid_HiLimit = OverRated_InputCurrentPeak;
-
 	SafetyReg.f32InvTemp_HiLimit = ShutInvTemperatureLimit;
+	SafetyReg.u8Short_Restart_times = 0;
 
 	Output_VoltRe_Reg.u8InvH_Heavy_Flag = 0;
 	Output_VoltRe_Reg.u8InvH_Light_Flag = 0;
@@ -220,18 +220,19 @@ void SysParamDefault(void)
 	BusCon_Reg.f32BusVoltErr_Old = 0;
 	BusCon_Reg.f32BusVoltErr_New = 0;
 	BusCon_Reg.f32IGridAmp_Ref = 0;
-	BusCon_Reg.PWMen_or_dis = 0;
 	BusCon_Reg.f32IGrid_RefAmp_Limit   = 28;
+	BusCon_Reg.f32Bus_Kp = BusCon_Kp;
+	BusCon_Reg.f32Bus_Ki = BusCon_Ki;
 
 	CurrConReg.f32IGrid_Ref = 0;
 	CurrConReg.f32IGrid_Fdb = 0;
 	CurrConReg.f32IGridErr_Old = 0;
 	CurrConReg.f32IGridErr_New = 0;
 	CurrConReg.f32PfcDuty_Con = 0;
-	CurrConReg.Driveopen = 0;
+	CurrConReg.u8Drive_Open = 0;
 	CurrConReg.f32PfcDuty_ff_factor = 1;
-	CurrConReg.f32Kp = 40;
-	CurrConReg.f32Ki = 3;
+	CurrConReg.f32Kp = CurrCon_Kp;
+	CurrConReg.f32Ki = CurrCon_Ki;
 
  	GridPLLConReg.f32Theta = 0;
 	GridPLLConReg.f32Vd = 0;
@@ -290,11 +291,8 @@ void SysParamDefault(void)
 	VOutLPLLReg.f32Theta = 0;
 
 	InvHVoltConReg.f32VoltRms_Ref = InvH_RatedVolt_Ref;
-	InvHVoltConReg.f32VoltRms_Fdb = 0;
 	InvHVoltConReg.f32VoltInst_Ref = 0;
 	InvHVoltConReg.f32VoltInst_Fdb = 0;
-	InvHCurrConReg.f32InvCurr_Ref = 0;
-	InvHCurrConReg.f32InvCurr_Fdb = 0;
 	InvHVoltConReg.Input[0] = 0;
 	InvHVoltConReg.Input[1] = 0;
 	InvHVoltConReg.Input[2] = 0;
@@ -302,14 +300,10 @@ void SysParamDefault(void)
 	InvHVoltConReg.Output[1] = 0;
 	InvHVoltConReg.Output[2] = 0;
 	InvHVoltConReg.MAC = 0;
-	InvHVoltConReg.f32Drop_Coeff = 0;
 
 	InvLVoltConReg.f32VoltRms_Ref =  InvL_RatedVolt_Ref;
-	InvLVoltConReg.f32VoltRms_Fdb = 0;
 	InvLVoltConReg.f32VoltInst_Ref = 0;
 	InvLVoltConReg.f32VoltInst_Fdb = 0;
-	InvLCurrConReg.f32InvCurr_Ref = 0;
-    InvLCurrConReg.f32InvCurr_Fdb = 0;
     InvLVoltConReg.Input[0] = 0;
     InvLVoltConReg.Input[1] = 0;
     InvLVoltConReg.Input[2] = 0;
@@ -317,7 +311,6 @@ void SysParamDefault(void)
     InvLVoltConReg.Output[1] = 0;
     InvLVoltConReg.Output[2] = 0;
     InvLVoltConReg.MAC = 0;
-	InvLVoltConReg.f32Drop_Coeff = 0;
 
  	OutPLLConReg.f32Theta = 0;
   	OutPLLConReg.f32Theta_Step = InvTheta_StepRated;
@@ -338,8 +331,8 @@ void SysParamDefault(void)
   	VOutLPLLConReg.f32Theta_Step = InvTheta_StepRated;
 
 
-  	InvLCurrConReg.f32InvDuty = 0;
-  	InvHCurrConReg.f32InvDuty = 0;
+  	InvLVoltConReg.f32InvDuty = 0;
+  	InvHVoltConReg.f32InvDuty = 0;
 	AD_Acc.i16GridCounter = 400;
 	AD_Acc.i16InvCounter = PWM_FREQ / RatedInvFrequency / 2;
 
@@ -465,10 +458,6 @@ void SysParamDefault(void)
 	Calc_Result.f32Coff_Dforward = 0;
 	Calc_Result.f32Phase_Diff_ave= 0;
 
-
-	FanCntl_Reg.u16Cnt_OnTime=0;
-	FanCntl_Reg.u16Cnt_Period=0;
-
 	g_SysWarningMessage.Word.byte0 = 0;
 	g_SysWarningMessage.Word.byte1 = 0;
 
@@ -504,8 +493,6 @@ void SysParamDefault(void)
 //Controller parameter
 
 //Power limit parameter
-	ShortCheck_Reg.Restart_time_interval = 0;
-	ShortCheck_Reg.Restart_times = 0;
 
     ComFlag.SciRcvStart=0;
 	ComFlag.Arrival_40ms=0;

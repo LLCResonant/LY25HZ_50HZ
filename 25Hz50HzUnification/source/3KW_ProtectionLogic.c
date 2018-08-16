@@ -1,17 +1,14 @@
 /*=============================================================================*
- *         Copyright(c)
- *                          ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 3KW_ProtectionLogic.c
+ *  FILENAME : 3KW_DataAcquisition.h
  *
- *  PURPOSE  : Do some checks according to calculated values.
- *  
+ *  PURPOSE  :
+ *
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *    2018.6.2		001					Li Zhang
- *    												Xun Gao
- *    												Jianxi Zhu
- *
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.8.11		001					NUAA XING
  *============================================================================*/
 			// Peripheral address definitions
 #include "3KW_MAINHEADER.h"					// Main include file
@@ -21,7 +18,6 @@
  *============================================================================*/
 SAFETY_PARAMETER_REG			SafetyReg;
 struct POWER_DERATE_REG  	PowerDerate_Reg;
-struct ShortCheck_REG  			ShortCheck_Reg;
 /*=============================================================================*
  * 	functions declaration
  *============================================================================*/
@@ -1127,20 +1123,21 @@ void CurrentProtectionIdentify(void)
 ******************************************************************************************************/
 void ShortRecover(void)
 {
+	static Uint16 u16Restart_time_interval = 0;
 	if((1 == g_SysFaultMessage.bit.recoverHW_InvH_OCP)||(1 == g_SysFaultMessage.bit.recoverHW_InvL_OCP))
 	{
-		ShortCheck_Reg.Restart_time_interval ++;
-		if(ShortCheck_Reg.Restart_times<=2)
+		u16Restart_time_interval ++;
+		if(SafetyReg.u8Short_Restart_times<=2)
 		{
 			//After short protection, the module will restart with 22V and 16.5V output voltage to test
 			//whether the output is still shorted
-			if(ShortCheck_Reg.Restart_time_interval==5000)  //2ms * 5000 = 10s
+			if(u16Restart_time_interval==5000)  //2ms * 5000 = 10s
 			{
 				g_SysFaultMessage.bit.recoverHW_InvH_OCP = 0;
 				g_SysFaultMessage.bit.recoverHW_InvL_OCP = 0;
 				DRV_RST_ON;
-				ShortCheck_Reg.Restart_time_interval = 0;
-				ShortCheck_Reg.Restart_times ++;
+				u16Restart_time_interval = 0;
+				SafetyReg.u8Short_Restart_times ++;
 				SafetyReg.f32InvH_VoltRms_Ref = 0.1 * InvH_RatedVolt_Ref;
 				SafetyReg.f32InvL_VoltRms_Ref = 0.15 * InvL_RatedVolt_Ref;
 				//InvHVoltConReg.f32VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref;
@@ -1149,8 +1146,8 @@ void ShortRecover(void)
 		}
 		else
 		{
-			ShortCheck_Reg.Restart_time_interval = 0;
-			ShortCheck_Reg.Restart_times = 0;
+			u16Restart_time_interval = 0;
+			SafetyReg.u8Short_Restart_times = 0;
 			g_SysFaultMessage.bit.unrecoverHW_InvH_OCP = 1;
 			g_SysFaultMessage.bit.unrecoverHW_InvL_OCP = 1;
 			g_StateCheck.bit.ShortInv = 1;

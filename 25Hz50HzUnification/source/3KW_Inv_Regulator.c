@@ -32,7 +32,6 @@
 struct	PLLCONTREG							OutPLLConReg, VOutLPLLConReg, VOutHPLLConReg;
 struct	PLL 											VOutLPLLReg, VOutHPLLReg;
 struct  INVVOLTCONTREG  				InvHVoltConReg, InvLVoltConReg;
-struct  INVCURRCONTREG  				InvHCurrConReg, InvLCurrConReg;
 
 /*=============================================================================*
  * 	functions declaration
@@ -194,24 +193,24 @@ void InvH_VoltControl(void)
 
   	 InvHVoltConReg.Output[0] = InvHVoltConReg.MAC;
   	 InvHVoltConReg.f32VoltInst_ErrOut = InvHVoltConReg.Output[0];
-  	 InvHCurrConReg.f32InvDuty =  InvHVoltConReg.f32VoltInst_ErrOut;
+  	 InvHVoltConReg.f32InvDuty =  InvHVoltConReg.f32VoltInst_ErrOut;
 
-  	 if (InvHCurrConReg.f32InvDuty >=  InvHVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD)
-  		 InvHCurrConReg.f32InvDuty = InvHVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD;
-  	 else if (InvHCurrConReg.f32InvDuty <= -InvHVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD )
-  		 InvHCurrConReg.f32InvDuty = -InvHVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD;
+  	 if (InvHVoltConReg.f32InvDuty >=  InvHVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD)
+  		 InvHVoltConReg.f32InvDuty = InvHVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD;
+  	 else if (InvHVoltConReg.f32InvDuty <= -InvHVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD )
+  		 InvHVoltConReg.f32InvDuty = -InvHVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD;
   	 else
   		 ;
 
   	 //open loop just for test
 	 #ifdef INV_OPEN_LOOP
-  	 InvHCurrConReg.f32InvDuty = 0.76f * PWM_HALF_PERIOD * OutPLLConReg.Sin_Theta;
+  	 InvHVoltConReg.f32InvDuty = 0.76f * PWM_HALF_PERIOD * OutPLLConReg.Sin_Theta;
 	 #endif
 
-  	 EPwm5Regs.CMPA.half.CMPA = (Uint16)(-InvHCurrConReg.f32InvDuty);
-  	 EPwm5Regs.CMPB = (Uint16)(-InvHCurrConReg.f32InvDuty);
-  	 EPwm6Regs.CMPA.half.CMPA = (Uint16)(InvHCurrConReg.f32InvDuty);
-  	 EPwm6Regs.CMPB = (Uint16)(InvHCurrConReg.f32InvDuty);
+  	 EPwm5Regs.CMPA.half.CMPA = (Uint16)(-InvHVoltConReg.f32InvDuty);
+  	 EPwm5Regs.CMPB = (Uint16)(-InvHVoltConReg.f32InvDuty);
+  	 EPwm6Regs.CMPA.half.CMPA = (Uint16)(InvHVoltConReg.f32InvDuty);
+  	 EPwm6Regs.CMPB = (Uint16)(InvHVoltConReg.f32InvDuty);
 
  } // end of InvH_VoltControl
 
@@ -301,36 +300,36 @@ void InvL_VoltControl(void)
 
 	InvLVoltConReg.Output[0] = InvLVoltConReg.MAC;
 	InvLVoltConReg.f32VoltInst_ErrOut = InvLVoltConReg.Output[0];
-	InvLCurrConReg.f32InvDuty =  InvLVoltConReg.f32VoltInst_ErrOut;
+	InvLVoltConReg.f32InvDuty =  InvLVoltConReg.f32VoltInst_ErrOut;
 
-	if (InvLCurrConReg.f32InvDuty >=  InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD)
-		InvLCurrConReg.f32InvDuty = InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD;
-    else if (InvLCurrConReg.f32InvDuty <= - InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD  )
-    	InvLCurrConReg.f32InvDuty = - InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD;
-    else if (InvLCurrConReg.f32InvDuty < InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD && \
-    		InvLCurrConReg.f32InvDuty >= InvLVoltConReg.f32VoltDutyLowLimit * PWM_HALF_PERIOD)
-    	InvLCurrConReg.f32InvDuty = InvLCurrConReg.f32InvDuty;
-    else if (InvLCurrConReg.f32InvDuty > -InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD && \
-    		InvLCurrConReg.f32InvDuty <= -InvLVoltConReg.f32VoltDutyLowLimit * PWM_HALF_PERIOD)
-    	InvLCurrConReg.f32InvDuty = InvLCurrConReg.f32InvDuty;
-    else if (InvLCurrConReg.f32InvDuty >= 0 && \
-    		InvLCurrConReg.f32InvDuty <  InvLVoltConReg.f32VoltDutyLowLimit * PWM_HALF_PERIOD)
-    	InvLCurrConReg.f32InvDuty = InvLVoltConReg.f32VoltDutyLowLimit * PWM_HALF_PERIOD;
-    else if (InvLCurrConReg.f32InvDuty < 0 && \
-    		InvLCurrConReg.f32InvDuty >  -InvLVoltConReg.f32VoltDutyLowLimit * PWM_HALF_PERIOD)
-    	InvLCurrConReg.f32InvDuty = -InvLVoltConReg.f32VoltDutyLowLimit * PWM_HALF_PERIOD;
+	if (InvLVoltConReg.f32InvDuty >=  InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD)
+		InvLVoltConReg.f32InvDuty = InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD;
+    else if (InvLVoltConReg.f32InvDuty <= - InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD  )
+    	InvLVoltConReg.f32InvDuty = - InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD;
+    else if (InvLVoltConReg.f32InvDuty < InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD && \
+    		InvLVoltConReg.f32InvDuty >= InvLVoltConReg.f32VoltDutyLowLimit * PWM_HALF_PERIOD)
+    	InvLVoltConReg.f32InvDuty = InvLVoltConReg.f32InvDuty;
+    else if (InvLVoltConReg.f32InvDuty > -InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD && \
+    		InvLVoltConReg.f32InvDuty <= -InvLVoltConReg.f32VoltDutyLowLimit * PWM_HALF_PERIOD)
+    	InvLVoltConReg.f32InvDuty = InvLVoltConReg.f32InvDuty;
+    else if (InvLVoltConReg.f32InvDuty >= 0 && \
+    		InvLVoltConReg.f32InvDuty <  InvLVoltConReg.f32VoltDutyLowLimit * PWM_HALF_PERIOD)
+    	InvLVoltConReg.f32InvDuty = InvLVoltConReg.f32VoltDutyLowLimit * PWM_HALF_PERIOD;
+    else if (InvLVoltConReg.f32InvDuty < 0 && \
+    		InvLVoltConReg.f32InvDuty >  -InvLVoltConReg.f32VoltDutyLowLimit * PWM_HALF_PERIOD)
+    	InvLVoltConReg.f32InvDuty = -InvLVoltConReg.f32VoltDutyLowLimit * PWM_HALF_PERIOD;
     else
     	;
 
 	//open loop just for test
 	#ifdef INV_OPEN_LOOP
-	InvLCurrConReg.f32InvDuty = 0.38f * PWM_HALF_PERIOD * OutPLLConReg.Cos_Theta;
+	InvLVoltConReg.f32InvDuty = 0.38f * PWM_HALF_PERIOD * OutPLLConReg.Cos_Theta;
 	#endif
 
-    EPwm3Regs.CMPA.half.CMPA = (Uint16)(-InvLCurrConReg.f32InvDuty);
-    EPwm3Regs.CMPB = (Uint16)(-InvLCurrConReg.f32InvDuty);
-    EPwm4Regs.CMPA.half.CMPA = (Uint16)(InvLCurrConReg.f32InvDuty);
-    EPwm4Regs.CMPB = (Uint16)(InvLCurrConReg.f32InvDuty);
+    EPwm3Regs.CMPA.half.CMPA = (Uint16)(-InvLVoltConReg.f32InvDuty);
+    EPwm3Regs.CMPB = (Uint16)(-InvLVoltConReg.f32InvDuty);
+    EPwm4Regs.CMPA.half.CMPA = (Uint16)(InvLVoltConReg.f32InvDuty);
+    EPwm4Regs.CMPB = (Uint16)(InvLVoltConReg.f32InvDuty);
 
 } // end of InvL_VoltControl
 
@@ -569,7 +568,7 @@ void InvVoltSlowup(void)
 	 else
 	 	g_StateCheck.bit.Inv_SoftStart = 0;
 
-	 if (g_StateCheck.bit.Inv_SoftStart == 1 && ShortCheck_Reg.Restart_times == 0)
+	 if (g_StateCheck.bit.Inv_SoftStart == 1 && SafetyReg.u8Short_Restart_times == 0)
 	 {
 		 if (InvHVoltConReg.f32VoltRms_Ref >= SafetyReg.f32InvH_VoltRms_Ref)
 		 {
@@ -608,34 +607,15 @@ void InvVoltSlowup(void)
 void InverterStage_Init(void)
 {
 	// start of InverterStage_Init
-
-	InvHVoltConReg.f32VoltRms_ErrOld = 0;
-	InvHVoltConReg.f32VoltRms_ErrNew = 0;
-	InvHVoltConReg.f32VoltRms_Out = 0;
 	InvHVoltConReg.f32VoltRms_Ref_Delta = 3;
-
 	InvHVoltConReg.f32VoltInst_ErrOld = 0;
 	InvHVoltConReg.f32VoltInst_ErrNew = 0;
 	InvHVoltConReg.f32VoltInst_ErrOut = 0;
 
-	InvHCurrConReg.f32CurrInst_ErrOld = 0;
-	InvHCurrConReg.f32CurrInst_ErrNew = 0;
-
-	InvHCurrConReg.f32InvDuty_Con = 0;
-
-	InvLVoltConReg.f32VoltRms_ErrOld = 0;
-	InvLVoltConReg.f32VoltRms_ErrNew = 0;
-	InvLVoltConReg.f32VoltRms_Out = 0;
 	InvLVoltConReg.f32VoltRms_Ref_Delta = 1.5;
-
 	InvLVoltConReg.f32VoltInst_ErrOld = 0;
 	InvLVoltConReg.f32VoltInst_ErrNew = 0;
 	InvLVoltConReg.f32VoltInst_ErrOut = 0;
-
-	InvLCurrConReg.f32CurrInst_ErrOld = 0;
-	InvLCurrConReg.f32CurrInst_ErrNew = 0;
-
-	InvLCurrConReg.f32InvDuty_Con = 0;
 
 	InvHVoltConReg.f32VoltGain = 0;
 	InvLVoltConReg.f32VoltGain = 0;
@@ -669,14 +649,14 @@ void InvRestartCheck(void)
 
 	if((g_StateCheck.bit.Inv_SoftStart == 1) && (NormalState==g_Sys_Current_State))
 	{
-		if(ShortCheck_Reg.Restart_times >=1)
+		if(SafetyReg.u8Short_Restart_times >=1)
 		{
 			if(u16temp1 <250)	//250 * 40ms = 10s
 				u16temp1++;
 			else
 			{
 				u16temp1=0;
-				ShortCheck_Reg.Restart_times = 0;
+				SafetyReg.u8Short_Restart_times = 0;
 				g_Sys_Current_State = FaultState;
 				SafetyReg.f32InvH_VoltRms_Ref = InvH_RatedVolt_Ref;
 			    SafetyReg.f32InvL_VoltRms_Ref = InvL_RatedVolt_Ref;

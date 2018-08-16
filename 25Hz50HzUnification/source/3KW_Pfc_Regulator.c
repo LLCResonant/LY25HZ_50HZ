@@ -81,17 +81,17 @@ void ADC_INT_PFC_Control(void)
   	#ifdef PFC_CLOSE_LOOP
   	if ( g_Sys_Current_State == NormalState )
   	{
-  		if (CurrConReg.Driveopen == 0 && g_StateCheck.bit.Grid_Zero_Crossing_Flag == 1)
+  		if (CurrConReg.u8Drive_Open == 0 && g_StateCheck.bit.Grid_Zero_Crossing_Flag == 1)
   		{
   			CurrConReg.f32PfcDuty_ff = 0;
-  			CurrConReg.Driveopen = 1;
+  			CurrConReg.u8Drive_Open = 1;
   			//send a signal to CPLD. The input current protection is set to be a Cycle-by-cycle protection
   			GRID_OCP_CBC_ON;
   		}
 
   		VGrid_Dip_Reset();
 
-		if (CurrConReg.Driveopen >= 1 )
+		if (CurrConReg.u8Drive_Open >= 1 )
   		{
 			Calc_IGrid_reference();
 			BusVoltBalController();
@@ -102,7 +102,7 @@ void ADC_INT_PFC_Control(void)
 
 	#ifdef PFC_OPEN_LOOP
   	GridCurrentController();
-  	CurrConReg.Driveopen = 1;
+  	CurrConReg.u8Drive_Open = 1;
 	#endif
 
 	//Scib_SnatchGraph();
@@ -135,7 +135,7 @@ void VGrid_Dip_Reset (void)
 	if(Calc_Result.f32VGrid_rms_instant <= 100)
 	{
 		PfcPWMOutputsDisable();
-		CurrConReg.Driveopen = 0;
+		CurrConReg.u8Drive_Open = 0;
 		PFCPWM = 1;
 		g_StateCheck.bit.Input_dip_Disable_GridOCP = 1;
 	}
@@ -149,7 +149,7 @@ void VGrid_Dip_Reset (void)
 		CurrConReg.f32IGridErr_New = 0;
 		CurrConReg.f32PfcDuty_Con = 0;
 
-		CurrConReg.Driveopen = 1;
+		CurrConReg.u8Drive_Open = 1;
 		PFCPWM = 0;
 	}
 	else
@@ -166,14 +166,7 @@ void VGrid_Dip_Reset (void)
 void GridCurrentController(void)
 {
 	// start of CurrentPIDcontroller
-
-	static float32 Curr_Kp =40.0f;
-	static float32 Curr_Ki =3.0f;
 	static Uint8  BusOVP = 0;
-
-	Curr_Kp = CurrConReg.f32Kp;
-	Curr_Ki = CurrConReg.f32Ki;
-
 	/*
 	 * 'BusCon_Reg.f32IGridAmp_Ref * GridPLLConReg.Sin_Theta' is the original current reference
 	 * 'BusCon_Reg.f32BusVoltDiff_Out' is the Neutral Point Balance superposition
@@ -188,9 +181,9 @@ void GridCurrentController(void)
 	CurrConReg.f32IGridErr_New = CurrConReg.f32IGrid_Ref - CurrConReg.f32IGrid_Fdb;
 
 	//PI calculating process
-	CurrConReg.f32PfcDuty_Con = CurrConReg.f32PfcDuty_Con + (Curr_Kp + Curr_Ki) * CurrConReg.f32IGridErr_New - Curr_Kp * CurrConReg.f32IGridErr_Old;
+	CurrConReg.f32PfcDuty_Con = CurrConReg.f32PfcDuty_Con + (CurrConReg.f32Kp + CurrConReg.f32Ki) * CurrConReg.f32IGridErr_New - CurrConReg.f32Kp * CurrConReg.f32IGridErr_Old;
 
-	if (CurrConReg.Driveopen == 2)
+	if (CurrConReg.u8Drive_Open == 2)
 		BusVoltHysteresis();
 
 	//'CurrConReg.f32PfcDuty_ff' is the forward control superposition value
@@ -223,12 +216,12 @@ void GridCurrentController(void)
 		EPwm2Regs.CMPA.half.CMPA = 0;
 	}
 
-	if (CurrConReg.Driveopen == 1) //2017.4.18 GX not confirmed
+	if (CurrConReg.u8Drive_Open == 1) //2017.4.18 GX not confirmed
 	{
-		CurrConReg.Driveopen = 2;
+		CurrConReg.u8Drive_Open = 2;
 		PfcPWMOutputsEnable();
 	}
-	else if (CurrConReg.Driveopen >= 1)
+	else if (CurrConReg.u8Drive_Open >= 1)
 	{
 		/*
 		 * When Bus voltage increase unusually, the drive should be closed.
@@ -248,7 +241,7 @@ void GridCurrentController(void)
 	        BusCon_Reg.f32BusVoltDiffErr_New = 0;
 	        BusCon_Reg.f32BusVoltDiffErr_Old = 0;
 	        BusCon_Reg.f32BusVoltDiff_Out = 0;
-	        CurrConReg.Driveopen = 1;
+	        CurrConReg.u8Drive_Open = 1;
 	        BusOVP = 0;
 		}
 	}
@@ -349,10 +342,6 @@ void BusVoltBalController(void)
 void Calc_IGrid_reference(void)
 {
 	//start of Calc_IGrid_reference
-
-	static float32 Bus_Kp = 0.2f;
-	static float32 Bus_Ki = 0.001f;
-
 	BusCon_Reg.f32BusFliter = 0.1f * (GetRealValue.f32VBusP + GetRealValue.f32VBusN) + \
 			0.9f * BusCon_Reg.f32BusFliter;
 	BusCon_Reg.f32BusVoltErr_Old = BusCon_Reg.f32BusVoltErr_New;
@@ -363,8 +352,8 @@ void Calc_IGrid_reference(void)
 	else if(BusCon_Reg.f32BusVoltErr_New  < -10)
 	  	BusCon_Reg.f32BusVoltErr_New  = -10;
 
-	BusCon_Reg.f32IGridAmp_Ref = BusCon_Reg.f32IGridAmp_Ref + (Bus_Kp + Bus_Ki) * \
-			BusCon_Reg.f32BusVoltErr_New - Bus_Kp * BusCon_Reg.f32BusVoltErr_Old;
+	BusCon_Reg.f32IGridAmp_Ref = BusCon_Reg.f32IGridAmp_Ref + (BusCon_Reg.f32Bus_Kp + BusCon_Reg.f32Bus_Ki) * \
+			BusCon_Reg.f32BusVoltErr_New - BusCon_Reg.f32Bus_Kp * BusCon_Reg.f32BusVoltErr_Old;
 
     if (BusCon_Reg.f32IGridAmp_Ref >= BusCon_Reg.f32IGrid_RefAmp_Limit  )
         BusCon_Reg.f32IGridAmp_Ref = BusCon_Reg.f32IGrid_RefAmp_Limit  ;
@@ -510,7 +499,7 @@ void RectifierStage_Init(void)
 	CurrConReg.f32IGridErr_Old = 0;
 	CurrConReg.f32IGridErr_New = 0;
 	CurrConReg.f32PfcDuty_Con = 0;
-	CurrConReg.Driveopen = 0;
+	CurrConReg.u8Drive_Open = 0;
 	CurrConReg.f32PfcDuty_ff_factor = 1;
 
 	g_StateCheck.bit.PfcSoftStart = 0;
