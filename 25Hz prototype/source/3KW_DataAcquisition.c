@@ -91,7 +91,7 @@ void Get_ADC_Result1(void)
 	GetRealValue.f32VBusN = GeneralADbuffer.f32VBusN * ADGain.f32VBusN * ADCorrection.f32VBusN - ADChannelOffset.f32VBusN;
 
 	GeneralADbuffer.f32TempPFC = (float32)AdcMirror.ADCRESULT11;		// B5 result
-	GetRealValue.f32TempPFC = ADCorrection.f32TempPFC * GeneralADbuffer.f32TempPFC;
+	GetRealValue.f32TempPFC = GeneralADbuffer.f32TempPFC;
 
 } // end of  Get_ADC_Result1
 
@@ -121,9 +121,9 @@ void Get_ADC_Result2(void)//ZJX changed
 	GetRealValue.f32VOutL = GeneralADbuffer.f32VOutL * ADGain.f32VOutL * ADCorrection.f32VOutL - ADChannelOffset.f32VOutL;
 
 	GeneralADbuffer.f32TempInvH = (float32)AdcMirror.ADCRESULT9;	// B4 result
-	GetRealValue.f32TempInvH = ADCorrection.f32TempInvH * GeneralADbuffer.f32TempInvH;
+	GetRealValue.f32TempInvH = GeneralADbuffer.f32TempInvH;
 	GeneralADbuffer.f32TempInvL = (float32)AdcMirror.ADCRESULT13;	// B6 result
-	GetRealValue.f32TempInvL = ADCorrection.f32TempInvL * GeneralADbuffer.f32TempInvL;
+	GetRealValue.f32TempInvL = GeneralADbuffer.f32TempInvL;
 
 } // end of  Get_ADC_Result2
 
@@ -580,6 +580,7 @@ void GridIRefAmp(void)
  *============================================================================*/
 void PFCTempCalc(void)
 {
+	static float32	s_f32temp3 = 0;
 	float32 f32temp1;
 	float32 f32PFCTempLowValue = 1;
 	float32 f32PFCTempHiValue = 125;
@@ -589,24 +590,25 @@ void PFCTempCalc(void)
 	f32temp1 = (AD_Sum.f32TempPFC * f32SumCounterReci);
 
 	if (f32temp1 <= f32TempTab[length])
-	{Calc_Result.f32TempPFC = f32PFCTempHiValue;}
+	{s_f32temp3 = f32PFCTempHiValue;}
 	else if (f32temp1 > f32TempTab[0])
-	{Calc_Result.f32TempPFC = f32PFCTempLowValue;}
+	{s_f32temp3 = f32PFCTempLowValue;}
 	else
 	{
 		for(i=length-1;i>=0;i--)
 		{
 		if((f32TempTab[i] > f32temp1) && (f32temp1 >= f32TempTab[i+1]))
 		{
-		Calc_Result.f32TempPFC = i + 1;
+			s_f32temp3 = i + 1;
 		break;
 		}
 		}
 	}
 
-	f32temp1 = Calc_Result.f32TempPFC;
-	f32temp1 = (Calc_Result.f32TempPFC * 0.7f) + (f32temp1 * 0.3f);
-	Calc_Result.f32TempPFC = f32temp1;
+	f32temp1 = s_f32temp3;
+	f32temp1 = (s_f32temp3 * 0.7f) + (f32temp1 * 0.3f);
+	s_f32temp3 = f32temp1;
+	Calc_Result.f32TempPFC = s_f32temp3 * ADCorrection.f32TempPFC;
 }
 
 /*=============================================================================*
@@ -772,6 +774,8 @@ void InvVoltsRMSCalc(void)
  *============================================================================*/
 void InvTempCalc(void)
 {
+	static float32 s_f32tempH3 = 0;
+	static float32 s_f32tempL3 = 0;
 	float32 f32temp1, f32temp2;
 	float32 f32InvTempLowValue = 1;
 	float32 f32InvTempHiValue = 125;
@@ -784,45 +788,47 @@ void InvTempCalc(void)
 
 	
 	if (f32temp1 <= f32TempTab[length])
-	{Calc_Result.f32TempInvH = f32InvTempHiValue;}
+	{s_f32tempH3 = f32InvTempHiValue;}
 	else if (f32temp1 > f32TempTab[0])
-	{Calc_Result.f32TempInvH = f32InvTempLowValue;}
+	{s_f32tempH3 = f32InvTempLowValue;}
 	else
 	{
 		for(i=length-1;i>=0;i--)
 		{
 		if((f32TempTab[i] > f32temp1) && (f32temp1 >= f32TempTab[i+1]))
 		{
-		Calc_Result.f32TempInvH = i + 1;
+			s_f32tempH3 = i + 1;
 		break;
 		}
 		}
 	}
 
 	if (f32temp2 <= f32TempTab[length])
-	{Calc_Result.f32TempInvL = f32InvTempHiValue;}
+	{s_f32tempL3 = f32InvTempHiValue;}
 	else if (f32temp2 > f32TempTab[0])
-	{Calc_Result.f32TempInvL =  f32InvTempLowValue;}
+	{s_f32tempL3 =  f32InvTempLowValue;}
 	else
 	{
 		for(j=length-1;j>=0;j--)
 		{
 		if((f32TempTab[j] > f32temp2) && (f32temp2 >= f32TempTab[j+1]))
 		{
-		Calc_Result.f32TempInvL = j + 1;
+			s_f32tempL3 = j + 1;
 		break;
 		}
 		}
 	}
 
-	f32temp1 = Calc_Result.f32TempInvH;
-	f32temp2 = Calc_Result.f32TempInvL;
+	f32temp1 = s_f32tempH3;
+	f32temp2 = s_f32tempL3;
 
-	f32temp1 = (Calc_Result.f32TempInvH * 0.7f) + (f32temp1 * 0.3f);
-	f32temp2 = (Calc_Result.f32TempInvL * 0.7f) + (f32temp2 * 0.3f);
+	f32temp1 = (s_f32tempH3 * 0.7f) + (f32temp1 * 0.3f);
+	f32temp2 = (s_f32tempL3 * 0.7f) + (f32temp2 * 0.3f);
 
-	Calc_Result.f32TempInvH = f32temp1;
-	Calc_Result.f32TempInvL = f32temp2;
+	s_f32tempH3 = f32temp1;
+	s_f32tempL3 = f32temp2;
+	Calc_Result.f32TempInvH = s_f32tempH3 * ADCorrection.f32TempInvH;
+	Calc_Result.f32TempInvL = s_f32tempL3 * ADCorrection.f32TempInvL;
 
 	if(Calc_Result.f32TempInvH > Calc_Result.f32TempInvL)
 	{
