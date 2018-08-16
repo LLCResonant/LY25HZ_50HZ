@@ -349,7 +349,7 @@ void DataUpload(MAIL mailp)
 	/*--------------------------------------------------------------------------*/
 	Temp.Mailbox_data.Byte.Current_frame = 0x05;//第五帧
 
-	Temp.Mailbox_data.Word.Data1= Ecan_ModuleData.InvH_Temp;
+	Temp.Mailbox_data.Word.Data1= Ecan_ModuleData.InvL_Temp;
 	Temp.Mailbox_data.Word.Data2= Ecan_ModuleData.InvH_Freq;
 	Temp.Mailbox_data.Word.Data3 = Ecan_ModuleData.InvL_Freq;
 	check ^= XOR(Temp);
@@ -575,7 +575,7 @@ void Data_Format_Conver()
 
 	Ecan_ModuleData.InvL_Cur_Rms = (Uint16)(Calc_Result.f32IOutL_rms * 100);
     Ecan_ModuleData.PFC_Temp = (Uint16)(Calc_Result.f32TempPFC * 10);
-    Ecan_ModuleData.InvH_Temp = (Uint16)(Calc_Result.f32TempInvL * 10);
+    Ecan_ModuleData.InvH_Temp = (Uint16)(Calc_Result.f32TempInvH * 10);
 
     Ecan_ModuleData.InvL_Temp = (Uint16)(Calc_Result.f32TempInvL * 10);
     Ecan_ModuleData.InvH_Freq = (Uint16)(Calc_Result.f32VoutHFreq * 10);
@@ -783,28 +783,38 @@ void Para_Revise_Oper(Uint8 temp)
 				ADCorrection.f32IGrid *= (float32)(Ecan_SytemREVISED.Input_Cur_Rms * 0.001);
 		}
 
-		if (Ecan_SytemREVISED.INVH_Volt_Ref > 2020 && Ecan_SytemREVISED.INVH_Volt_Ref < 2420)  //2017.12.1 GX
+		if (Ecan_SytemREVISED.INVH_Volt_Ref > 2110 && Ecan_SytemREVISED.INVH_Volt_Ref < 2290)  //2017.12.1 GX
+		{
 			SafetyReg.f32InvH_VoltRms_Ref_LCD = (float32)(Ecan_SytemREVISED.INVH_Volt_Ref * 0.1);
+			Output_VoltRe_Reg.InvH_Light_Flag = 0;
+			Output_VoltRe_Reg.InvH_Middle_Flag = 0;
+			Output_VoltRe_Reg.InvH_Heavy_Flag = 0;
+		}
 
-		if (Ecan_SytemREVISED.INVL_Volt_Ref > 1010 && Ecan_SytemREVISED.INVL_Volt_Ref  < 1210)  //2017.12.1 GX
+		if (Ecan_SytemREVISED.INVL_Volt_Ref > 1050 && Ecan_SytemREVISED.INVL_Volt_Ref  < 1150)  //2017.12.1 GX
+		{
 			SafetyReg.f32InvL_VoltRms_Ref_LCD = (float32)(Ecan_SytemREVISED.INVL_Volt_Ref * 0.1);
+			Output_VoltRe_Reg.InvL_Light_Flag = 0;
+			Output_VoltRe_Reg.InvL_Middle_Flag = 0;
+			Output_VoltRe_Reg.InvL_Heavy_Flag = 0;
+		}
 
 		break;
 	case 6:
 		/*
 		 * 暂用Drop_Coeff代替均流调节量，在大一统程序中会做调整
 		 */
-		if (Ecan_SytemREVISED.INVH_Drop_Coeff > 9000 && Ecan_SytemREVISED.INVH_Drop_Coeff < 11000)  //2017.12.1 GX
+		if (Ecan_SytemREVISED.INVH_Drop_Coeff > 9900 && Ecan_SytemREVISED.INVH_Drop_Coeff < 10100)  //2017.12.1 GX
 		{
 			temp1 = InvHVoltConReg.f32Drop_Coeff  * (float32)(Ecan_SytemREVISED.INVH_Drop_Coeff * 0.0001);
-			if (temp1 > 0.9f && temp1 < 1.1f)
+			if (temp1 > 0.99f && temp1 < 1.01f)
 				InvHVoltConReg.f32Drop_Coeff *= (float32)(Ecan_SytemREVISED.INVH_Drop_Coeff * 0.0001);
 		}
 
-		if (Ecan_SytemREVISED.INVL_Drop_Coeff  > 9000 && Ecan_SytemREVISED.INVL_Drop_Coeff  < 11000)  //2017.12.1 GX
+		if (Ecan_SytemREVISED.INVL_Drop_Coeff  > 9900 && Ecan_SytemREVISED.INVL_Drop_Coeff  < 10100)  //2017.12.1 GX
 		{
 			temp1 = InvLVoltConReg.f32Drop_Coeff  * (float32)(Ecan_SytemREVISED.INVL_Drop_Coeff * 0.0001);
-			if (temp1 > 0.9f && temp1 < 1.1f)
+			if (temp1 > 0.99f && temp1 < 1.01f)
 				InvLVoltConReg.f32Drop_Coeff *= (float32)(Ecan_SytemREVISED.INVL_Drop_Coeff * 0.0001);
 		}
 
@@ -862,7 +872,12 @@ void Sys_Set_Oper()
 
 		SafetyReg.f32InvH_VoltRms_Ref_LCD = 220;
 		SafetyReg.f32InvL_VoltRms_Ref_LCD = 110;
-
+		Output_VoltRe_Reg.InvH_Light_Flag = 0;
+		Output_VoltRe_Reg.InvH_Middle_Flag = 0;
+		Output_VoltRe_Reg.InvH_Heavy_Flag = 0;
+		Output_VoltRe_Reg.InvL_Light_Flag = 0;
+		Output_VoltRe_Reg.InvL_Middle_Flag = 0;
+		Output_VoltRe_Reg.InvL_Heavy_Flag = 0;
 	}
 	if (0x0055 == Ecan_SytemOrder.Output_Enable)
 	{
