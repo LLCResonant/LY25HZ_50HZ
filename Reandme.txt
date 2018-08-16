@@ -7,5 +7,6 @@ The Project are design a 25Hz Signal Power Source and 50Hz Signal Power Source.
 The Folder '25Hz prototype' is the DSP Program of 25Hz after 25Hz prototype test.
 The Folder '25Hz50HzUnification' is the Program combining the 25Hz one and 50Hz one.
 The Folder 'Configuration and protocol files' is the ECAN protocol and hardware revised record.
-2018.8.16
+2018.8.16 GX
 25Hz prototype is revised
+25Hz50HzUnification is revised
