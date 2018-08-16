@@ -6,3 +6,4 @@ NUAA: Yan Xing; Li Zhang; Xun Gao; Jianxin Zhu; Rui Zhao; Fan Wu; Jie Chen
 The Project are design a 25Hz Signal Power Source and 50Hz Signal Power Source.
 The Folder '25Hz prototype' is the DSP Program of 25Hz after 25Hz prototype test.
 The Folder '25Hz50HzUnification' is the Program combining the 25Hz one and 50Hz one.
+The Folder 'Configuration and protocol files' is the ECAN protocol and hardware revised record.
