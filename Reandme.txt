@@ -2,5 +2,4 @@ This is the test
 My name is Xun Gao
 You call me Enigma
 I am study in Nanjing University of Aeronautics and Astronautics
-I am pursuing a Ph.D degree
 The last valid sentence must followed an 'Enter'
