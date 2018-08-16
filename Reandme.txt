@@ -1,10 +1,8 @@
-This is the test
-My name is Xun Gao
-You call me Enigma
-I am study in Nanjing University of Aeronautics and Astronautics
-I am pursuing a Ph.D degree
-The last valid sentence must followed an 'Enter'
-I am 26 years old
-Nanjing is a beautiful city
-It is the capital of six dynasty
-
+This is the brief introduction of the LY Project.
+The file is created by Xun Gao.
+This project is the cooperation project between LY Co Ltd. and NUAA.
+LY: Yufu Han; Bofeng Ma
+NUAA: Yan Xing; Li Zhang; Xun Gao; Jianxin Zhu; Rui Zhao; Fan Wu; Jie Chen
+The Project are design a 25Hz Signal Power Source and 50Hz Signal Power Source.
+The Folder '25Hz prototype' is the DSP Program of 25Hz after 25Hz prototype test.
+The Folder '25Hz50HzUnification' is the Program combine the 25Hz one and 50Hz one.
