@@ -61,7 +61,7 @@ typedef union
 		Uint8 OverTemp_A:1;		//温度超限告警
 		Uint8 Fan1Block_A:1;		//风扇1异常
 		Uint8 Fan2Block_A:1;		//风扇2异常
-		Uint8 Ecan_A:1;		//模块并机通讯告警
+		Uint8 u8rsvr1:1;
 		Uint8 ACPowerDerating_A :1;	//达到限额告警
 		Uint8 UnAsyn_A :1;//逆变器不同步
 		Uint8 rsvr7 :1;
@@ -86,7 +86,7 @@ typedef union
 		Uint8 Repeatedly_Launch_F:1;		//反复起机故障
 		//Fault3
 		Uint8 SynLine_broken:1;//并机线断
-		Uint8 u8rsvr1:1;
+		Uint8 Ecan_F:1;		//ECAN通讯故障
 		Uint8 u8rsvr2:1;
 		Uint8 u8rsvr3:1;
 		Uint8 u8rsvr4:1;

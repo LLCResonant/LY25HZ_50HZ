@@ -594,8 +594,8 @@ void Data_Format_Conver()
     Ecan_ModuleData.Error.bit.Fan1Block_A = g_SysWarningMessage.bit.Fan1Block;
     //风扇2异常A06
     Ecan_ModuleData.Error.bit.Fan2Block_A = g_SysWarningMessage.bit.Fan2Block;
-    //ECAN故障告警A10
-    Ecan_ModuleData.Error.bit.Ecan_A = g_StateCheck.bit.ECAN_Fault;
+    //ECAN故障告警F19
+    Ecan_ModuleData.Error.bit.Ecan_F = g_SysFaultMessage.bit.unrecover_ECANFault;
 
     //输入欠压输出降额保护A12
     Ecan_ModuleData.Error.bit.ACPowerDerating_A = g_SysWarningMessage.bit.InvH_OverLoad |  \
