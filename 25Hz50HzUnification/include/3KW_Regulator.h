@@ -29,15 +29,35 @@
 /* 5us deadband with 75MHz TBCLK, 5*75 = 375 */	 
 #define DeadBand_Duration	50				//250*2=5us,375-->7.5us
 
+#define LPF_B0_50	0.00034605f		//0.000346050740714038155762;
+#define LPF_B1_50	0.00069210f		//0.000692101481428076311525;
+#define LPF_B2_50	0.00034605f		//0.000346050740714038155762;
+#define LPF_A1_50	1.94721182f		//1.947211823488243620516869;
+#define LPF_A2_50	0.94859602f		//0.948596026451099749721152;
+
+#define PLL_Grid_Kp	5e-5f
+#define PLL_Grid_Ki		2.5e-8f
+#define DELTA_ANGLE_GRID  2*Value_Pi *55/(PWM_FREQ/2)
+
+#ifdef 	LY25HZ
+//PFC
 #define CurrCon_Kp	30.0f
 #define CurrCon_Ki	 	3.0f
 
 #define BusCon_Kp	0.2
 #define BusCon_Ki	0.001
+//Inv
+#define LPF_B0_25	0.00003913f
+#define LPF_B1_25	0.00007826f
+#define LPF_B2_25	0.00003913f
+#define LPF_A1_25	1.9822318f
+#define LPF_A2_25	0.98238832f
 
-#define PLLCon_K_alpha	5.588e-4f
-#define PLLCon_K_beta	5.571e-4f
+#define PLL_Inv_Kp	1e-5f
+#define PLL_Inv_Ki	5e-9f
+#define DELTA_ANGLE_INV 2*Value_Pi * 24/(PWM_FREQ/2)
 
+#endif
 
 /* General Purpose PID Controller, Data type */
 
@@ -88,9 +108,9 @@ struct INVVOLTCONTREG
 	float32	 f32VoltGain;
 	float32  f32VoltDutyUpLimit;
 	float32  f32VoltDutyLowLimit;
-	float32  Input[3];
-	float32  Output[3];
-	float32  MAC;
+	float32  f32Input[3];
+	float32  f32Output[3];
+	float32  f32MAC;
 	float32  f32InvDuty;
 };
 extern	struct	INVVOLTCONTREG	InvHVoltConReg, InvLVoltConReg;
@@ -98,54 +118,25 @@ extern	struct	INVVOLTCONTREG	InvHVoltConReg, InvLVoltConReg;
 struct PLLCONTREG	
 {  
 	float32  f32Valpha;   		// Input: Reference input 
-	float32  f32Vbeta;   		// Input: Feedback input
-	float32  f32Vd;
-	float32  f32Vq;
-	float32  f32VqErr_Old;
-	float32  f32VqErr_New;
-	float32  Delta_Vq;   //2017.3.31 GX
 
-	float32  f32Theta;   		// Output: PID output
+	float32  f32Theta;   			// Output: PID output
 	float32  f32Theta_Step;
-	float32  Sin_Theta;		// 
-	float32  Cos_Theta;			//
-	float32	 Sin_5Theta;
-	float32	 Cos_5Theta; 
-	float32	 f32DQ_PLL_Lockin;
-	float32	 f32Fre_Delta_k;
-	float32  f32Vd_Filter;  //2017.2.27 GX
-	float32  f32PLL_fail;   //2017.2.27 GX
-	float32  f32Theta_Offset; //2017.3.7 GX
-	float32  f32real_Sin_Theta;   //2017.3.7 GX
-	Uint32   Period;//2017.5.24 GX
-};	            
-extern	struct	PLLCONTREG	GridPLLConReg, OutPLLConReg, VOutLPLLConReg, VOutHPLLConReg;
+	float32  f32Sin_Theta;
+	float32	 f32Cos_Theta;
+	Uint32   u32Period;
 
-struct PLL
-{
-	float32  Input[3];   		// LPF
-	float32  Output[3];   		// LPF
-	float32  MAC;
+	float32  f32Input[3];   		// LPF
+	float32  f32Output[3];   	// LPF
+	float32  f32MAC;
 
 	float32  f32Refer;
+	float32  f32Kp;
+	float32  f32Ki;
 	float32  f32PIDErr_Old;
 	float32  f32PIDErr_New;
-	float32  f32PID_Output;   //2017.3.31 GX
-
-	float32  f32Delta_Theta;   		// Output: PID output
-	float32  f32Frequency;
-	float32	 f32Theta;
+	float32  f32PID_Output;
 };
-extern	struct	PLL	GridPLLReg,VOutLPLLReg, VOutHPLLReg;
-
-
-struct PLLCONTPARAREG	
-{  
-	float32  f32K_alpha;   		// Input: Feedback input 
-	float32  f32K_beta;		// Variable: Error 
-	float32  f32FreShift_Step;
-};	            
-extern	struct	PLLCONTPARAREG	PLLConParaReg;
+extern	struct	PLLCONTREG	GridPLLConReg, OutPLLConReg, VOutLPLLConReg, VOutHPLLConReg;
 
 struct VOLTAGE_REVISE_REG
 {

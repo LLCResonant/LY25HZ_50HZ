@@ -30,9 +30,8 @@
  * 	Variables declaration
  *============================================================================*/
 struct  BUS_CON_REG                   		BusCon_Reg;
-struct	CURRENTCONTREG	       		CurrConReg;
+struct	CURRENTCONTREG	       			CurrConReg;
 struct	PLLCONTREG							GridPLLConReg;
-struct	PLL											GridPLLReg;
 struct 	VOLTAGE_REVISE_REG 			Output_VoltRe_Reg;
 
 /*=============================================================================*
@@ -173,8 +172,8 @@ void GridCurrentController(void)
 	 * '2 * 3.14 * Calc_Result.f32GridFreq * 0.000005 * Calc_Result.f32VGrid_rms * 1.414 * GridPLLConReg.Cos_Theta'
 	 * is the input capacitor current compensation
 	 */
-	CurrConReg.f32IGrid_Ref = BusCon_Reg.f32IGridAmp_Ref * GridPLLConReg.Sin_Theta - BusCon_Reg.f32BusVoltDiff_Out \
-			- 2 * 3.14 * Calc_Result.f32GridFreq * 0.000005 * Calc_Result.f32VGrid_rms * 1.414 * GridPLLConReg.Cos_Theta;
+	CurrConReg.f32IGrid_Ref = BusCon_Reg.f32IGridAmp_Ref * GridPLLConReg.f32Sin_Theta - BusCon_Reg.f32BusVoltDiff_Out \
+			- 2 * 3.14 * Calc_Result.f32GridFreq * 0.000005 * Calc_Result.f32VGrid_rms * 1.414 * GridPLLConReg.f32Cos_Theta;
 	CurrConReg.f32IGrid_Fdb = GetRealValue.f32IGrid;
 
 	CurrConReg.f32IGridErr_Old = CurrConReg.f32IGridErr_New;
@@ -269,7 +268,7 @@ void BusVoltHysteresis(void)
 	{
 		//'CurrConReg.f32PfcDuty_ff_factor' is the square wave amplitude
 		CurrConReg.f32PfcDuty_ff_factor = 1 - 0.5 * BusCon_Reg.f32IGridAmp_Ref ;
-		if (GridPLLConReg.Sin_Theta >= 0)
+		if (GridPLLConReg.f32Sin_Theta >= 0)
 		{
 			/*
 			 * 'PWM_HALF_PERIOD' is the PWM counting value.
@@ -372,83 +371,72 @@ void Calc_IGrid_reference(void)
  void GridPLLcontroller(void)
 { 
 	 // start of  Phase Lock Loop controller
-	 static int i = 0;
-	 static int Phase_Check_signal = 0;
-
-
-	 float32 GridPLL_Kp = 5e-5f;
-	 float32 GridPLL_Ki = 2.5e-8f;
-	 float32 LPF_B0 = 0.00034605;		//0.000346050740714038155762;
-	 float32 LPF_B1 = 0.00069210;		//0.000692101481428076311525;
-	 float32 LPF_B2 = 0.00034605;		//0.000346050740714038155762;
-	 float32 LPF_A1 = 1.94721182;		//1.947211823488243620516869;
-	 float32 LPF_A2 = 0.94859602;		//0.948596026451099749721152;
-	 float32 DELTA_ANGLE = 17.279e-3;	//2*pi*55/20000
+	 static Uint8 	u8cnt = 0;
+	 static Uint16 	u16Phase_Check_signal = 0;
 
 	 GridPLLConReg.f32Valpha = GetRealValue.f32VGrid;
-	 i++;
+	 u8cnt ++;
 
 	 //The following is the different equation of a second order low pass filter
-	 if (4 == i)
+	 if (4 == u8cnt )
 	 {
-	 	GridPLLReg.Input[2] = GridPLLReg.Input[1];																	// x(k-2) = x(k-1)
-	 	GridPLLReg.Input[1] = GridPLLReg.Input[0];																	// x(k-1) = x(k)
-	 	GridPLLReg.Input[0] = GridPLLConReg.f32Valpha * GridPLLConReg.Cos_Theta;		// x(k)
+	 	GridPLLConReg.f32Input[2] = GridPLLConReg.f32Input[1];																	// x(k-2) = x(k-1)
+	 	GridPLLConReg.f32Input[1] = GridPLLConReg.f32Input[0];																	// x(k-1) = x(k)
+	 	GridPLLConReg.f32Input[0] = GridPLLConReg.f32Valpha * GridPLLConReg.f32Cos_Theta;		// x(k)
 
-	 	GridPLLReg.Output[2] = GridPLLReg.Output[1];															// y(k-2) = y(k-1)
-	 	GridPLLReg.Output[1] = GridPLLReg.Output[0];															// y(k-1) = y(k)
+	 	GridPLLConReg.f32Output[2] = GridPLLConReg.f32Output[1];															// y(k-2) = y(k-1)
+	 	GridPLLConReg.f32Output[1] = GridPLLConReg.f32Output[0];															// y(k-1) = y(k)
 
-	 	GridPLLReg.MAC = LPF_B0 * GridPLLReg.Input[0];														// + b0 * x(k)
-	 	GridPLLReg.MAC += LPF_B1 * GridPLLReg.Input[1];														// + b1 * x(k-1)
-	 	GridPLLReg.MAC += LPF_B2 * GridPLLReg.Input[2];														// + b2 * x(k-2)
+	 	GridPLLConReg.f32MAC = LPF_B0_50 * GridPLLConReg.f32Input[0];														// + b0 * x(k)
+	 	GridPLLConReg.f32MAC += LPF_B1_50 * GridPLLConReg.f32Input[1];														// + b1 * x(k-1)
+	 	GridPLLConReg.f32MAC += LPF_B2_50 * GridPLLConReg.f32Input[2];														// + b2 * x(k-2)
 
-	 	GridPLLReg.MAC += LPF_A1 * GridPLLReg.Output[1];													// + a11 * y(k-1)
-	 	GridPLLReg.MAC -= LPF_A2 * GridPLLReg.Output[2];													// - a2 * y(k-2)
+	 	GridPLLConReg.f32MAC += LPF_A1_50 * GridPLLConReg.f32Output[1];													// + a11 * y(k-1)
+	 	GridPLLConReg.f32MAC -= LPF_A2_50 * GridPLLConReg.f32Output[2];													// - a2 * y(k-2)
 
-	 	GridPLLReg.Output[0] = GridPLLReg.MAC;
-	 	i = 0;
+	 	GridPLLConReg.f32Output[0] = GridPLLConReg.f32MAC;
+	 	u8cnt  = 0;
 
 	 	/*
-	 	 * If  'GridPLLReg.Output[0]' can be small enough, the phase is successful locked
+	 	 * If  'GridPLLConReg.f32Output[0]' can be small enough, the phase is successful locked
 	 	 */
-	 	if ( GridPLLReg.Output[0] < 40 && GridPLLReg.Output[0] > -40 && g_StateCheck.bit.Grid_PhaseLock == 0)  //2017.8.14 GX
-	 		Phase_Check_signal ++;
+	 	if ( GridPLLConReg.f32Output[0] < 40 && GridPLLConReg.f32Output[0] > -40 && g_StateCheck.bit.Grid_PhaseLock == 0)  //2017.8.14 GX
+	 		u16Phase_Check_signal ++;
 	 	else
-	 		Phase_Check_signal = 0;
-	 	if ( Phase_Check_signal >200 )
+	 		u16Phase_Check_signal = 0;
+	 	if ( u16Phase_Check_signal >200 )
 	 		g_StateCheck.bit.Grid_PhaseLock = 1;
 	 }
 
 	 // The PI regulator
-	 GridPLLReg.f32PIDErr_Old = GridPLLReg.f32PIDErr_New ;
-	 GridPLLReg.f32PIDErr_New  = GridPLLReg.Output[0] - GridPLLReg.f32Refer;															// error(n) = y(k) - 0
-	 GridPLLReg.f32PID_Output = GridPLLReg.f32PID_Output \
-	 					+ (GridPLL_Kp + GridPLL_Ki) * GridPLLReg.f32PIDErr_New \
-	 					- GridPLL_Kp * GridPLLReg.f32PIDErr_Old;               	 // u(n) = u(n-1) + alpha * error(n) - beta * error(n-1)
+	 GridPLLConReg.f32PIDErr_Old = GridPLLConReg.f32PIDErr_New ;
+	 GridPLLConReg.f32PIDErr_New  = GridPLLConReg.f32Output[0] - GridPLLConReg.f32Refer;															// error(n) = y(k) - 0
+	 GridPLLConReg.f32PID_Output = GridPLLConReg.f32PID_Output \
+	 					+ (GridPLLConReg.f32Kp + GridPLLConReg.f32Ki) * GridPLLConReg.f32PIDErr_New \
+	 					- GridPLLConReg.f32Kp * GridPLLConReg.f32PIDErr_Old;               	 // u(n) = u(n-1) + alpha * error(n) - beta * error(n-1)
 	 /*
-	 * 'GridPLLReg.f32Delta_Theta' is the angle step which needs to be accumulated in each ADC interruption.
+	 * 'GridPLLConReg.f32Theta_Step' is the angle step which needs to be accumulated in each ADC interruption.
 	 * 'DELTA_ANGLE' is the bias(55Hz), which can acceleration regulating process
 	 */
-	 GridPLLReg.f32Delta_Theta =  DELTA_ANGLE + GridPLLReg.f32PID_Output;
+	 GridPLLConReg.f32Theta_Step =  DELTA_ANGLE_GRID + GridPLLConReg.f32PID_Output;
 
-	 if(GridPLLReg.f32Delta_Theta > GridTheta_Step_Hi_Limit)	  //60 * 1.15Hz
+	 if(GridPLLConReg.f32Theta_Step > GridTheta_Step_Hi_Limit)	  //60 * 1.15Hz
 	 {
-	 	GridPLLReg.f32Delta_Theta = GridTheta_Step_Hi_Limit;
+	 	GridPLLConReg.f32Theta_Step = GridTheta_Step_Hi_Limit;
 	 }
-	 if(GridPLLReg.f32Delta_Theta < GridTheta_Step_Low_Limit)	//50 * 0.85Hz
+	 if(GridPLLConReg.f32Theta_Step < GridTheta_Step_Low_Limit)	//50 * 0.85Hz
 	 {
-	 	GridPLLReg.f32Delta_Theta = GridTheta_Step_Low_Limit;
+	 	GridPLLConReg.f32Theta_Step = GridTheta_Step_Low_Limit;
 	 }
-	 GridPLLConReg.f32Theta_Step = GridPLLReg.f32Delta_Theta;
 
-	 GridPLLReg.f32Theta += GridPLLReg.f32Delta_Theta;
-	 if ( GridPLLReg.f32Theta > Value_2Pi )
+	 GridPLLConReg.f32Theta += GridPLLConReg.f32Theta_Step;
+	 if ( GridPLLConReg.f32Theta > Value_2Pi )
 	 {
-	 	GridPLLReg.f32Theta = GridPLLReg.f32Theta - Value_2Pi;
+	 	GridPLLConReg.f32Theta = GridPLLConReg.f32Theta - Value_2Pi;
 	 	g_StateCheck.bit.Grid_Zero_Crossing_Flag = 1;
 	 }
 
-	 sincos((GridPLLReg.f32Theta), &(GridPLLConReg.Sin_Theta), &(GridPLLConReg.Cos_Theta));
+	 sincos((GridPLLConReg.f32Theta), &(GridPLLConReg.f32Sin_Theta), &(GridPLLConReg.f32Cos_Theta));
 } // end of  Phase Lock Loop controller
 
  /*=============================================================================*

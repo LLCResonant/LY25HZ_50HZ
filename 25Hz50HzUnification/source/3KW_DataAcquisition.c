@@ -217,7 +217,7 @@ void ADAccInvCalc(void)
 		/*
 		 * 'AD_Acc.f32Phase_Diff_ave' is related to phase different between INVH(220V) and INVL(110V)
 		 */
-		f32Phase_Diff_temp1 = (VOutLPLLReg.f32Theta - VOutHPLLReg.f32Theta) * Value2Pi_Ratio * 360.0f;
+		f32Phase_Diff_temp1 = (VOutLPLLConReg.f32Theta - VOutHPLLConReg.f32Theta) * Value2Pi_Ratio * 360.0f;
 		if (f32Phase_Diff_temp1 < 0)
 			f32Phase_Diff_temp1 = f32Phase_Diff_temp1 + 360.0f;
 		AD_Acc.f32Phase_Diff_ave += f32Phase_Diff_temp1;
@@ -482,20 +482,21 @@ void GridCurrentsRMSAveCalc(void)
 void GridVoltsRMSCalc(void)
 {
 	float32 f32temp1;
+	static float32 f32temp2 = 0;
 	Calc_Result.f32VGrid_rms_instant = sqrt(AD_Sum.f32VGrid_rms * f32SumCounterReci);
 	f32temp1 = Calc_Result.f32VGrid_rms_instant;
-	f32temp1 = (Calc_Result.f32VGrid_rms_shadow * 0.4f) + (f32temp1 * 0.6f);
-	Calc_Result.f32VGrid_rms_shadow = f32temp1;
+	f32temp1 = (f32temp2 * 0.4f) + (f32temp1 * 0.6f);
+	f32temp2 = f32temp1;
 
 	/*
 	 * Make the Grid voltage protection more difficult to protect. Enhance robustness.
 	 */
-	if (Calc_Result.f32VGrid_rms_shadow <= 170)
-		Calc_Result.f32VGrid_rms = Calc_Result.f32VGrid_rms_shadow + 2;
-	else if(Calc_Result.f32VGrid_rms_shadow >= 280)
-		Calc_Result.f32VGrid_rms = Calc_Result.f32VGrid_rms_shadow - 2;
+	if (f32temp2 <= 170)
+		Calc_Result.f32VGrid_rms = f32temp2 + 2;
+	else if(f32temp2 >= 280)
+		Calc_Result.f32VGrid_rms = f32temp2 - 2;
 	else
-		Calc_Result.f32VGrid_rms = Calc_Result.f32VGrid_rms_shadow;
+		Calc_Result.f32VGrid_rms = f32temp2;
 }
 
 /*=============================================================================*

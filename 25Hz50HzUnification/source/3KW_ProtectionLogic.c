@@ -741,7 +741,7 @@ void InvSyncCheck(void)
 		 // when relay picks up, there will be several period for PLL function to lock right phase of load voltage
 		if (u8temp1 >= 20)  //20 * 40ms = 800ms
 		{
-			if(fabs(OutPLLConReg.f32Theta - VOutHPLLReg.f32Theta) >=  f32phase_diff && \
+			if(fabs(OutPLLConReg.f32Theta - VOutHPLLConReg.f32Theta) >=  f32phase_diff && \
 					g_ParaLogic_State.bit.SyncPhase_Flag == 1)
 				u8temp2 ++;
 			else

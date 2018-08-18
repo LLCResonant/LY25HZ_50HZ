@@ -564,7 +564,7 @@ void Scib_Q1Command(void)
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(fabs(OutPLLConReg.f32Theta - VOutHPLLReg.f32Theta)*1000, 0, pDataBuf);//47
+	bStrLen1 = sbNumToAscii(fabs(OutPLLConReg.f32Theta - VOutHPLLConReg.f32Theta)*1000, 0, pDataBuf);//47
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 

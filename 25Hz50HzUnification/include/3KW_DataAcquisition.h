@@ -144,7 +144,6 @@ struct	AD_ACC_Reg1
 
 	float32 	f32VGrid_rms;
 	float32 	f32VGrid_rms_instant;
-	float32		f32VGrid_rms_shadow;
 	float32 	f32VInvH_rms;
 	float32 	f32VInvL_rms;
 	float32		f32VInvH_rms_instant;

@@ -30,8 +30,7 @@
  * 	Variables declaration
  *============================================================================*/
 struct	PLLCONTREG							OutPLLConReg, VOutLPLLConReg, VOutHPLLConReg;
-struct	PLL 											VOutLPLLReg, VOutHPLLReg;
-struct  INVVOLTCONTREG  				InvHVoltConReg, InvLVoltConReg;
+struct  INVVOLTCONTREG  					InvHVoltConReg, InvLVoltConReg;
 
 /*=============================================================================*
  * 	functions declaration
@@ -163,7 +162,7 @@ void InvH_VoltControl(void)
 		kr = 800* 0.00005f;
 	}*/
 
-	InvHVoltConReg.f32VoltInst_Ref = InvHVoltConReg.f32VoltRms_Ref * 1.414f * OutPLLConReg.Sin_Theta * InvHVoltConReg.f32VoltGain;
+	InvHVoltConReg.f32VoltInst_Ref = InvHVoltConReg.f32VoltRms_Ref * 1.414f * OutPLLConReg.f32Sin_Theta * InvHVoltConReg.f32VoltGain;
 	InvHVoltConReg.f32VoltInst_Fdb = GetRealValue.f32VInvH;
 
 	InvHVoltConReg.f32VoltInst_ErrOld = InvHVoltConReg.f32VoltInst_ErrNew;
@@ -177,22 +176,22 @@ void InvH_VoltControl(void)
   	 /*
   	  * The following is the PR controller difference-equation
   	  */
-  	 InvHVoltConReg.Input[2] = InvHVoltConReg.Input[1];																					// x(k-2) = x(k-1)
-  	 InvHVoltConReg.Input[1] = InvHVoltConReg.Input[0];																					// x(k-1) = x(k)
-  	 InvHVoltConReg.Input[0] = InvHVoltConReg.f32VoltInst_ErrNew;																// x(k)
+  	 InvHVoltConReg.f32Input[2] = InvHVoltConReg.f32Input[1];																					// x(k-2) = x(k-1)
+  	 InvHVoltConReg.f32Input[1] = InvHVoltConReg.f32Input[0];																					// x(k-1) = x(k)
+  	 InvHVoltConReg.f32Input[0] = InvHVoltConReg.f32VoltInst_ErrNew;																// x(k)
 
-  	 InvHVoltConReg.Output[2] = InvHVoltConReg.Output[1];																			// y(k-2) = y(k-1)
-  	 InvHVoltConReg.Output[1] = InvHVoltConReg.Output[0];																			// y(k-1) = y(k)
+  	 InvHVoltConReg.f32Output[2] = InvHVoltConReg.f32Output[1];																			// y(k-2) = y(k-1)
+  	 InvHVoltConReg.f32Output[1] = InvHVoltConReg.f32Output[0];																			// y(k-1) = y(k)
 
-  	 InvHVoltConReg.MAC = ((2*kr+4*kp+Coff_a2*kp) * Coff_a3) * InvHVoltConReg.Input[0];                         // + a1 * x(k)
-  	 InvHVoltConReg.MAC -=((8-2*Coff_a2) *kp * Coff_a3)* InvHVoltConReg.Input[1];
-  	 InvHVoltConReg.MAC += ((4*kp+Coff_a2*kp-2*kr)* Coff_a3) * InvHVoltConReg.Input[2];							// + a3 * x(k-2)
+  	 InvHVoltConReg.f32MAC = ((2*kr+4*kp+Coff_a2*kp) * Coff_a3) * InvHVoltConReg.f32Input[0];                         // + a1 * x(k)
+  	 InvHVoltConReg.f32MAC -=((8-2*Coff_a2) *kp * Coff_a3)* InvHVoltConReg.f32Input[1];
+  	 InvHVoltConReg.f32MAC += ((4*kp+Coff_a2*kp-2*kr)* Coff_a3) * InvHVoltConReg.f32Input[2];							// + a3 * x(k-2)
 
-  	 InvHVoltConReg.MAC += ((8-2*Coff_a2)* Coff_a3) * InvHVoltConReg.Output[1];										// + b1 * y(k-1)
-  	 InvHVoltConReg.MAC -= InvHVoltConReg.Output[2];																					// - b2 * y(k-2)
+  	 InvHVoltConReg.f32MAC += ((8-2*Coff_a2)* Coff_a3) * InvHVoltConReg.f32Output[1];										// + b1 * y(k-1)
+  	 InvHVoltConReg.f32MAC -= InvHVoltConReg.f32Output[2];																					// - b2 * y(k-2)
 
-  	 InvHVoltConReg.Output[0] = InvHVoltConReg.MAC;
-  	 InvHVoltConReg.f32VoltInst_ErrOut = InvHVoltConReg.Output[0];
+  	 InvHVoltConReg.f32Output[0] = InvHVoltConReg.f32MAC;
+  	 InvHVoltConReg.f32VoltInst_ErrOut = InvHVoltConReg.f32Output[0];
   	 InvHVoltConReg.f32InvDuty =  InvHVoltConReg.f32VoltInst_ErrOut;
 
   	 if (InvHVoltConReg.f32InvDuty >=  InvHVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD)
@@ -204,7 +203,7 @@ void InvH_VoltControl(void)
 
   	 //open loop just for test
 	 #ifdef INV_OPEN_LOOP
-  	 InvHVoltConReg.f32InvDuty = 0.76f * PWM_HALF_PERIOD * OutPLLConReg.Sin_Theta;
+  	 InvHVoltConReg.f32InvDuty = 0.76f * PWM_HALF_PERIOD * OutPLLConReg.f32Sin_Theta;
 	 #endif
 
   	 EPwm5Regs.CMPA.half.CMPA = (Uint16)(-InvHVoltConReg.f32InvDuty);
@@ -265,7 +264,7 @@ void InvL_VoltControl(void)
 		kr = 1200* 0.00005f;
 	}*/
 
-	InvLVoltConReg.f32VoltInst_Ref =  InvLVoltConReg.f32VoltRms_Ref * 1.414f * OutPLLConReg.Cos_Theta * InvLVoltConReg.f32VoltGain;
+	InvLVoltConReg.f32VoltInst_Ref =  InvLVoltConReg.f32VoltRms_Ref * 1.414f * OutPLLConReg.f32Cos_Theta * InvLVoltConReg.f32VoltGain;
 
     InvLVoltConReg.f32VoltInst_Fdb = GetRealValue.f32VInvL;
 
@@ -284,22 +283,22 @@ void InvL_VoltControl(void)
  	 /*
  	  * The following is the PR controller difference-equation
  	  */
-	InvLVoltConReg.Input[2] = InvLVoltConReg.Input[1];																			// x(k-2) = x(k-1)
-	InvLVoltConReg.Input[1] = InvLVoltConReg.Input[0];																			// x(k-1) = x(k)
-	InvLVoltConReg.Input[0] = InvLVoltConReg.f32VoltInst_ErrNew;														// x(k)
+	InvLVoltConReg.f32Input[2] = InvLVoltConReg.f32Input[1];																			// x(k-2) = x(k-1)
+	InvLVoltConReg.f32Input[1] = InvLVoltConReg.f32Input[0];																			// x(k-1) = x(k)
+	InvLVoltConReg.f32Input[0] = InvLVoltConReg.f32VoltInst_ErrNew;														// x(k)
 
-	InvLVoltConReg.Output[2] = InvLVoltConReg.Output[1];																	// y(k-2) = y(k-1)
-	InvLVoltConReg.Output[1] = InvLVoltConReg.Output[0];																	// y(k-1) = y(k)
+	InvLVoltConReg.f32Output[2] = InvLVoltConReg.f32Output[1];																	// y(k-2) = y(k-1)
+	InvLVoltConReg.f32Output[1] = InvLVoltConReg.f32Output[0];																	// y(k-1) = y(k)
 
-	InvLVoltConReg.MAC = ((2*kr+4*kp+Coff_a2*kp) * Coff_a3) * InvLVoltConReg.Input[0];                // + a1 * x(k)
-	InvLVoltConReg.MAC -=((8-2*Coff_a2) *kp * Coff_a3)* InvLVoltConReg.Input[1];
-	InvLVoltConReg.MAC += ((4*kp+Coff_a2*kp-2*kr)* Coff_a3) * InvLVoltConReg.Input[2];				// + a3 * x(k-2)
+	InvLVoltConReg.f32MAC = ((2*kr+4*kp+Coff_a2*kp) * Coff_a3) * InvLVoltConReg.f32Input[0];                // + a1 * x(k)
+	InvLVoltConReg.f32MAC -=((8-2*Coff_a2) *kp * Coff_a3)* InvLVoltConReg.f32Input[1];
+	InvLVoltConReg.f32MAC += ((4*kp+Coff_a2*kp-2*kr)* Coff_a3) * InvLVoltConReg.f32Input[2];				// + a3 * x(k-2)
 
-	InvLVoltConReg.MAC += ((8-2*Coff_a2)* Coff_a3) * InvLVoltConReg.Output[1];								// + b1 * y(k-1)
-	InvLVoltConReg.MAC -= InvLVoltConReg.Output[2];																		// - b2 * y(k-2)
+	InvLVoltConReg.f32MAC += ((8-2*Coff_a2)* Coff_a3) * InvLVoltConReg.f32Output[1];								// + b1 * y(k-1)
+	InvLVoltConReg.f32MAC -= InvLVoltConReg.f32Output[2];																		// - b2 * y(k-2)
 
-	InvLVoltConReg.Output[0] = InvLVoltConReg.MAC;
-	InvLVoltConReg.f32VoltInst_ErrOut = InvLVoltConReg.Output[0];
+	InvLVoltConReg.f32Output[0] = InvLVoltConReg.f32MAC;
+	InvLVoltConReg.f32VoltInst_ErrOut = InvLVoltConReg.f32Output[0];
 	InvLVoltConReg.f32InvDuty =  InvLVoltConReg.f32VoltInst_ErrOut;
 
 	if (InvLVoltConReg.f32InvDuty >=  InvLVoltConReg.f32VoltDutyUpLimit * PWM_HALF_PERIOD)
@@ -323,7 +322,7 @@ void InvL_VoltControl(void)
 
 	//open loop just for test
 	#ifdef INV_OPEN_LOOP
-	InvLVoltConReg.f32InvDuty = 0.38f * PWM_HALF_PERIOD * OutPLLConReg.Cos_Theta;
+	InvLVoltConReg.f32InvDuty = 0.38f * PWM_HALF_PERIOD * OutPLLConReg.f32Cos_Theta;
 	#endif
 
     EPwm3Regs.CMPA.half.CMPA = (Uint16)(-InvLVoltConReg.f32InvDuty);
@@ -373,10 +372,10 @@ void OutPLLcontroller(void)
 	}
 
 	/*
-	 * INVH(220V) uses 'OutPLLConReg.Sin_Theta', while INVL(110V) uses 'OutPLLConReg.Cos_Theta)'.
+	 * INVH(220V) uses 'OutPLLConReg.f32Sin_Theta', while INVL(110V) uses 'OutPLLConReg.f32Cos_Theta)'.
 	 * So 110V lead half period than 220V
 	 */
-	sincos(OutPLLConReg.f32Theta, &(OutPLLConReg.Sin_Theta), &(OutPLLConReg.Cos_Theta));
+	sincos(OutPLLConReg.f32Theta, &(OutPLLConReg.f32Sin_Theta), &(OutPLLConReg.f32Cos_Theta));
 
 } // end of OutPLLcontroller()
 
@@ -389,68 +388,58 @@ void OutPLLcontroller(void)
   *============================================================================*/
 void VoutLPhaseCalc(void)
 {
-	static int Li = 0;
-
-	float32 VoutL_PLL_Kp = 1e-5f;
-	float32 VoutL_PLL_Ki = 5e-9f;
-	float32 LPFL_B0 = 0.00003913f;
-	float32 LPFL_B1 = 0.00007826f;
-	float32 LPFL_B2 = 0.00003913f;
-	float32 LPFL_A1 = 1.9822318f;
-	float32 LPFL_A2 = 0.98238832f;
-	float32 DELTA_ANGLE_L = 7.5398e-3f;
+	static Uint8 u8cntL = 0;
 
 	VOutLPLLConReg.f32Valpha = GetRealValue.f32VOutL;
-	Li++;
+	u8cntL++;
 
 	//The following is the different equation of a second order low pass filter
-	if (4 == Li)
+	if (4 == u8cntL)
 	{
-		VOutLPLLReg.Input[2] = VOutLPLLReg.Input[1];																		// x(k-2) = x(k-1)
-		VOutLPLLReg.Input[1] = VOutLPLLReg.Input[0];																		// x(k-1) = x(k)
-		VOutLPLLReg.Input[0] = VOutLPLLConReg.f32Valpha * VOutLPLLConReg.Cos_Theta;		// x(k)
+		VOutLPLLConReg.f32Input[2] = VOutLPLLConReg.f32Input[1];																		// x(k-2) = x(k-1)
+		VOutLPLLConReg.f32Input[1] = VOutLPLLConReg.f32Input[0];																		// x(k-1) = x(k)
+		VOutLPLLConReg.f32Input[0] = VOutLPLLConReg.f32Valpha * VOutLPLLConReg.f32Cos_Theta;		// x(k)
 
-		VOutLPLLReg.Output[2] = VOutLPLLReg.Output[1];																// y(k-2) = y(k-1)
-		VOutLPLLReg.Output[1] = VOutLPLLReg.Output[0];																// y(k-1) = y(k)
+		VOutLPLLConReg.f32Output[2] = VOutLPLLConReg.f32Output[1];																// y(k-2) = y(k-1)
+		VOutLPLLConReg.f32Output[1] = VOutLPLLConReg.f32Output[0];																// y(k-1) = y(k)
 
-		VOutLPLLReg.MAC = LPFL_B0 * VOutLPLLReg.Input[0];															// + b0 * x(k)
-	 	VOutLPLLReg.MAC += LPFL_B1 * VOutLPLLReg.Input[1];														// + b1 * x(k-1)
-	 	VOutLPLLReg.MAC += LPFL_B2 * VOutLPLLReg.Input[2];														// + b2 * x(k-2)
+		VOutLPLLConReg.f32MAC = LPF_B0_25 * VOutLPLLConReg.f32Input[0];															// + b0 * x(k)
+	 	VOutLPLLConReg.f32MAC += LPF_B1_25 * VOutLPLLConReg.f32Input[1];														// + b1 * x(k-1)
+	 	VOutLPLLConReg.f32MAC += LPF_B2_25 * VOutLPLLConReg.f32Input[2];														// + b2 * x(k-2)
 
-	 	VOutLPLLReg.MAC += LPFL_A1 * VOutLPLLReg.Output[1];													// + a11 * y(k-1)
-	 	VOutLPLLReg.MAC -= LPFL_A2 * VOutLPLLReg.Output[2];														// - a2 * y(k-2)
+	 	VOutLPLLConReg.f32MAC += LPF_A1_25 * VOutLPLLConReg.f32Output[1];													// + a11 * y(k-1)
+	 	VOutLPLLConReg.f32MAC -= LPF_A2_25 * VOutLPLLConReg.f32Output[2];														// - a2 * y(k-2)
 
-	 	VOutLPLLReg.Output[0] = VOutLPLLReg.MAC;
-	 	Li = 0;
+	 	VOutLPLLConReg.f32Output[0] = VOutLPLLConReg.f32MAC;
+	 	u8cntL = 0;
 	 }
 
 	 //PI regulator can achieve zero static error of phase
-	 VOutLPLLReg.f32PIDErr_Old = VOutLPLLReg.f32PIDErr_New ;
-	 VOutLPLLReg.f32PIDErr_New  = VOutLPLLReg.Output[0] - VOutLPLLReg.f32Refer;				// error(n) = y(k) - 0
+	 VOutLPLLConReg.f32PIDErr_Old = VOutLPLLConReg.f32PIDErr_New ;
+	 VOutLPLLConReg.f32PIDErr_New  = VOutLPLLConReg.f32Output[0] - VOutLPLLConReg.f32Refer;				// error(n) = y(k) - 0
 
-	 VOutLPLLReg.f32PID_Output = VOutLPLLReg.f32PID_Output \
-	 					+ (VoutL_PLL_Kp + VoutL_PLL_Ki) * VOutLPLLReg.f32PIDErr_New \
-	 					- VoutL_PLL_Kp * VOutLPLLReg.f32PIDErr_Old;                		// u(n) = u(n-1) + alpha * error(n) - beta * error(n-1)
+	 VOutLPLLConReg.f32PID_Output = VOutLPLLConReg.f32PID_Output \
+	 					+ (VOutLPLLConReg.f32Kp + VOutLPLLConReg.f32Ki) * VOutLPLLConReg.f32PIDErr_New \
+	 					- VOutLPLLConReg.f32Kp * VOutLPLLConReg.f32PIDErr_Old;                		// u(n) = u(n-1) + alpha * error(n) - beta * error(n-1)
 
 	 /*
-	  * 'VOutLPLLReg.f32Delta_Theta' is the angle step which needs to be accumulated in each ADC interruption.
+	  * 'VOutLPLLConReg.f32Theta_Step' is the angle step which needs to be accumulated in each ADC interruption.
 	  * 'DELTA_ANGLE_L' is the bias, which can acceleration regulating process
 	  */
-	 VOutLPLLReg.f32Delta_Theta =  DELTA_ANGLE_L + VOutLPLLReg.f32PID_Output;
+	 VOutLPLLConReg.f32Theta_Step =  DELTA_ANGLE_INV + VOutLPLLConReg.f32PID_Output;
 
-	 if(VOutLPLLReg.f32Delta_Theta > InvTheta_Step_Hi_Limit)
-	 	VOutLPLLReg.f32Delta_Theta = InvTheta_Step_Hi_Limit;
-	 if(VOutLPLLReg.f32Delta_Theta < InvTheta_Step_Low_Limit)
-	 	VOutLPLLReg.f32Delta_Theta = InvTheta_Step_Low_Limit;
+	 if(VOutLPLLConReg.f32Theta_Step > InvTheta_Step_Hi_Limit)
+	 	VOutLPLLConReg.f32Theta_Step = InvTheta_Step_Hi_Limit;
+	 if(VOutLPLLConReg.f32Theta_Step < InvTheta_Step_Low_Limit)
+	 	VOutLPLLConReg.f32Theta_Step = InvTheta_Step_Low_Limit;
 
 	 //'VOutLPLLConReg.f32Theta_Step' is used to calculate the frequency of the 110V load voltage
-	 VOutLPLLConReg.f32Theta_Step = VOutLPLLReg.f32Delta_Theta ;
-	 VOutLPLLReg.f32Theta += VOutLPLLReg.f32Delta_Theta;
+	 VOutLPLLConReg.f32Theta += VOutLPLLConReg.f32Theta_Step;
 
-	 if ( VOutLPLLReg.f32Theta > Value_2Pi )
-	 	VOutLPLLReg.f32Theta = VOutLPLLReg.f32Theta - Value_2Pi;
+	 if ( VOutLPLLConReg.f32Theta > Value_2Pi )
+	 	VOutLPLLConReg.f32Theta = VOutLPLLConReg.f32Theta - Value_2Pi;
 
-	 sincos(VOutLPLLReg.f32Theta, &(VOutLPLLConReg.Sin_Theta), &(VOutLPLLConReg.Cos_Theta));
+	 sincos(VOutLPLLConReg.f32Theta, &(VOutLPLLConReg.f32Sin_Theta), &(VOutLPLLConReg.f32Cos_Theta));
 }
 
 /*=============================================================================*
@@ -462,68 +451,58 @@ void VoutLPhaseCalc(void)
   *============================================================================*/
 void VoutHPhaseCalc(void)
 {
-	static int Hi = 0;
-
-	 float32 VoutH_PLL_Kp = 1e-5f;
-	 float32 VoutH_PLL_Ki = 5e-9f;
-	 float32 LPFH_B0 = 0.00003913f;
-	 float32 LPFH_B1 = 0.00007826f;
-	 float32 LPFH_B2 = 0.00003913f;
-	 float32 LPFH_A1 = 1.9822318f;
-	 float32 LPFH_A2 = 0.98238832f;
-	 float32 DELTA_ANGLE_H = 7.5398e-3f;
+	static Uint8 u8cntH = 0;
 
 	 VOutHPLLConReg.f32Valpha = GetRealValue.f32VOutH;
-	 Hi++;
+	 u8cntH++;
 
 	 //The following is the different equation of a second order low pass filter
-	 if (4 == Hi)
+	 if (4 == u8cntH)
 	 {
-	 	VOutHPLLReg.Input[2] = VOutHPLLReg.Input[1];																		// x(k-2) = x(k-1)
-	 	VOutHPLLReg.Input[1] = VOutHPLLReg.Input[0];																		// x(k-1) = x(k)
-	 	VOutHPLLReg.Input[0] = VOutHPLLConReg.f32Valpha * VOutHPLLConReg.Cos_Theta;		// x(k)
+	 	VOutHPLLConReg.f32Input[2] = VOutHPLLConReg.f32Input[1];																		// x(k-2) = x(k-1)
+	 	VOutHPLLConReg.f32Input[1] = VOutHPLLConReg.f32Input[0];																		// x(k-1) = x(k)
+	 	VOutHPLLConReg.f32Input[0] = VOutHPLLConReg.f32Valpha * VOutHPLLConReg.f32Cos_Theta;		// x(k)
 
- 		VOutHPLLReg.Output[2] = VOutHPLLReg.Output[1];																// y(k-2) = y(k-1)
- 		VOutHPLLReg.Output[1] = VOutHPLLReg.Output[0];																// y(k-1) = y(k)
+ 		VOutHPLLConReg.f32Output[2] = VOutHPLLConReg.f32Output[1];																// y(k-2) = y(k-1)
+ 		VOutHPLLConReg.f32Output[1] = VOutHPLLConReg.f32Output[0];																// y(k-1) = y(k)
 
- 		VOutHPLLReg.MAC = LPFH_B0 * VOutHPLLReg.Input[0];														// + b0 * x(k)
- 		VOutHPLLReg.MAC += LPFH_B1 * VOutHPLLReg.Input[1];														// + b1 * x(k-1)
- 		VOutHPLLReg.MAC += LPFH_B2 * VOutHPLLReg.Input[2];														// + b2 * x(k-2)
+ 		VOutHPLLConReg.f32MAC = LPF_B0_25 * VOutHPLLConReg.f32Input[0];														// + b0 * x(k)
+ 		VOutHPLLConReg.f32MAC += LPF_B1_25 * VOutHPLLConReg.f32Input[1];														// + b1 * x(k-1)
+ 		VOutHPLLConReg.f32MAC += LPF_B2_25 * VOutHPLLConReg.f32Input[2];														// + b2 * x(k-2)
 
- 		VOutHPLLReg.MAC += LPFH_A1 * VOutHPLLReg.Output[1];													// + a11 * y(k-1)
- 		VOutHPLLReg.MAC -= LPFH_A2 * VOutHPLLReg.Output[2];													// - a2 * y(k-2)
+ 		VOutHPLLConReg.f32MAC += LPF_A1_25 * VOutHPLLConReg.f32Output[1];													// + a11 * y(k-1)
+ 		VOutHPLLConReg.f32MAC -= LPF_A2_25 * VOutHPLLConReg.f32Output[2];													// - a2 * y(k-2)
 
- 		VOutHPLLReg.Output[0] = VOutHPLLReg.MAC;
- 		Hi = 0;
+ 		VOutHPLLConReg.f32Output[0] = VOutHPLLConReg.f32MAC;
+ 		u8cntH = 0;
  	}
 
 	//PI regulator can achieve zero static error of phase
- 	VOutHPLLReg.f32PIDErr_Old = VOutHPLLReg.f32PIDErr_New ;
- 	VOutHPLLReg.f32PIDErr_New  = VOutHPLLReg.Output[0] - VOutHPLLReg.f32Refer;				// error(n) = y(k) - 0
+ 	VOutHPLLConReg.f32PIDErr_Old = VOutHPLLConReg.f32PIDErr_New ;
+ 	VOutHPLLConReg.f32PIDErr_New  = VOutHPLLConReg.f32Output[0] - VOutHPLLConReg.f32Refer;				// error(n) = y(k) - 0
 
- 	VOutHPLLReg.f32PID_Output = VOutHPLLReg.f32PID_Output \
- 						+ (VoutH_PLL_Kp + VoutH_PLL_Ki) * VOutHPLLReg.f32PIDErr_New \
- 						- VoutH_PLL_Kp * VOutHPLLReg.f32PIDErr_Old;           // u(n) = u(n-1) + alpha * error(n) - beta * error(n-1)
+ 	VOutHPLLConReg.f32PID_Output = VOutHPLLConReg.f32PID_Output \
+ 						+ (VOutHPLLConReg.f32Kp + VOutHPLLConReg.f32Ki) * VOutHPLLConReg.f32PIDErr_New \
+ 						- VOutHPLLConReg.f32Kp * VOutHPLLConReg.f32PIDErr_Old;           // u(n) = u(n-1) + alpha * error(n) - beta * error(n-1)
 
  	/*
- 	* 'VOutHPLLReg.f32Delta_Theta' is the angle step which needs to be accumulated in each ADC interruption.
+ 	* 'VOutHPLLConReg.f32Theta_Step' is the angle step which needs to be accumulated in each ADC interruption.
  	* 'DELTA_ANGLE_H' is the bias, which can acceleration regulating process
  	*/
- 	VOutHPLLReg.f32Delta_Theta =  DELTA_ANGLE_H + VOutHPLLReg.f32PID_Output;
+ 	VOutHPLLConReg.f32Theta_Step =  DELTA_ANGLE_INV + VOutHPLLConReg.f32PID_Output;
 
- 	if(VOutHPLLReg.f32Delta_Theta > InvTheta_Step_Hi_Limit)
- 		VOutHPLLReg.f32Delta_Theta = InvTheta_Step_Hi_Limit;
- 	if(VOutHPLLReg.f32Delta_Theta < InvTheta_Step_Low_Limit)
- 		VOutHPLLReg.f32Delta_Theta = InvTheta_Step_Low_Limit;
+ 	if(VOutHPLLConReg.f32Theta_Step > InvTheta_Step_Hi_Limit)
+ 		VOutHPLLConReg.f32Theta_Step = InvTheta_Step_Hi_Limit;
+ 	if(VOutHPLLConReg.f32Theta_Step < InvTheta_Step_Low_Limit)
+ 		VOutHPLLConReg.f32Theta_Step = InvTheta_Step_Low_Limit;
 
  	//'VOutHPLLConReg.f32Theta_Step' is used to calculate the frequency of the 220V load voltage
- 	VOutHPLLConReg.f32Theta_Step = VOutHPLLReg.f32Delta_Theta ;
- 	VOutHPLLReg.f32Theta += VOutHPLLReg.f32Delta_Theta;
+ 	VOutHPLLConReg.f32Theta += VOutHPLLConReg.f32Theta_Step;
 
- 	if ( VOutHPLLReg.f32Theta > Value_2Pi )
- 		VOutHPLLReg.f32Theta = VOutHPLLReg.f32Theta - Value_2Pi;
+ 	if ( VOutHPLLConReg.f32Theta > Value_2Pi )
+ 		VOutHPLLConReg.f32Theta = VOutHPLLConReg.f32Theta - Value_2Pi;
 
- 	sincos(VOutHPLLReg.f32Theta, &(VOutHPLLConReg.Sin_Theta), &(VOutHPLLConReg.Cos_Theta));
+ 	sincos(VOutHPLLConReg.f32Theta, &(VOutHPLLConReg.f32Sin_Theta), &(VOutHPLLConReg.f32Cos_Theta));
 }
 
 /*=============================================================================*
