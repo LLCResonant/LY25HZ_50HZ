@@ -10,3 +10,7 @@ The Folder 'Configuration and protocol files' is the ECAN protocol and hardware 
 2018.8.16 GX
 25Hz prototype is revised
 25Hz50HzUnification is revised
+2018.8.17 GX
+50Hz prototype is uploaded
+2018.8.18 GX
+25Hz50HzUnification is revised
