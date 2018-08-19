@@ -34,9 +34,11 @@
 #define GridTheta_StepRated			Rated50HzGirdFrequecy*Value_2Pi/PWM_FREQ*2
 #define GridTheta_Step_Hi_Limit		DetectMaxGridFrequency*Value_2Pi/PWM_FREQ*2
 #define GridTheta_Step_Low_Limit	DetectMinGridFrequency*Value_2Pi/PWM_FREQ*2
+#define GridCounter						PWM_FREQ/2/Rated50HzGirdFrequecy
 
 #define CoffStepToFre				PWM_FREQ/Value_2Pi/2
-
+#define Default_Calibra_Coeff	1.0f
+#define Default_Offset			1.0f
 // -----------------------------------------------
 // define measure gain, the calculated values are ten times of real values
 // -----------------------------------------------
@@ -52,6 +54,8 @@
 #define VInvHMeasureGain		0.235f
 #define VInvLMeasureGain		0.117f
 #define VBusMeasureGain		0.143f
+#define RatedInvFrequency 	25
+#define InvCounter					PWM_FREQ/2/RatedInvFrequency
 #endif
 
 #ifdef 	LY50HZ
@@ -66,6 +70,8 @@
 #define VInvHMeasureGain		0.235f
 #define VInvLMeasureGain		0f
 #define VBusMeasureGain		0.143f
+#define RatedInvFrequency 	50
+#define InvCounter					PWM_FREQ/2/RatedInvFrequency
 #endif
 
 // define AD samples AC components' DC offset

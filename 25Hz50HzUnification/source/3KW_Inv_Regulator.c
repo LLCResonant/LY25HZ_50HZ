@@ -123,17 +123,6 @@ void InvH_VoltControl(void)
 	// start of InvH_VoltControl
 
 	/*
-	 * PR controller in s domain: Gpr =
-	 * 				    kr * s
-	 *  kp + --------------
-	 *  		  s^2 + w0^2
-	 */
-	static float32 kp = 0.6f;                        //0.8f;//2016.6.25 GX
-	static float32 kr = 400* 0.00005f;        //800 * 0.00005f;//2016.6.25 GX
-	float32 Coff_a2 = 0.00006168503f;  	// (w0 * Ts) * (w0 * Ts), where w0 is 2 * pi * 25Hz; Ts is the sample period 1 / 20000Hz
-	float32 Coff_a3 = 0.2499961f;     		// 1 / (4 + w0 * w0 * Ts * Ts)
-
-	/*
 	 *	Change INVH(220V) PR parameter according to output current amplitude.
 	 */
 	/*if(Calc_Result.f32IInvH_rms_instant <= 0.9f)
@@ -176,18 +165,21 @@ void InvH_VoltControl(void)
   	 /*
   	  * The following is the PR controller difference-equation
   	  */
-  	 InvHVoltConReg.f32Input[2] = InvHVoltConReg.f32Input[1];																					// x(k-2) = x(k-1)
-  	 InvHVoltConReg.f32Input[1] = InvHVoltConReg.f32Input[0];																					// x(k-1) = x(k)
-  	 InvHVoltConReg.f32Input[0] = InvHVoltConReg.f32VoltInst_ErrNew;																// x(k)
+  	 InvHVoltConReg.f32Input[2] = InvHVoltConReg.f32Input[1];																				// x(k-2) = x(k-1)
+  	 InvHVoltConReg.f32Input[1] = InvHVoltConReg.f32Input[0];																				// x(k-1) = x(k)
+  	 InvHVoltConReg.f32Input[0] = InvHVoltConReg.f32VoltInst_ErrNew;																	// x(k)
 
   	 InvHVoltConReg.f32Output[2] = InvHVoltConReg.f32Output[1];																			// y(k-2) = y(k-1)
   	 InvHVoltConReg.f32Output[1] = InvHVoltConReg.f32Output[0];																			// y(k-1) = y(k)
 
-  	 InvHVoltConReg.f32MAC = ((2*kr+4*kp+Coff_a2*kp) * Coff_a3) * InvHVoltConReg.f32Input[0];                         // + a1 * x(k)
-  	 InvHVoltConReg.f32MAC -=((8-2*Coff_a2) *kp * Coff_a3)* InvHVoltConReg.f32Input[1];
-  	 InvHVoltConReg.f32MAC += ((4*kp+Coff_a2*kp-2*kr)* Coff_a3) * InvHVoltConReg.f32Input[2];							// + a3 * x(k-2)
+  	 InvHVoltConReg.f32MAC = ( ( 2 * InvHVoltConReg.f32Kr + 4 * InvHVoltConReg.f32Kp + \
+  			 Inv_Volt_Coff_a2 * InvHVoltConReg.f32Kp ) * Inv_Volt_Coff_a3 ) * InvHVoltConReg.f32Input[0];                         // + a1 * x(k)
+  	 InvHVoltConReg.f32MAC -=( ( 8 - 2 * Inv_Volt_Coff_a2 ) * InvHVoltConReg.f32Kp * \
+  			 Inv_Volt_Coff_a3) * InvHVoltConReg.f32Input[1];
+  	 InvHVoltConReg.f32MAC += ( ( 4 * InvHVoltConReg.f32Kp + Inv_Volt_Coff_a2 * InvHVoltConReg.f32Kp - \
+  			 2 * InvHVoltConReg.f32Kr ) * Inv_Volt_Coff_a3) * InvHVoltConReg.f32Input[2];													// + a3 * x(k-2)
 
-  	 InvHVoltConReg.f32MAC += ((8-2*Coff_a2)* Coff_a3) * InvHVoltConReg.f32Output[1];										// + b1 * y(k-1)
+  	 InvHVoltConReg.f32MAC += ((8-2*Inv_Volt_Coff_a2)* Inv_Volt_Coff_a3) * InvHVoltConReg.f32Output[1];										// + b1 * y(k-1)
   	 InvHVoltConReg.f32MAC -= InvHVoltConReg.f32Output[2];																					// - b2 * y(k-2)
 
   	 InvHVoltConReg.f32Output[0] = InvHVoltConReg.f32MAC;
@@ -223,17 +215,6 @@ void InvH_VoltControl(void)
 void InvL_VoltControl(void)
 {
 	// start of InvL_VoltControl
-
-	/*
-	 * PR controller in s domain: Gpr =
-	 * 				    kr * s
-	 *  kp + --------------
-	 *  		  s^2 + w0^2
-	 */
-	static float32 kp = 1.5f;//2.0f;  //2018.6.25 GX
-	static float32 kr = 350* 0.00005f;//1200 * 0.00005f;  //2018.6.25 GX
-	float32 Coff_a2 = 0.00006168503f;  				// (w0 * Ts) * (w0 * Ts), where w0 is 2 * pi * 25Hz; Ts is the sample period 1 / 20000Hz
-	float32 Coff_a3 = 0.2499961f;     					// 1 / (4 + w0 * w0 * Ts * Ts)
 
 	/*
 	 *	Change INVH(220V) PR parameter according to output current amplitude.
@@ -290,11 +271,14 @@ void InvL_VoltControl(void)
 	InvLVoltConReg.f32Output[2] = InvLVoltConReg.f32Output[1];																	// y(k-2) = y(k-1)
 	InvLVoltConReg.f32Output[1] = InvLVoltConReg.f32Output[0];																	// y(k-1) = y(k)
 
-	InvLVoltConReg.f32MAC = ((2*kr+4*kp+Coff_a2*kp) * Coff_a3) * InvLVoltConReg.f32Input[0];                // + a1 * x(k)
-	InvLVoltConReg.f32MAC -=((8-2*Coff_a2) *kp * Coff_a3)* InvLVoltConReg.f32Input[1];
-	InvLVoltConReg.f32MAC += ((4*kp+Coff_a2*kp-2*kr)* Coff_a3) * InvLVoltConReg.f32Input[2];				// + a3 * x(k-2)
+	InvLVoltConReg.f32MAC = ( ( 2 * InvLVoltConReg.f32Kr + 4 * InvLVoltConReg.f32Kp + \
+			Inv_Volt_Coff_a2 * InvLVoltConReg.f32Kp ) * Inv_Volt_Coff_a3 ) * InvLVoltConReg.f32Input[0];                // + a1 * x(k)
+	InvLVoltConReg.f32MAC -=( ( 8 - 2 * Inv_Volt_Coff_a2 ) * InvLVoltConReg.f32Kp *\
+			Inv_Volt_Coff_a3 ) * InvLVoltConReg.f32Input[1];
+	InvLVoltConReg.f32MAC += ( ( 4 * InvLVoltConReg.f32Kp + Inv_Volt_Coff_a2 * InvLVoltConReg.f32Kp - \
+			2 * InvLVoltConReg.f32Kr ) * Inv_Volt_Coff_a3 ) * InvLVoltConReg.f32Input[2];				// + a3 * x(k-2)
 
-	InvLVoltConReg.f32MAC += ((8-2*Coff_a2)* Coff_a3) * InvLVoltConReg.f32Output[1];								// + b1 * y(k-1)
+	InvLVoltConReg.f32MAC += ( ( 8 - 2 * Inv_Volt_Coff_a2 ) * Inv_Volt_Coff_a3 ) * InvLVoltConReg.f32Output[1];								// + b1 * y(k-1)
 	InvLVoltConReg.f32MAC -= InvLVoltConReg.f32Output[2];																		// - b2 * y(k-2)
 
 	InvLVoltConReg.f32Output[0] = InvLVoltConReg.f32MAC;
@@ -403,12 +387,12 @@ void VoutLPhaseCalc(void)
 		VOutLPLLConReg.f32Output[2] = VOutLPLLConReg.f32Output[1];																// y(k-2) = y(k-1)
 		VOutLPLLConReg.f32Output[1] = VOutLPLLConReg.f32Output[0];																// y(k-1) = y(k)
 
-		VOutLPLLConReg.f32MAC = LPF_B0_25 * VOutLPLLConReg.f32Input[0];															// + b0 * x(k)
-	 	VOutLPLLConReg.f32MAC += LPF_B1_25 * VOutLPLLConReg.f32Input[1];														// + b1 * x(k-1)
-	 	VOutLPLLConReg.f32MAC += LPF_B2_25 * VOutLPLLConReg.f32Input[2];														// + b2 * x(k-2)
+		VOutLPLLConReg.f32MAC = LPF_B0_INV * VOutLPLLConReg.f32Input[0];															// + b0 * x(k)
+	 	VOutLPLLConReg.f32MAC += LPF_B1_INV * VOutLPLLConReg.f32Input[1];														// + b1 * x(k-1)
+	 	VOutLPLLConReg.f32MAC += LPF_B2_INV * VOutLPLLConReg.f32Input[2];														// + b2 * x(k-2)
 
-	 	VOutLPLLConReg.f32MAC += LPF_A1_25 * VOutLPLLConReg.f32Output[1];													// + a11 * y(k-1)
-	 	VOutLPLLConReg.f32MAC -= LPF_A2_25 * VOutLPLLConReg.f32Output[2];														// - a2 * y(k-2)
+	 	VOutLPLLConReg.f32MAC += LPF_A1_INV * VOutLPLLConReg.f32Output[1];													// + a11 * y(k-1)
+	 	VOutLPLLConReg.f32MAC -= LPF_A2_INV * VOutLPLLConReg.f32Output[2];														// - a2 * y(k-2)
 
 	 	VOutLPLLConReg.f32Output[0] = VOutLPLLConReg.f32MAC;
 	 	u8cntL = 0;
@@ -466,12 +450,12 @@ void VoutHPhaseCalc(void)
  		VOutHPLLConReg.f32Output[2] = VOutHPLLConReg.f32Output[1];																// y(k-2) = y(k-1)
  		VOutHPLLConReg.f32Output[1] = VOutHPLLConReg.f32Output[0];																// y(k-1) = y(k)
 
- 		VOutHPLLConReg.f32MAC = LPF_B0_25 * VOutHPLLConReg.f32Input[0];														// + b0 * x(k)
- 		VOutHPLLConReg.f32MAC += LPF_B1_25 * VOutHPLLConReg.f32Input[1];														// + b1 * x(k-1)
- 		VOutHPLLConReg.f32MAC += LPF_B2_25 * VOutHPLLConReg.f32Input[2];														// + b2 * x(k-2)
+ 		VOutHPLLConReg.f32MAC = LPF_B0_INV * VOutHPLLConReg.f32Input[0];														// + b0 * x(k)
+ 		VOutHPLLConReg.f32MAC += LPF_B1_INV * VOutHPLLConReg.f32Input[1];														// + b1 * x(k-1)
+ 		VOutHPLLConReg.f32MAC += LPF_B2_INV * VOutHPLLConReg.f32Input[2];														// + b2 * x(k-2)
 
- 		VOutHPLLConReg.f32MAC += LPF_A1_25 * VOutHPLLConReg.f32Output[1];													// + a11 * y(k-1)
- 		VOutHPLLConReg.f32MAC -= LPF_A2_25 * VOutHPLLConReg.f32Output[2];													// - a2 * y(k-2)
+ 		VOutHPLLConReg.f32MAC += LPF_A1_INV * VOutHPLLConReg.f32Output[1];													// + a11 * y(k-1)
+ 		VOutHPLLConReg.f32MAC -= LPF_A2_INV * VOutHPLLConReg.f32Output[2];													// - a2 * y(k-2)
 
  		VOutHPLLConReg.f32Output[0] = VOutHPLLConReg.f32MAC;
  		u8cntH = 0;

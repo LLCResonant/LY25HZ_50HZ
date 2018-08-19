@@ -16,7 +16,7 @@
 
 #define 	Computer_Address  		0x02
 #define 	Computer_Type 		    0x00
-#define 	Module_Type 		    LY25HZ
+#define 	Module_Type 		    	LY25HZ
 #define 	Module_Address 		    0x01
 extern Uint8   	ModuleAdd;
 extern Uint8  	u8_hostdrop;
@@ -40,7 +40,6 @@ extern Uint8 	g_InvL_Load;
 #define	LightLoad      0x01
 #define	MiddleLoad   0x02
 #define	HeavyLoad    0x03
-
 
 /************************************************************************************
 *ECAN intermediate data list*

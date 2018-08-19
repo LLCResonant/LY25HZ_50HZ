@@ -1,46 +1,64 @@
-/***********************************************************************
- *    Copyright(c) 2010-2011,    
-
- *    FILENAME  : 3KW_StateUpdate.h
- *    PURPOSE  :  define constant, struct declaration
- *                        
- *    HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *     
+/*=============================================================================*
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *		
- * 	Software Development Evironment: 
- *	-- CCS 3.3.81.6
- * 	-- BIOS 5.33.06
- *	-- Code Generation Tool v5.2.4 
-
- ************************************************************************/
+ *  FILENAME : 3KW_ProtectionLogic.h
+ *
+ *  PURPOSE  :
+ *
+ *  HISTORY  :
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.8.11		001					NUAA XING
+ *============================================================================*/
 
 #ifndef STATE_UPDATE  //MAINSTATUSMACHINE_H
 #define STATE_UPDATE  //MAINSTATUSMACHINE_H
 
-#define SW_Version1 2012
-#define SW_Version2 0101
-#define SW_Version3 V1.2.1
-#define CurLoop 0       //
-#define OpenLoop 1 
-#define MpptLoop 2
-#define StabilizedVoltLoop 3      
-#define WorkMode OpenLoop 
+#define FAN_CHECK
+#define LY25HZ	0x05
+//#define LY50HZ	0x07
 
-//#define WorkMode   MpptLoop
-//#define WorkMode StabilizedVoltLoop
-
-//safety define
 /*
-#define  CHINA_SUN  1
-#define  VDE0126    2
-#define  RD1663     3   //Spanish
-#define  DK5940     4
-#define FunctionSafety CHINA_SUN
-*/
-//================ Global variables =====================================
+ * PFC PWM test
+ * Warning: DON NOT SOLDER THE BUS FUSE
+ */
+//#define	PFC_OPEN_LOOP
+//#define	PFC_PWM_ENABLE
 
+/*
+ * PFC_CLOSE_LOOP TEST
+ * Warning: DON NOT SOLDER THE BUS FUSE
+ */
+//#define	PFC_CLOSE_LOOP
+//#define	PFC_PWM_ENABLE
+//#define	PFC_PWM_DISABLE
+
+/*
+ * INV PWM TEST
+ * Warning: DON NOT SOLDER THE BUS FUSE
+ */
+//#define	INV_OPEN_LOOP
+//#define	PFC_PWM_DISABLE
+//#define	INV_PWM_ENABLE
+
+/*
+ * INV CLOSE TEST
+ * Warning: SOLDER THE BUS FUSE
+*/
+#define	INV_CLOSE_LOOP
+#define	PFC_CLOSE_LOOP
+#define	PFC_PWM_ENABLE
+#define	PFC_PWM_DISABLE
+#define	INV_PWM_ENABLE
+#define	INV_PWM_DISABLE
+
+#define NORMAL_EEPROM
+//#define RESET_EEPROM
+
+#define SECOND_EDITION
+//#define THIRD_EDITION
+
+//================ Global variables =====================================
 //System Status definition for StateMachine
 enum   SYS_STATE                             
 {
@@ -91,17 +109,17 @@ union  STATE_CHECK
 		Uint16  Inv_SoftStart:1;    							//
 		Uint16  :1;    							//
 		//byte 3
-		Uint16  DcFanControl:1;    //0
-		Uint16  DcFan1Fault:1;    //1
-		Uint16  DcFan2Fault:1;    //2
-		Uint16  DcFanFault:1;    //3
-		Uint16  Grid_PhaseLock:1;    ////2017.8.14 GX
-		Uint16  Bus_OVP_Fault:1;    //
-		Uint16  ECAN_Noline:1;    //
-		Uint16  fflag:1;    //
+		Uint16  DcFanControl:1;    //B0
+		Uint16  DcFan1Fault:1;    //B1
+		Uint16  DcFan2Fault:1;    //B2
+		Uint16  DcFanFault:1;    //B3
+		Uint16  Grid_PhaseLock:1;    //B4
+		Uint16  Bus_OVP_Fault:1;    //B5
+		Uint16  ECAN_Noline:1;    //B6
+		Uint16  fflag:1;    //B7
 		//byte 4
 		Uint16  ACPowerDerating:1;    //
-		Uint16  ECANPWMEnable:1;    //2017.12.18 GX
+		Uint16  ECANPWMEnable:1;    //
 		Uint16  Time_Overflow:1;    //
 		Uint16  ECAN_Fault:1;    //
 		Uint16  Input_dip_Disable_GridOCP:1;    	//
@@ -152,7 +170,7 @@ union  SYS_WARN_MESSAGE
 		//byte 1
         Uint16  VInvHUnderRating:1;    		// B0
         Uint16  VInvLUnderRating:1;      	// B1
-        Uint16  HW_Bus_OVP:1; 			// B2  硬件过压是告警而非保护
+        Uint16  HW_Bus_OVP:1; 			// B2
         Uint16  InvH_OverLoad:1;  			// B3
         Uint16  InvL_OverLoad:1;			// B4
         Uint16  LCD_Comm_Error:1;  //B5
@@ -224,7 +242,7 @@ union  SYS_FAULT_MESSAGE
         Uint16  InvL_OverLoad:1;    	//B1
         Uint16  recoverHW_InvH_OCP:1;    	//B2
         Uint16  recoverHW_InvL_OCP:1;    	//B3
-        Uint16  recoverSW_Bus_UVP:1;    	//B4  2018.1.24 GX
+        Uint16  recoverSW_Bus_UVP:1;    	//B4
         Uint16  :1;   	//B5
         Uint16  :1;   	//B6
         Uint16  :1;   	//B7
@@ -265,14 +283,6 @@ extern union SYS_FAULT_MESSAGE g_SysFaultMessage;
 
 //===================== Global functions==================================
 extern void RelaysOFF(void);
-//main statemachine
-//extern void SysParamDefault(); 
-//extern void ProcessWaiting(void);
-//extern void ProcessChecking(void);
-//extern void ProcessRunning(void);
-//extern void ProcessPermanent(void);        
-//extern void ProcessFault(void);           
-
 
 #endif
 

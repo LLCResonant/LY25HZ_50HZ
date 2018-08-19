@@ -23,10 +23,8 @@
  *	CHECK CAREFULLY AND MAKE SURE IN ACCORDANCE WITH THE ABOVE EVIRONMENT 
  *
  *============================================================================*/
-
 #ifndef LYX2BP1_PARA_SW_H
 #define LYX2BP1_PARA_SW_H
-
 
 /* Define Macros for system level clock parameters */
 #define SYSCLOCK_FREQ		150000000
@@ -34,53 +32,8 @@
 #define LSPCLK_FREQ			(SYSCLOCK_FREQ/4)		// defined in SysCtrlRegs
 #define TBCLK_FREQ			(SYSCLOCK_FREQ/2)		// EPwm Timer clock
 
-
 /* DSP/BIOS Macros for ADC calibration */
 #define ADC_cal_func_ptr (void (*)(void))0x380080
-#define FAN_CHECK
-#define LY25HZ	0x05
-//#define LY50HZ	0x07
-
-/*
- * PFC PWM test
- * Warning: DON NOT SOLDER THE BUS FUSE
- */
-//#define	PFC_OPEN_LOOP
-//#define	PFC_PWM_ENABLE
-
-/*
- * PFC_CLOSE_LOOP TEST
- * Warning: DON NOT SOLDER THE BUS FUSE
- */
-//#define	PFC_CLOSE_LOOP
-//#define	PFC_PWM_ENABLE
-//#define	PFC_PWM_DISABLE
-
-/*
- * INV PWM TEST
- * Warning: DON NOT SOLDER THE BUS FUSE
- */
-//#define	INV_OPEN_LOOP
-//#define	PFC_PWM_DISABLE
-//#define	INV_PWM_ENABLE
-
-/*
- * INV CLOSE TEST
- * Warning: SOLDER THE BUS FUSE
-*/
-#define	INV_CLOSE_LOOP
-#define	PFC_CLOSE_LOOP
-#define	PFC_PWM_ENABLE
-#define	PFC_PWM_DISABLE
-#define	INV_PWM_ENABLE
-#define	INV_PWM_DISABLE
-
-#define NORMAL_EEPROM
-//#define RESET_EEPROM
-
-
-#define SECOND_EDITION
-//#define THIRD_EDITION
 /*=============================================================================*
  * 	Includings 
  *============================================================================*/
@@ -101,9 +54,9 @@
 /* Include user defined Header Files */
 #include "Ecap.h"
 #include "Epwm.h"
+#include "3KW_StateUpdate.h"
 #include "3KW_DataAcquisition.h"
 #include "3KW_ProtectionLogic.h"
-#include "3KW_StateUpdate.h"
 #include "3KW_Regulator.h"
 #include "3KW_ParallelLogic.h"
 #include "3KW_Scib_PCOsc.h"

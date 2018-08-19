@@ -1,16 +1,15 @@
 /*=============================================================================*
- *         Copyright(c) 2010-2011, ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 50KW_Regulator.h 
- *  PURPOSE  : header files 50KW_Regulator.c 
- *			       define constant, struct declaration, extern varibles 
+ *  FILENAME : 3KW_ProtectionLogic.h
+ *
+ *  PURPOSE  :
  *
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *    
- *
- ******************************************************************************/
-
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.8.11		001					NUAA XING
+ *============================================================================*/
 #ifndef REGULATOR_H
 #define REGULATOR_H
 
@@ -29,11 +28,11 @@
 /* 5us deadband with 75MHz TBCLK, 5*75 = 375 */	 
 #define DeadBand_Duration	50				//250*2=5us,375-->7.5us
 
-#define LPF_B0_50	0.00034605f		//0.000346050740714038155762;
-#define LPF_B1_50	0.00069210f		//0.000692101481428076311525;
-#define LPF_B2_50	0.00034605f		//0.000346050740714038155762;
-#define LPF_A1_50	1.94721182f		//1.947211823488243620516869;
-#define LPF_A2_50	0.94859602f		//0.948596026451099749721152;
+#define LPF_B0_GRID	0.00034605f		//0.000346050740714038155762;
+#define LPF_B1_GRID	0.00069210f		//0.000692101481428076311525;
+#define LPF_B2_GRID	0.00034605f		//0.000346050740714038155762;
+#define LPF_A1_GRID	1.94721182f		//1.947211823488243620516869;
+#define LPF_A2_GRID	0.94859602f		//0.948596026451099749721152;
 
 #define PLL_Grid_Kp	5e-5f
 #define PLL_Grid_Ki		2.5e-8f
@@ -47,16 +46,53 @@
 #define BusCon_Kp	0.2
 #define BusCon_Ki	0.001
 //Inv
-#define LPF_B0_25	0.00003913f
-#define LPF_B1_25	0.00007826f
-#define LPF_B2_25	0.00003913f
-#define LPF_A1_25	1.9822318f
-#define LPF_A2_25	0.98238832f
+/*
+ * PR controller in s domain: Gpr =
+ * 				    kr * s
+ *  kp + --------------
+ *  		  s^2 + w0^2
+ */
+#define InvH_Volt_Kp				0.6f
+#define InvH_Volt_Kr				400* 0.00005f
+#define Inv_Volt_Coff_a2			0.00006168503f  // (w0 * Ts) * (w0 * Ts), where w0 is 2 * pi * 25Hz; Ts is the sample period 1 / 20000Hz
+#define Inv_Volt_Coff_a3			0.2499961f   		// 1 / (4 + w0 * w0 * Ts * Ts)
+
+#define InvL_Volt_Kp				1.5f
+#define InvL_Volt_Kr				350* 0.00005f
+
+#define LPF_B0_INV	0.00003913f
+#define LPF_B1_INV	0.00007826f
+#define LPF_B2_INV	0.00003913f
+#define LPF_A1_INV	1.9822318f
+#define LPF_A2_INV	0.98238832f
 
 #define PLL_Inv_Kp	1e-5f
 #define PLL_Inv_Ki	5e-9f
 #define DELTA_ANGLE_INV 2*Value_Pi * 24/(PWM_FREQ/2)
+#endif
 
+#ifdef 	LY50HZ
+//PFC
+#define CurrCon_Kp	10.0f
+#define CurrCon_Ki	 	3.0f
+
+#define BusCon_Kp	0.3f
+#define BusCon_Ki	0.0015f
+//Inv
+#define InvH_Volt_Kp				0.01f
+#define InvH_Volt_Kr				800 * 0.00005f
+#define Inv_Volt_Coff_a2			0.0002467401f  	// (w0 * Ts) * (w0 * Ts), where w0 is 2 * pi * 25Hz; Ts is the sample period 1 / 20000Hz
+#define Inv_Volt_Coff_a3			0.2499846f   		// 1 / (4 + w0 * w0 * Ts * Ts)
+
+#define LPF_B0_INV	0.00034605f
+#define LPF_B1_INV	0.00069210f
+#define LPF_B2_INV	0.00034605f
+#define LPF_A1_INV	1.94721182f
+#define LPF_A2_INV	0.94859602f
+
+#define PLL_Inv_Kp	5e-5f
+#define PLL_Inv_Ki	2.5e-8f
+#define DELTA_ANGLE_INV 2*Value_Pi * 50/(PWM_FREQ/2)
 #endif
 
 /* General Purpose PID Controller, Data type */
@@ -112,6 +148,8 @@ struct INVVOLTCONTREG
 	float32  f32Output[3];
 	float32  f32MAC;
 	float32  f32InvDuty;
+	float32  f32Kp;
+	float32  f32Kr;
 };
 extern	struct	INVVOLTCONTREG	InvHVoltConReg, InvLVoltConReg;
 
@@ -123,7 +161,6 @@ struct PLLCONTREG
 	float32  f32Theta_Step;
 	float32  f32Sin_Theta;
 	float32	 f32Cos_Theta;
-	Uint32   u32Period;
 
 	float32  f32Input[3];   		// LPF
 	float32  f32Output[3];   	// LPF
@@ -164,7 +201,6 @@ extern void ADC_INT_INV_Control(void);
 extern int16 swGetStartADIsrPoint(void);
 extern int16 swGetEndADIsrPoint(void);
 extern int16 swGetEndCONPoint(void);
-//extern int16 Test_Start_of_SEQISR;
 
 #endif
 

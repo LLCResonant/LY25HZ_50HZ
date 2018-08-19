@@ -25,7 +25,6 @@
 #define 	OverRated_InputCurrentRms		Rated_InputCurrentRms * 1.3
 #define 	OverRated_InputCurrentPeak  		OverRated_InputCurrentRms * 1.414
 
-#define 	RatedInvFrequency 				25
 #define 	InvTheta_StepRated				RatedInvFrequency*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Hi_Limit			25*1.1*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Low_Limit		25*0.9*Value_2Pi/PWM_FREQ*2

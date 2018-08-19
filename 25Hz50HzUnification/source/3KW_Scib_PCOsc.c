@@ -332,7 +332,7 @@ void Scib_Q1Command(void)
 	u8Scib_UserDataBuf0[bStrLen++] = 32;	
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
 
-	bStrLen1 = sbNumToAscii(WorkMode, 0, pDataBuf);    //2
+	bStrLen1 = sbNumToAscii(Module_Type, 0, pDataBuf);    //2
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
@@ -378,7 +378,6 @@ void Scib_Q1Command(void)
 	
     pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
     bStrLen1 = sbNumToAscii(SafetyReg.f32InvL_VoltRms_Ref*10 , 0, pDataBuf);//2017.6.7 ZR sample test Calc_Result.f32TempInvH SafetyReg.f32InvL_VoltRms_Ref*10
-    //bStrLen1 = sbNumToAscii(Calc_Result.f32TempInvH, 0, pDataBuf);//11
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 

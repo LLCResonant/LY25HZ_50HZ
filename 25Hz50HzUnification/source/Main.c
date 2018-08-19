@@ -19,9 +19,8 @@
 #include "3KW_MAINHEADER.h"					// Main include file
 
 //--- variables
-Uint16 g_u16DelayTimeSys = 0;
-Uint8 	u_cnt = 1;
-Uint32 hosttemp = 0;
+Uint8 	u8ecan_cnt = 1;
+Uint8 	u8hosttemp = 0;
 
 //--- functions
 void SysParamDefault(); 
@@ -113,24 +112,165 @@ void SysParamDefault(void)
 	ADGain.f32TempInvH = TempMeasureGain;
 	ADGain.f32TempInvL = TempMeasureGain;
 
-	ADCalibration.f32IGrid = 1;
-	ADCalibration.f32VGrid = 1.0f;
+	ADCalibration.f32IGrid = Default_Calibra_Coeff;
+	ADCalibration.f32VGrid = Default_Calibra_Coeff;
 
-	ADCalibration.f32IInvH = 1.0f;
-	ADCalibration.f32VInvH = 1.0f;
-	ADCalibration.f32VOutH = 1;
-	ADCalibration.f32IOutH= 1.0f;
+	ADCalibration.f32IInvH = Default_Calibra_Coeff;
+	ADCalibration.f32VInvH = Default_Calibra_Coeff;
+	ADCalibration.f32VOutH = Default_Calibra_Coeff;
+	ADCalibration.f32IOutH= Default_Calibra_Coeff;
 
-	ADCalibration.f32IInvL = 1.0f;
-	ADCalibration.f32VInvL = 1.0f;
-	ADCalibration.f32VOutL = 1;
-	ADCalibration.f32IOutL = 1.0f;
+	ADCalibration.f32IInvL = Default_Calibra_Coeff;
+	ADCalibration.f32VInvL = Default_Calibra_Coeff;
+	ADCalibration.f32VOutL = Default_Calibra_Coeff;
+	ADCalibration.f32IOutL = Default_Calibra_Coeff;
 
-	ADCalibration.f32VBusP= 1;
-	ADCalibration.f32VBusN = 1;
-	ADCalibration.f32TempPFC = 1;
-	ADCalibration.f32TempInvH = 1;
-	ADCalibration.f32TempInvL = 1;
+	ADCalibration.f32VBusP= Default_Calibra_Coeff;
+	ADCalibration.f32VBusN = Default_Calibra_Coeff;
+	ADCalibration.f32TempPFC = Default_Calibra_Coeff;
+	ADCalibration.f32TempInvH = Default_Calibra_Coeff;
+	ADCalibration.f32TempInvL = Default_Calibra_Coeff;
+
+	ADChannelOffset.f32VBusP = Default_Offset;
+	ADChannelOffset.f32VBusN = Default_Offset;
+
+	ADChannelOffset.f32IGrid = Default_Offset;
+	ADChannelOffset.f32VGrid = Default_Offset;
+
+	ADChannelOffset.f32IInvH = Default_Offset;
+	ADChannelOffset.f32VInvH = Default_Offset;
+	ADChannelOffset.f32VOutH = Default_Offset;
+
+	ADChannelOffset.f32IInvL = Default_Offset;
+	ADChannelOffset.f32VInvL = Default_Offset;
+	ADChannelOffset.f32VOutL = Default_Offset;
+
+	ADChannelOffset.f32TempPFC = Default_Offset;
+	ADChannelOffset.f32TempInvH = Default_Offset;
+	ADChannelOffset.f32TempInvL = Default_Offset;
+
+	AD_Acc.i16GridCounter = GridCounter;
+	AD_Acc.i16InvCounter = InvCounter;
+
+	AD_Acc.f32VBusP = 0;
+	AD_Acc.f32VBusN = 0;
+	AD_Acc.f32TempPFC = 0;
+	AD_Acc.f32TempInvH = 0;
+	AD_Acc.f32TempInvL = 0;
+
+	AD_Acc.f32GridFreq = 0;
+	AD_Acc.f32VOutFreq = 0;
+	AD_Acc.f32VOutHFreq = 0;
+	AD_Acc.f32VOutLFreq = 0;
+
+	AD_Acc.f32IGrid_ave = 0;
+	AD_Acc.f32VGrid_ave = 0;
+
+	AD_Acc.f32IInvH_ave = 0;
+	AD_Acc.f32VInvH_ave = 0;
+	AD_Acc.f32VOutH_ave = 0;
+
+	AD_Acc.f32IInvL_ave = 0;
+	AD_Acc.f32VInvL_ave = 0;
+	AD_Acc.f32VOutL_ave = 0;
+
+	AD_Acc.f32IGrid_rms = 0;
+	AD_Acc.f32VGrid_rms = 0;
+
+	AD_Acc.f32IInvH_rms = 0;
+	AD_Acc.f32VInvH_rms = 0;
+	AD_Acc.f32VOutH_rms = 0;
+
+	AD_Acc.f32IInvL_rms = 0;
+	AD_Acc.f32VInvL_rms = 0;
+	AD_Acc.f32VOutL_rms = 0;
+
+	AD_Acc.f32Phase_Diff_ave = 0;
+
+	AD_Sum.i16GridCounter = GridCounter;
+	AD_Sum.i16InvCounter = InvCounter;
+
+	AD_Sum.f32VBusP = 0;
+	AD_Sum.f32VBusN = 0;
+
+	AD_Sum.f32TempPFC = 0;
+	AD_Sum.f32TempInvH = 0;
+	AD_Sum.f32TempInvL = 0;
+
+	AD_Sum.f32GridFreq = 0;
+	AD_Sum.f32VOutFreq = 0;
+	AD_Sum.f32VOutHFreq = 0;
+	AD_Sum.f32VOutLFreq = 0;
+
+	AD_Sum.f32IGrid_ave = 0;
+	AD_Sum.f32VGrid_ave = 0;
+
+	AD_Sum.f32IInvH_ave = 0;
+	AD_Sum.f32VInvH_ave = 0;
+	AD_Sum.f32VOutH_ave = 0;
+
+	AD_Sum.f32IInvL_ave = 0;
+	AD_Sum.f32VInvL_ave = 0;
+	AD_Sum.f32VOutL_ave = 0;
+
+	AD_Sum.f32IGrid_rms = 0;
+	AD_Sum.f32VGrid_rms = 0;
+
+	AD_Sum.f32IInvH_rms = 0;
+	AD_Sum.f32VInvH_rms = 0;
+	AD_Sum.f32VOutH_rms = 0;
+
+	AD_Sum.f32IInvL_rms = 0;
+	AD_Sum.f32VInvL_rms = 0;
+	AD_Sum.f32VOutL_rms = 0;
+
+	AD_Sum.f32Phase_Diff_ave = 0;
+
+	Calc_Result.f32VBusP = 0;
+	Calc_Result.f32VBusN = 0;
+	Calc_Result.f32VBus = 0;
+
+
+	Calc_Result.f32TempPFC = 0;
+	Calc_Result.f32TempInvH = 0;
+	Calc_Result.f32TempInvL = 0;
+
+	Calc_Result.f32GridFreq = 0;
+	Calc_Result.f32VOutFreq = 0;
+	Calc_Result.f32VOutLFreq = 0;
+	Calc_Result.f32VOutHFreq = 0;
+
+	Calc_Result.f32IGrid_ave = 0;
+	Calc_Result.f32VGrid_ave = 0;
+
+	Calc_Result.f32IInvH_ave = 0;
+	Calc_Result.f32VInvH_ave = 0;
+	Calc_Result.f32VOutH_ave = 0;
+
+	Calc_Result.f32IInvL_ave = 0;
+	Calc_Result.f32VInvL_ave = 0;
+	Calc_Result.f32VOutL_ave = 0;
+
+	Calc_Result.f32IGrid_rms = 0;
+	Calc_Result.f32VGrid_rms = 0;
+	Calc_Result.f32VGrid_rms_instant = 0;
+
+	Calc_Result.f32IInvH_rms = 0;
+	Calc_Result.f32IOutH_rms = 0;
+	Calc_Result.f32VInvH_rms = 0;
+	Calc_Result.f32VOutH_rms = 0;
+	Calc_Result.f32VInvH_rms_instant = 0;
+	Calc_Result.f32IInvH_rms_instant = 0;
+
+	Calc_Result.f32IInvL_rms = 0;
+	Calc_Result.f32VInvL_rms = 0;
+	Calc_Result.f32VOutL_rms = 0;
+	Calc_Result.f32IOutL_rms = 0;
+	Calc_Result.f32VInvL_rms_instant = 0;
+	Calc_Result.f32IInvL_rms_instant = 0;
+
+	Calc_Result.f32Coff_Dforward = 0;
+	Calc_Result.f32Phase_Diff_ave= 0;
 
 	PowerDerate_Reg.f32ACPowerDerating_VRate = ACPowerDerating_VoltageRate;
 	PowerDerate_Reg.f32ACPowerDerating_HTRate = ACPowerDerating_HeathinkTempRate;
@@ -194,24 +334,6 @@ void SysParamDefault(void)
 	Output_VoltRe_Reg.u8InvL_Light_Flag = 0;
 	Output_VoltRe_Reg.u8InvL_Middle_Flag = 0;
 
-	ADChannelOffset.f32VBusP = 1.0f;
-	ADChannelOffset.f32VBusN = 1.0f;
-
-	ADChannelOffset.f32IGrid = 0;
-	ADChannelOffset.f32VGrid = 0;
-
-	ADChannelOffset.f32IInvH = 0;
-	ADChannelOffset.f32VInvH = 0;
-	ADChannelOffset.f32VOutH = 0;
-
-	ADChannelOffset.f32IInvL = 0;
-	ADChannelOffset.f32VInvL = 0;
-	ADChannelOffset.f32VOutL = 0;
-
-	ADChannelOffset.f32TempPFC = 0;
-	ADChannelOffset.f32TempInvH = 0;
-	ADChannelOffset.f32TempInvL = 0;
-
 	// before enter normal mode, bus voltage controller,current controller should be initiated
 	BusCon_Reg.f32BusVolt_Ref = 850;
 	BusCon_Reg.f32BusFliter = 0;
@@ -230,13 +352,9 @@ void SysParamDefault(void)
 	CurrConReg.f32IGridErr_New = 0;
 	CurrConReg.f32PfcDuty_Con = 0;
 	CurrConReg.u8Drive_Open = 0;
-	CurrConReg.f32PfcDuty_ff_factor = 1;
+	CurrConReg.f32PfcDuty_ff_factor = 1.0f;
 	CurrConReg.f32Kp = CurrCon_Kp;
 	CurrConReg.f32Ki = CurrCon_Ki;
-
- 	GridPLLConReg.f32Theta = 0;
-	GridPLLConReg.f32Theta_Step = GridTheta_StepRated;
-
 
 	GridPLLConReg.f32Input[0] = 0;
 	GridPLLConReg.f32Input[1] = 0;
@@ -252,7 +370,8 @@ void SysParamDefault(void)
 	GridPLLConReg.f32Theta = 0;
 	GridPLLConReg.f32Kp = PLL_Grid_Kp;
 	GridPLLConReg.f32Ki = PLL_Grid_Ki;
-	GridPLLConReg.f32Theta_Step = DELTA_ANGLE_GRID;
+	GridPLLConReg.f32Theta_Step = GridTheta_StepRated;
+	GridPLLConReg.f32Valpha = 0;
 
 	VOutHPLLConReg.f32Input[0] = 0;
 	VOutHPLLConReg.f32Input[1] = 0;
@@ -269,6 +388,7 @@ void SysParamDefault(void)
 	VOutHPLLConReg.f32Kp = PLL_Inv_Kp;
 	VOutHPLLConReg.f32Ki = PLL_Inv_Ki;
 	VOutHPLLConReg.f32Theta_Step = DELTA_ANGLE_INV;
+	VOutHPLLConReg.f32Valpha = 0;
 
 	VOutLPLLConReg.f32Input[0] = 0;
 	VOutLPLLConReg.f32Input[1] = 0;
@@ -285,6 +405,10 @@ void SysParamDefault(void)
 	VOutLPLLConReg.f32Kp = PLL_Inv_Kp;
 	VOutLPLLConReg.f32Ki = PLL_Inv_Ki;
 	VOutLPLLConReg.f32Theta_Step = DELTA_ANGLE_INV;
+  	VOutLPLLConReg.f32Valpha = 0;
+
+ 	OutPLLConReg.f32Theta = 0;
+  	OutPLLConReg.f32Theta_Step = InvTheta_StepRated;
 
 	InvHVoltConReg.f32VoltRms_Ref = InvH_RatedVolt_Ref;
 	InvHVoltConReg.f32VoltInst_Ref = 0;
@@ -296,6 +420,8 @@ void SysParamDefault(void)
 	InvHVoltConReg.f32Output[1] = 0;
 	InvHVoltConReg.f32Output[2] = 0;
 	InvHVoltConReg.f32MAC = 0;
+	InvHVoltConReg.f32Kp = InvH_Volt_Kp;
+	InvHVoltConReg.f32Kr = InvH_Volt_Kr;
 
 	InvLVoltConReg.f32VoltRms_Ref =  InvL_RatedVolt_Ref;
 	InvLVoltConReg.f32VoltInst_Ref = 0;
@@ -307,141 +433,11 @@ void SysParamDefault(void)
     InvLVoltConReg.f32Output[1] = 0;
     InvLVoltConReg.f32Output[2] = 0;
     InvLVoltConReg.f32MAC = 0;
-
- 	OutPLLConReg.f32Theta = 0;
-  	OutPLLConReg.f32Theta_Step = InvTheta_StepRated;
-  	VOutHPLLConReg.f32Valpha = 0;
-  	VOutHPLLConReg.f32Theta_Step = InvTheta_StepRated;
-  	VOutLPLLConReg.f32Valpha = 0;
-  	VOutLPLLConReg.f32Theta_Step = InvTheta_StepRated;
-
+	InvLVoltConReg.f32Kp = InvL_Volt_Kp;
+	InvLVoltConReg.f32Kr = InvL_Volt_Kr;
 
   	InvLVoltConReg.f32InvDuty = 0;
   	InvHVoltConReg.f32InvDuty = 0;
-	AD_Acc.i16GridCounter = 400;
-	AD_Acc.i16InvCounter = PWM_FREQ / RatedInvFrequency / 2;
-
-	AD_Acc.f32VBusP = 0;
-	AD_Acc.f32VBusN = 0;
-
-
-	AD_Acc.f32TempPFC = 0;
-	AD_Acc.f32TempInvH = 0;
-	AD_Acc.f32TempInvL = 0;
-
-	AD_Acc.f32GridFreq = 0;
-	AD_Acc.f32VOutFreq = 0;
-	AD_Acc.f32VOutHFreq = 0;
-	AD_Acc.f32VOutLFreq = 0;
-
-	AD_Acc.f32IGrid_ave = 0;
-	AD_Acc.f32VGrid_ave = 0;
-
-	AD_Acc.f32IInvH_ave = 0;
-	AD_Acc.f32VInvH_ave = 0;
-	AD_Acc.f32VOutH_ave = 0;
-
-	AD_Acc.f32IInvL_ave = 0;
-	AD_Acc.f32VInvL_ave = 0;
-	AD_Acc.f32VOutL_ave = 0;
-
-	AD_Acc.f32IGrid_rms = 0;
-	AD_Acc.f32VGrid_rms = 0;
-
-	AD_Acc.f32IInvH_rms = 0;
-	AD_Acc.f32VInvH_rms = 0;
-	AD_Acc.f32VOutH_rms = 0;
-
-	AD_Acc.f32IInvL_rms = 0;
-	AD_Acc.f32VInvL_rms = 0;
-	AD_Acc.f32VOutL_rms = 0;
-
-	AD_Acc.f32Phase_Diff_ave = 0;
-
-	AD_Sum.i16GridCounter = 400;
-	AD_Sum.i16InvCounter = PWM_FREQ / RatedInvFrequency/2;
-
-	AD_Sum.f32VBusP = 0;
-	AD_Sum.f32VBusN = 0;
-
-	AD_Sum.f32TempPFC = 0;
-	AD_Sum.f32TempInvH = 0;
-	AD_Sum.f32TempInvL = 0;
-
-	AD_Sum.f32GridFreq = 0;
-	AD_Sum.f32VOutFreq = 0;
-	AD_Sum.f32VOutHFreq = 0;
-	AD_Sum.f32VOutLFreq = 0;
-
-	AD_Sum.f32IGrid_ave = 0;
-	AD_Sum.f32VGrid_ave = 0;
-
-	AD_Sum.f32IInvH_ave = 0;
-	AD_Sum.f32VInvH_ave = 0;
-	AD_Sum.f32VOutH_ave = 0;
-
-	AD_Sum.f32IInvL_ave = 0;
-	AD_Sum.f32VInvL_ave = 0;
-	AD_Sum.f32VOutL_ave = 0;
-
-	AD_Sum.f32IGrid_rms = 0;
-	AD_Sum.f32VGrid_rms = 0;
-
-	AD_Sum.f32IInvH_rms = 0;
-	AD_Sum.f32VInvH_rms = 0;
-	AD_Sum.f32VOutH_rms = 0;
-
-	AD_Sum.f32IInvL_rms = 0;
-	AD_Sum.f32VInvL_rms = 0;
-	AD_Sum.f32VOutL_rms = 0;
-
-	AD_Sum.f32Phase_Diff_ave = 0;
-
-	Calc_Result.f32VBusP = 0;
-	Calc_Result.f32VBusN = 0;
-	Calc_Result.f32VBus = 0;
-
-	
-	Calc_Result.f32TempPFC = 0;
-	Calc_Result.f32TempInvH = 0;
-	Calc_Result.f32TempInvL = 0;
-
-	Calc_Result.f32GridFreq = 0;
-	Calc_Result.f32VOutFreq = 0;
-	Calc_Result.f32VOutLFreq = 0;
-	Calc_Result.f32VOutHFreq = 0;
-
-	Calc_Result.f32IGrid_ave = 0;
-	Calc_Result.f32VGrid_ave = 0;
-
-	Calc_Result.f32IInvH_ave = 0;
-	Calc_Result.f32VInvH_ave = 0;
-	Calc_Result.f32VOutH_ave = 0;
-
-	Calc_Result.f32IInvL_ave = 0;
-	Calc_Result.f32VInvL_ave = 0;
-	Calc_Result.f32VOutL_ave = 0;
-
-	Calc_Result.f32IGrid_rms = 0;
-	Calc_Result.f32VGrid_rms = 0;
-	Calc_Result.f32VGrid_rms_instant = 0;
-
-	Calc_Result.f32IInvH_rms = 0;
-	Calc_Result.f32IOutH_rms = 0;
-	Calc_Result.f32VInvH_rms = 0;
-	Calc_Result.f32VOutH_rms = 0;
-	Calc_Result.f32VInvH_rms_instant = 0;
-	Calc_Result.f32IInvH_rms_instant = 0;
-
-	Calc_Result.f32IInvL_rms = 0;
-	Calc_Result.f32VInvL_rms = 0;
-	Calc_Result.f32VOutL_rms = 0;
-	Calc_Result.f32IOutL_rms = 0;
-	Calc_Result.f32VInvL_rms_instant = 0;
-	Calc_Result.f32IInvL_rms_instant = 0;
-
-	Calc_Result.f32Coff_Dforward = 0;
-	Calc_Result.f32Phase_Diff_ave= 0;
 
 	g_SysWarningMessage.Word.byte0 = 0;
 	g_SysWarningMessage.Word.byte1 = 0;
@@ -478,20 +474,11 @@ void SysParamDefault(void)
 //Controller parameter
 
 //Power limit parameter
-
     ComFlag.SciRcvStart=0;
-	ComFlag.Arrival_40ms=0;
 	ComFlag.OverTimeFlag=0;
 	ComFlag.OverTimeDelay=0;
-	ComFlag.OverTimeStartFlag=0;
-
 	ComCnt.SaveFactorySettings = 0;
-	ComCnt.RestoreFactorySettings = 0;
-	ComCnt.SaveFactorySettingsStart = 0;
-	ComCnt.RestoreFactorySettingsStart = 0;
-	ComCnt.Cnt_Control_WriteToEEPROM = 0;
-    ComCnt.Cnt_Control_ReadFromEEPROM = 0;
-   
+	ComCnt.ComRecByteNum = 0;
 
     //ECan
     Ecan_ModuleData.u16VGrid_rms = 0X0000;
@@ -653,20 +640,20 @@ void TimeBase500msPRD(void)
 		s_count++;
 		if (s_count == 4)
 		{
-			if (hosttemp == u8_hostdrop && g_Mod_Status != Master)
+			if (u8hosttemp == u8_hostdrop && g_Mod_Status != Master)
 			{
-				if (u_cnt >= 2 && u_cnt < 5)
+				if (u8ecan_cnt >= 2 && u8ecan_cnt < 5)
 					g_Mod_Status = idle;
-				else if (u_cnt >= 5)
+				else if (u8ecan_cnt >= 5)
 				{
 					g_Mod_Status = Master;
-					u_cnt = 1;
+					u8ecan_cnt = 1;
 				}
-				u_cnt ++ ;
+				u8ecan_cnt ++ ;
 			}
 			else
-				u_cnt = 1;
-			hosttemp = u8_hostdrop;
+				u8ecan_cnt = 1;
+			u8hosttemp = u8_hostdrop;
 			s_count = 0;
 		}
 	}

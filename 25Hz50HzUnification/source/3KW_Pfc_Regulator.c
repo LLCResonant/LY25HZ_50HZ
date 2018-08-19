@@ -387,12 +387,12 @@ void Calc_IGrid_reference(void)
 	 	GridPLLConReg.f32Output[2] = GridPLLConReg.f32Output[1];															// y(k-2) = y(k-1)
 	 	GridPLLConReg.f32Output[1] = GridPLLConReg.f32Output[0];															// y(k-1) = y(k)
 
-	 	GridPLLConReg.f32MAC = LPF_B0_50 * GridPLLConReg.f32Input[0];														// + b0 * x(k)
-	 	GridPLLConReg.f32MAC += LPF_B1_50 * GridPLLConReg.f32Input[1];														// + b1 * x(k-1)
-	 	GridPLLConReg.f32MAC += LPF_B2_50 * GridPLLConReg.f32Input[2];														// + b2 * x(k-2)
+	 	GridPLLConReg.f32MAC = LPF_B0_GRID * GridPLLConReg.f32Input[0];														// + b0 * x(k)
+	 	GridPLLConReg.f32MAC += LPF_B1_GRID * GridPLLConReg.f32Input[1];														// + b1 * x(k-1)
+	 	GridPLLConReg.f32MAC += LPF_B2_GRID * GridPLLConReg.f32Input[2];														// + b2 * x(k-2)
 
-	 	GridPLLConReg.f32MAC += LPF_A1_50 * GridPLLConReg.f32Output[1];													// + a11 * y(k-1)
-	 	GridPLLConReg.f32MAC -= LPF_A2_50 * GridPLLConReg.f32Output[2];													// - a2 * y(k-2)
+	 	GridPLLConReg.f32MAC += LPF_A1_GRID * GridPLLConReg.f32Output[1];													// + a11 * y(k-1)
+	 	GridPLLConReg.f32MAC -= LPF_A2_GRID * GridPLLConReg.f32Output[2];													// - a2 * y(k-2)
 
 	 	GridPLLConReg.f32Output[0] = GridPLLConReg.f32MAC;
 	 	u8cnt  = 0;
