@@ -38,13 +38,16 @@
 #define PLL_Grid_Ki		2.5e-8f
 #define DELTA_ANGLE_GRID  2*Value_Pi *55/(PWM_FREQ/2)
 
+#define BusBal_Kp  0.03f;
+#define BusBal_Ki   0.00002f;
+
 #ifdef 	LY25HZ
 //PFC
 #define CurrCon_Kp	30.0f
 #define CurrCon_Ki	 	3.0f
 
-#define BusCon_Kp	0.2
-#define BusCon_Ki	0.001
+#define BusCon_Kp	0.2f
+#define BusCon_Ki	0.001f
 //Inv
 /*
  * PR controller in s domain: Gpr =
@@ -113,6 +116,8 @@ struct BUS_CON_REG
   float32   f32BusFliter;
   float32	f32Bus_Kp;
   float32	f32Bus_Ki;
+  float32	f32BusBal_Kp;
+  float32	f32BusBal_Ki;
 };
 extern  struct BUS_CON_REG  BusCon_Reg;
 

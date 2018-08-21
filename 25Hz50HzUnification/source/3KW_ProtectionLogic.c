@@ -362,7 +362,7 @@ void InvCurrentCheck(void)
     	 if(Calc_Result.f32IOutH_rms >=  SafetyReg.f32IInvH_Hi4Limit )//2¹ýÔØ  5.5*2A
     	 {
     		 s_u16Cnt_InvHCurrent_High4_Fault++;
-    		 if(s_u16Cnt_InvHCurrent_High4_Fault >= SafetyReg.f32IInvH_Hi3ProtectionTime)// 40ms*3
+    		 if(s_u16Cnt_InvHCurrent_High4_Fault >= SafetyReg.f32IInvH_Hi4ProtectionTime)// 40ms*3
     	     {
     			 g_SysFaultMessage.bit.InvH_OverLoad = 1;
     			 s_u16Cnt_InvHCurrent_High4_Fault = 0;
@@ -374,7 +374,7 @@ void InvCurrentCheck(void)
     		 s_u16Cnt_InvHCurrent_High3_Fault++;
     		 if(s_u16Cnt_InvHCurrent_High3_Fault >= 10)//10*40ms
     			 g_SysWarningMessage.bit.InvH_OverLoad = 1;
-    		 if(s_u16Cnt_InvHCurrent_High3_Fault >= SafetyReg.f32IInvH_Hi2ProtectionTime)// 1s
+    		 if(s_u16Cnt_InvHCurrent_High3_Fault >= SafetyReg.f32IInvH_Hi3ProtectionTime)// 1s
     		 {
     			 g_SysFaultMessage.bit.InvH_OverLoad = 1;
     			 s_u16Cnt_InvHCurrent_High3_Fault = 0;
@@ -386,7 +386,7 @@ void InvCurrentCheck(void)
     		s_u16Cnt_InvHCurrent_High2_Fault++;
 			if(s_u16Cnt_InvHCurrent_High2_Fault >= 10)   //10*40ms
 				g_SysWarningMessage.bit.InvH_OverLoad = 1;
-			if(s_u16Cnt_InvHCurrent_High2_Fault >= 3*SafetyReg.f32IInvH_Hi2ProtectionTime)// 75*40ms=3s
+			if(s_u16Cnt_InvHCurrent_High2_Fault >= SafetyReg.f32IInvH_Hi2ProtectionTime)// 75*40ms=3s
 			{
 				g_SysFaultMessage.bit.InvH_OverLoad = 1;
 				s_u16Cnt_InvHCurrent_High2_Fault = 0;
@@ -436,7 +436,7 @@ void InvCurrentCheck(void)
     	if(Calc_Result.f32IOutL_rms >=  SafetyReg.f32IInvL_Hi4Limit )//2±¶¹ýÔØ 7.3*2A
     	{
     		s_u16Cnt_InvLCurrent_High4_Fault++;
-    		if(s_u16Cnt_InvLCurrent_High4_Fault >= SafetyReg.f32IInvL_Hi3ProtectionTime )// 40ms*3
+    		if(s_u16Cnt_InvLCurrent_High4_Fault >= SafetyReg.f32IInvL_Hi4ProtectionTime )// 40ms*3
     		{
     			g_SysFaultMessage.bit.InvL_OverLoad = 1;
     			s_u16Cnt_InvLCurrent_High4_Fault = 0;
@@ -448,7 +448,7 @@ void InvCurrentCheck(void)
     		s_u16Cnt_InvLCurrent_High3_Fault++;
 			if(s_u16Cnt_InvLCurrent_High3_Fault >= 10)//10*40ms
 				 g_SysWarningMessage.bit.InvL_OverLoad = 1;
-			if(s_u16Cnt_InvLCurrent_High3_Fault >= SafetyReg.f32IInvL_Hi2ProtectionTime )// 1s
+			if(s_u16Cnt_InvLCurrent_High3_Fault >= SafetyReg.f32IInvL_Hi3ProtectionTime )// 1s
 			{
 				 g_SysFaultMessage.bit.InvL_OverLoad = 1;
 				 s_u16Cnt_InvLCurrent_High3_Fault = 0;
@@ -460,7 +460,7 @@ void InvCurrentCheck(void)
 			s_u16Cnt_InvLCurrent_High2_Fault++;
 			if(s_u16Cnt_InvLCurrent_High2_Fault >= 10)//10*40ms
 				g_SysWarningMessage.bit.InvL_OverLoad = 1;
-			if(s_u16Cnt_InvLCurrent_High2_Fault >=3* SafetyReg.f32IInvL_Hi2ProtectionTime)// 3s
+			if(s_u16Cnt_InvLCurrent_High2_Fault >=SafetyReg.f32IInvL_Hi2ProtectionTime)// 3s
 			{
 				g_SysFaultMessage.bit.InvL_OverLoad = 1;
 				s_u16Cnt_InvLCurrent_High2_Fault = 0;

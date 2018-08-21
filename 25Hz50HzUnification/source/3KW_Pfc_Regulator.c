@@ -301,9 +301,6 @@ void BusVoltBalController(void)
 {
 	// start of BusVoltBalController
 
-	float32 BusBal_Kp = 0.03f;
-	float32 BusBal_Ki = 0.00002;
-
     BusCon_Reg.f32BusVoltDiffErr_Old = BusCon_Reg.f32BusVoltDiffErr_New;
 	BusCon_Reg.f32BusVoltDiffErr_New = Calc_Result.f32VBusP - Calc_Result.f32VBusN;
 
@@ -316,8 +313,8 @@ void BusVoltBalController(void)
 	  	BusCon_Reg.f32BusVoltDiffErr_New  = -10;
 	}
 
-	BusCon_Reg.f32BusVoltDiff_Out = BusCon_Reg.f32BusVoltDiff_Out + (BusBal_Kp + BusBal_Ki) * \
-			BusCon_Reg.f32BusVoltDiffErr_New - BusBal_Kp * BusCon_Reg.f32BusVoltDiffErr_Old;
+	BusCon_Reg.f32BusVoltDiff_Out = BusCon_Reg.f32BusVoltDiff_Out + (BusCon_Reg.f32BusBal_Kp + BusCon_Reg.f32BusBal_Ki) * \
+			BusCon_Reg.f32BusVoltDiffErr_New - BusCon_Reg.f32BusBal_Kp * BusCon_Reg.f32BusVoltDiffErr_Old;
 
     if (BusCon_Reg.f32BusVoltDiff_Out >=  10)
     {
