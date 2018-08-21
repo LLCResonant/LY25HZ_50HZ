@@ -17,9 +17,10 @@
 #ifdef		LY25HZ
 #define	Rated_InvH_OutputCurrentRms	5.5
 #define 	Rated_InvL_OutputCurrentRms 	7.3
-#define 	IInvHi2ProtectionTime       	25
 #define 	IInvHi1ProtectionTime       	15000
-#define 	IInvHi3ProtectionTime       	3
+#define 	IInvHi2ProtectionTime       	75
+#define 	IInvHi3ProtectionTime       	25
+#define 	IInvHi4ProtectionTime       	3
 #define 	IInvHiLimitBackTime				1500
 #define 	Rated_InputCurrentRms		13.5
 #define 	OverRated_InputCurrentRms		Rated_InputCurrentRms * 1.3
@@ -32,9 +33,10 @@
 
 #ifdef		LY50HZ
 #define	Rated_Inv_OutputCurrentRms		13
-#define IInvHi2ProtectionTime       		50
 #define IInvHi1ProtectionTime       		30000
-#define IInvHi3ProtectionTime       		3
+#define IInvHi2ProtectionTime       		150
+#define IInvHi3ProtectionTime       		7
+#define IInvHi4ProtectionTime       		3
 #define IInvHiLimitBackTime				3000
 #define Rated_InputCurrentRms			19
 #define OverRated_InputCurrentRms	Rated_InputCurrentRms * 1.3
@@ -156,6 +158,7 @@ typedef struct
 	float32 f32IInvH_Hi1ProtectionTime;
 	float32 f32IInvH_Hi2ProtectionTime;
 	float32 f32IInvH_Hi3ProtectionTime;
+	float32 f32IInvH_Hi4ProtectionTime;
 	float32 f32IInvH_HiLimitBackTime;
 
 	float32	f32IInvL_Hi1Limit;
@@ -165,6 +168,7 @@ typedef struct
 	float32 f32IInvL_Hi1ProtectionTime;
 	float32 f32IInvL_Hi2ProtectionTime;
 	float32 f32IInvL_Hi3ProtectionTime;
+	float32 f32IInvL_Hi4ProtectionTime;
 	float32 f32IInvL_HiLimitBackTime;
 
 	float32 f32IGrid_HiLimit;

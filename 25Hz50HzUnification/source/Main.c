@@ -234,6 +234,7 @@ void SysParamDefault(void)
 	Calc_Result.f32TempPFC = 0;
 	Calc_Result.f32TempInvH = 0;
 	Calc_Result.f32TempInvL = 0;
+	Calc_Result.f32TempInvMax = 0;
 
 	Calc_Result.f32GridFreq = 0;
 	Calc_Result.f32VOutFreq = 0;
@@ -242,6 +243,7 @@ void SysParamDefault(void)
 
 	Calc_Result.f32IGrid_ave = 0;
 	Calc_Result.f32VGrid_ave = 0;
+	Calc_Result.f32IGrid_rms_ave = 0;
 
 	Calc_Result.f32IInvH_ave = 0;
 	Calc_Result.f32VInvH_ave = 0;
@@ -304,22 +306,24 @@ void SysParamDefault(void)
 	SafetyReg.f32VBus_LowLimit = Bus_Under_Volt_Limit;
 	SafetyReg.f32VBusProtectionTime = BusVoltProtectionTime;
 
-	SafetyReg.f32IInvH_Hi2Limit = Rated_InvH_OutputCurrentRms * 1.3;
 	SafetyReg.f32IInvH_Hi1Limit = Rated_InvH_OutputCurrentRms * 1.2;
+	SafetyReg.f32IInvH_Hi2Limit = Rated_InvH_OutputCurrentRms * 1.3;
 	SafetyReg.f32IInvH_Hi3Limit = Rated_InvH_OutputCurrentRms * 1.5;
 	SafetyReg.f32IInvH_Hi4Limit = Rated_InvH_OutputCurrentRms * 2;
-	SafetyReg.f32IInvH_Hi2ProtectionTime = IInvHi2ProtectionTime;
 	SafetyReg.f32IInvH_Hi1ProtectionTime = IInvHi1ProtectionTime;
+	SafetyReg.f32IInvH_Hi2ProtectionTime = IInvHi2ProtectionTime;
 	SafetyReg.f32IInvH_Hi3ProtectionTime = IInvHi3ProtectionTime;
+	SafetyReg.f32IInvH_Hi4ProtectionTime = IInvHi4ProtectionTime;
 	SafetyReg.f32IInvH_HiLimitBackTime = IInvHiLimitBackTime;
 
-	SafetyReg.f32IInvL_Hi2Limit = Rated_InvL_OutputCurrentRms * 1.3;
 	SafetyReg.f32IInvL_Hi1Limit = Rated_InvL_OutputCurrentRms * 1.2;
+	SafetyReg.f32IInvL_Hi2Limit = Rated_InvL_OutputCurrentRms * 1.3;
 	SafetyReg.f32IInvL_Hi3Limit = Rated_InvL_OutputCurrentRms * 1.5;
 	SafetyReg.f32IInvL_Hi4Limit = Rated_InvL_OutputCurrentRms * 2;
-	SafetyReg.f32IInvL_Hi2ProtectionTime = IInvHi2ProtectionTime;
 	SafetyReg.f32IInvL_Hi1ProtectionTime = IInvHi1ProtectionTime;
+	SafetyReg.f32IInvL_Hi2ProtectionTime = IInvHi2ProtectionTime;
 	SafetyReg.f32IInvL_Hi3ProtectionTime = IInvHi3ProtectionTime;
+	SafetyReg.f32IInvL_Hi4ProtectionTime = IInvHi4ProtectionTime;
 	SafetyReg.f32IInvL_HiLimitBackTime = IInvHiLimitBackTime;
 
 	SafetyReg.f32IGrid_HiLimit = OverRated_InputCurrentPeak;
@@ -343,8 +347,13 @@ void SysParamDefault(void)
 	BusCon_Reg.f32BusVoltErr_New = 0;
 	BusCon_Reg.f32IGridAmp_Ref = 0;
 	BusCon_Reg.f32IGrid_RefAmp_Limit   = 28;
+	BusCon_Reg.f32BusVoltDiffErr_New = 0;
+	BusCon_Reg.f32BusVoltDiffErr_Old = 0;
+	BusCon_Reg.f32BusVoltDiff_Out = 0;
 	BusCon_Reg.f32Bus_Kp = BusCon_Kp;
 	BusCon_Reg.f32Bus_Ki = BusCon_Ki;
+	BusCon_Reg.f32BusBal_Kp = BusCon_Kp;
+	BusCon_Reg.f32BusBal_Ki = BusCon_Ki;
 
 	CurrConReg.f32IGrid_Ref = 0;
 	CurrConReg.f32IGrid_Fdb = 0;
