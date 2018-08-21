@@ -11,8 +11,8 @@
  *    2018.8.11		001					NUAA XING
  *============================================================================*/
 
-#ifndef STATE_UPDATE  //MAINSTATUSMACHINE_H
-#define STATE_UPDATE  //MAINSTATUSMACHINE_H
+#ifndef STATE_UPDATE
+#define STATE_UPDATE
 
 #define FAN_CHECK
 #define LY25HZ	0x05

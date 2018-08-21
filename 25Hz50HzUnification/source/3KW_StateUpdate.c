@@ -1,19 +1,15 @@
 /*=============================================================================*
- *         Copyright(c) 
- *                          ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 3KW_StateUpdate.c
-
- *  PURPOSE  : state changed between wait state, check state,
- *             normal state,fault state, for 3KW Parallel Inverter.
- * 
+ *  FILENAME : 3KW_ProtectionLogic.h
+ *
+ *  PURPOSE  :
  *
  *  HISTORY  :
  *    DATE            VERSION         AUTHOR            NOTE
- *    2018.6.2		001					Li Zhang
- *    												Xun Gao
- *    												Jianxi Zhu
- ******************************************************************************/
+ *    2018.8.11		001					NUAA XING
+ *============================================================================*/
  
 //Main including header files
 #include "DSP2833x_Device.h"		// Peripheral address definitions
@@ -60,9 +56,6 @@ void RelaysOFF(void);
 Uint16 PermanentFaultCheck(void);    
 Uint16 FaultCheck(void);
 Uint16 FaultBackCheck(void);
-void Times_WriteToEEPROM();
-void Ref_WriteToEEPROM();
-void Sample_WriteToEEPROM();
 
 /***********************************************************************************************
 * FUNCION :  	State Switch
@@ -117,21 +110,21 @@ void ProcessWaiting(void)
 
 	if (PermanentFaultCheck())          //Permanent fault
 	{
-		RelaysOFF();
 		PfcPWMOutputsDisable();
 		InvPWMOutputsDisable();
+		RelaysOFF();
+		DryCrtl_OFF;
 		CntReconnectionDelayTime = 0;
 		g_Sys_Current_State = PermanentState;
-		DryCrtl_OFF;
 	}
 	else if (FaultCheck())    		 //Fault state
 	{
-		RelaysOFF();
 		PfcPWMOutputsDisable();
 		InvPWMOutputsDisable();
+		RelaysOFF();
+		DryCrtl_OFF;
 		CntReconnectionDelayTime = 0;
 		g_Sys_Current_State = FaultState;
-		DryCrtl_OFF;
 	}
 	else
 	{
@@ -151,19 +144,19 @@ void ProcessChecking(void)
 	static Uint16 Count_DelayTime = 0;
 	if(PermanentFaultCheck())          //Permanent fault
 	{
-		RelaysOFF();
 		PfcPWMOutputsDisable();
 		InvPWMOutputsDisable();
-		g_Sys_Current_State = PermanentState;
+		RelaysOFF();
 		DryCrtl_OFF;
+		g_Sys_Current_State = PermanentState;
 	}
 	else if (FaultCheck())             //Fault state
 	{
-		RelaysOFF();
 		PfcPWMOutputsDisable();
 		InvPWMOutputsDisable();
-		g_Sys_Current_State = FaultState;
+		RelaysOFF();
 		DryCrtl_OFF;
+		g_Sys_Current_State = FaultState;
 	}
 	else
 	{
@@ -175,24 +168,22 @@ void ProcessChecking(void)
 		if(1 == g_StateCheck.bit.DcPreCharCheckOver)
 		{
 			g_StateCheck.bit.DcPreCharCheckOver = 0;
-      
-			HWI_disable();
-			RectifierStage_Init();
-			InverterStage_Init();
 
 			//wait 2 Grid period for advance charge after relay picking up.
 			if(Count_DelayTime > 20)
 			{
 				Count_DelayTime = 0;
+				HWI_disable();
+				RectifierStage_Init();
+				InverterStage_Init();
 				g_Sys_Current_State = NormalState;
+				HWI_enable();
 			}
 			else
 			{
-				g_Sys_Current_State = CheckState;
 				Count_DelayTime ++ ;
 			}
 		}
-		HWI_enable();
 	}
 }
 
@@ -207,19 +198,19 @@ void ProcessRunning(void)
 	// start of ProcessRUNNING
 	if (PermanentFaultCheck())        //Permanent fault
 	{
-		RelaysOFF();
 	    PfcPWMOutputsDisable();
 	    InvPWMOutputsDisable();
-    	g_Sys_Current_State = PermanentState;  
+		RelaysOFF();
     	DryCrtl_OFF;
+    	g_Sys_Current_State = PermanentState;  
 	}
 	else if (FaultCheck())                 // fault state
 	{
-	  	RelaysOFF();
 	    PfcPWMOutputsDisable();
 	    InvPWMOutputsDisable();
-    	g_Sys_Current_State = FaultState;
+	  	RelaysOFF();
     	DryCrtl_OFF;
+    	g_Sys_Current_State = FaultState;
 	}
 	else
 	  ;
@@ -254,8 +245,8 @@ void ProcessFault(void)
 	    RelaysOFF();
 	    if (temp1>=2000)//4s
 	    {
-	    	g_SysFaultMessage.bit.recoverSW_Bus_UVP = 0; //母线欠压自动恢复
-	    	g_SysFaultMessage.bit.BusVoltUnbalanceFault = 0;//母线电压不平衡自动恢复
+	    	g_SysFaultMessage.bit.recoverSW_Bus_UVP = 0; //Low Bus voltage automatic recover
+	    	g_SysFaultMessage.bit.BusVoltUnbalanceFault = 0;//Bus voltage unbalanced automatic recover
 	    	temp1 = 0;
 	    }
     	ShortRecover();
@@ -263,11 +254,10 @@ void ProcessFault(void)
 		if (temp2 == 0)
 		{
 			Times_WriteToEEPROM();
-			Ref_WriteToEEPROM();
+			VoltsRef_WriteToEEPROM();
 			Sample_WriteToEEPROM();
-			temp2 =1;
 			SYNC_COM2_ON;
-			//g_StateCheck.bit.fflag = 1;
+			temp2 =1;
 		}
         if (FaultBackCheck())
         {
@@ -306,26 +296,19 @@ void ProcessFault(void)
 void ProcessPermanent(void)
 {
 	static Uint8 temp = 0;
-	if (PermanentFaultCheck())
-	{
-		RelaysOFF();
-	    PfcPWMOutputsDisable();
-	    InvPWMOutputsDisable();
-        g_Sys_Current_State = PermanentState;
-	}
+
 	SYNC_COM2_ON;
-	PfcPWMOutputsDisable();   //2018.6.2 GX
-	InvPWMOutputsDisable();	//2018.6.2 GX
+	PfcPWMOutputsDisable();
+	InvPWMOutputsDisable();
 	RelaysOFF();
+
     if (temp == 0)
     {
     	Times_WriteToEEPROM();
-    	Ref_WriteToEEPROM();
+    	VoltsRef_WriteToEEPROM();
     	Sample_WriteToEEPROM();
     	temp =1;
     }
-	//else
-		//g_Sys_Current_State = FaultState;//2018.6.2 GX
 }
 
 /****************************************************************************************
@@ -365,8 +348,6 @@ Uint16 PermanentFaultCheck(void)
 **********************************************************************/
 Uint16 FaultBackCheck(void)
 {
-	//母线欠压自动恢复(g_SysFaultMessage.Word.byte0 & 0x7F)
-	//母线电压不平衡自动恢复g_SysFaultMessage.Word.byte4 & 0xEF
 	if ((0 == g_SysFaultMessage.Word.byte0) && (0 == g_SysFaultMessage.Word.byte1) &&(0 == g_SysFaultMessage.Word.byte2)
    	&& (0 == g_SysFaultMessage.Word.byte3) && (0 == g_SysFaultMessage.Word.byte4))
        	return(1);
@@ -398,7 +379,7 @@ void DigitalIODetect()
 void DigitalIOCheck()
 {
 	#ifdef FAN_CHECK
-	DCFanCheck();//2017.3.26 GX
+	DCFanCheck();
 	#endif
 	HwInvHOCPCheck();
 	HwInvHOVPCheck();

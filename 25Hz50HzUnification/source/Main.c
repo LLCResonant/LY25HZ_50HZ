@@ -1,19 +1,15 @@
 /*=============================================================================*
- *	Copyright(c) 2009-2011
- *          ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : Main.c
- *   
- *  PURPOSE  : This document  include  initializtion of CPU system , ad sampling, three phase pwm output,Peripheral Interrupt Expansion equal,
- *                      system default parameter  defined , state change funtion, sofeware period  interrupt.
- *  
+ *  FILENAME : 3KW_ProtectionLogic.h
+ *
+ *  PURPOSE  :
+ *
  *  HISTORY  :
  *    DATE            VERSION         AUTHOR            NOTE
- *    2018.6.2		001					Li Zhang
- *    												Xun Gao
- *    												Jianxi Zhu
+ *    2018.8.11		001					NUAA XING
  *============================================================================*/
-
 
 #include "DSP2833x_Device.h"			       		// Peripheral address definitions
 #include "3KW_MAINHEADER.h"					// Main include file
@@ -24,14 +20,6 @@ Uint8 	u8hosttemp = 0;
 
 //--- functions
 void SysParamDefault(); 
-
-/* EEPROM related function */
-void Ref_ReadFromEEPROM();
-void Ref_WriteToEEPROM();
-void Times_ReadFromEEPROM();
-void Times_WriteToEEPROM();
-void Sample_ReadFromEEPROM();
-void Sample_WriteToEEPROM();
 
 /********************************************************************************************************
 * FUNCION : 	void main(void)
@@ -62,16 +50,15 @@ void main(void)
 			&g_u16ControlLoopInRAM_loadend - &g_u16ControlLoopInRAM_loadstart);
 
 	MemMoveForFlashProgramming();
-	Eeprom_Gpio_Init();           // Initialize the I2C.
 
 	SysParamDefault();
 
     InitAdc();							// Initialize necessary ADC module, directly for SVPWM.
     InitEPwm();							// Initialize the PWM, Note, ALL PWM output must be disabled.
     InitECap();							// Initialize the Capture module, to measure Grid frequency.
-  	InitECanGpio();                     // Initialize the ECan GPIO.  2017.10.26 GX
-  	InitECan();							// Initialize the ECan.  2017.10.26 GX
- 	InitECana();						// Initialize the ECana.  2017.10.26 GX
+  	InitECan();							// Initialize the ECan.
+ 	InitECana();						// Initialize the ECana.
+ 	EEPROMParamDefault();	// Initialize the EEprom
 
     SetDBGIER(IER | 0x6000);							// Enable everything in IER, plus INT14 and DLOGINT
     *(volatile unsigned int *)0x00000C14 |= 0x0C00;		// Set TIMER2 FREE=SOFT=1
@@ -92,6 +79,7 @@ void SysParamDefault(void)
 	PfcPWMOutputsDisable();
 	InvPWMOutputsDisable();
 
+	HWI_disable();
 	i16Cnt_SysParaTemp = 0;
 
 	ADGain.f32IGrid = IGridMeasureGain;
@@ -339,7 +327,7 @@ void SysParamDefault(void)
 	Output_VoltRe_Reg.u8InvL_Middle_Flag = 0;
 
 	// before enter normal mode, bus voltage controller,current controller should be initiated
-	BusCon_Reg.f32BusVolt_Ref = 850;
+	BusCon_Reg.f32BusVolt_Ref = BusVoltRef;
 	BusCon_Reg.f32BusFliter = 0;
 	BusCon_Reg.f32BusVolt_Cmd = 0;
 	BusCon_Reg.f32BusVolt_Fdb = 0;
@@ -364,6 +352,8 @@ void SysParamDefault(void)
 	CurrConReg.f32PfcDuty_ff_factor = 1.0f;
 	CurrConReg.f32Kp = CurrCon_Kp;
 	CurrConReg.f32Ki = CurrCon_Ki;
+	CurrConReg.f32PfcDuty = 0;
+	CurrConReg.f32PfcDuty_ff = 0;
 
 	GridPLLConReg.f32Input[0] = 0;
 	GridPLLConReg.f32Input[1] = 0;
@@ -381,6 +371,8 @@ void SysParamDefault(void)
 	GridPLLConReg.f32Ki = PLL_Grid_Ki;
 	GridPLLConReg.f32Theta_Step = GridTheta_StepRated;
 	GridPLLConReg.f32Valpha = 0;
+	GridPLLConReg.f32Sin_Theta = 0;
+	GridPLLConReg.f32Cos_Theta = 0;
 
 	VOutHPLLConReg.f32Input[0] = 0;
 	VOutHPLLConReg.f32Input[1] = 0;
@@ -398,6 +390,9 @@ void SysParamDefault(void)
 	VOutHPLLConReg.f32Ki = PLL_Inv_Ki;
 	VOutHPLLConReg.f32Theta_Step = DELTA_ANGLE_INV;
 	VOutHPLLConReg.f32Valpha = 0;
+	VOutHPLLConReg.f32Sin_Theta = 0;
+	VOutHPLLConReg.f32Cos_Theta = 0;
+
 
 	VOutLPLLConReg.f32Input[0] = 0;
 	VOutLPLLConReg.f32Input[1] = 0;
@@ -415,13 +410,21 @@ void SysParamDefault(void)
 	VOutLPLLConReg.f32Ki = PLL_Inv_Ki;
 	VOutLPLLConReg.f32Theta_Step = DELTA_ANGLE_INV;
   	VOutLPLLConReg.f32Valpha = 0;
+	VOutLPLLConReg.f32Sin_Theta = 0;
+	VOutLPLLConReg.f32Cos_Theta = 0;
 
  	OutPLLConReg.f32Theta = 0;
   	OutPLLConReg.f32Theta_Step = InvTheta_StepRated;
+  	OutPLLConReg.f32Cos_Theta = 0;
+  	OutPLLConReg.f32Sin_Theta = 0;
 
 	InvHVoltConReg.f32VoltRms_Ref = InvH_RatedVolt_Ref;
+	InvHVoltConReg.f32VoltRms_Ref_Delta =  0;
 	InvHVoltConReg.f32VoltInst_Ref = 0;
 	InvHVoltConReg.f32VoltInst_Fdb = 0;
+	InvHVoltConReg.f32VoltInst_ErrNew = 0;
+	InvHVoltConReg.f32VoltInst_ErrOld = 0;
+	InvHVoltConReg.f32VoltInst_ErrOut = 0;
 	InvHVoltConReg.f32Input[0] = 0;
 	InvHVoltConReg.f32Input[1] = 0;
 	InvHVoltConReg.f32Input[2] = 0;
@@ -431,10 +434,18 @@ void SysParamDefault(void)
 	InvHVoltConReg.f32MAC = 0;
 	InvHVoltConReg.f32Kp = InvH_Volt_Kp;
 	InvHVoltConReg.f32Kr = InvH_Volt_Kr;
+	InvHVoltConReg.f32VoltDutyUpLimit = 0;
+	InvHVoltConReg.f32VoltDutyLowLimit = 0;
+  	InvHVoltConReg.f32InvDuty = 0;
+  	InvHVoltConReg.f32VoltGain = 0;
 
 	InvLVoltConReg.f32VoltRms_Ref =  InvL_RatedVolt_Ref;
+	InvLVoltConReg.f32VoltRms_Ref_Delta =  0;
 	InvLVoltConReg.f32VoltInst_Ref = 0;
 	InvLVoltConReg.f32VoltInst_Fdb = 0;
+	InvLVoltConReg.f32VoltInst_ErrNew = 0;
+	InvLVoltConReg.f32VoltInst_ErrOld = 0;
+	InvLVoltConReg.f32VoltInst_ErrOut = 0;
     InvLVoltConReg.f32Input[0] = 0;
     InvLVoltConReg.f32Input[1] = 0;
     InvLVoltConReg.f32Input[2] = 0;
@@ -444,9 +455,10 @@ void SysParamDefault(void)
     InvLVoltConReg.f32MAC = 0;
 	InvLVoltConReg.f32Kp = InvL_Volt_Kp;
 	InvLVoltConReg.f32Kr = InvL_Volt_Kr;
-
+	InvLVoltConReg.f32VoltDutyUpLimit = 0;
+	InvLVoltConReg.f32VoltDutyLowLimit = 0;
   	InvLVoltConReg.f32InvDuty = 0;
-  	InvHVoltConReg.f32InvDuty = 0;
+  	InvLVoltConReg.f32VoltGain = 0;
 
 	g_SysWarningMessage.Word.byte0 = 0;
 	g_SysWarningMessage.Word.byte1 = 0;
@@ -555,8 +567,6 @@ void SysParamDefault(void)
     EcanP2A_Tx.P2AMail_data.DWord.CANH_Bytes = 0x00000000;
     EcanP2A_Tx.P2AMail_data.DWord.CANL_Bytes = 0x00000000;
 
-    g_StateCheck.bit.ECANPWMEnable = 0;
-
     Ecan_Error.u8Upload_Trans_Error = 0;
     Ecan_Error.u8Broadcast_Trans_Error = 0;
 
@@ -567,18 +577,7 @@ void SysParamDefault(void)
 	RunningTime.OverFlow = 0;
 	RunningTime.TimeCheck = 0;
 
-#ifdef NORMAL_EEPROM
- 	Times_ReadFromEEPROM();
- 	Ref_ReadFromEEPROM();
- 	Sample_ReadFromEEPROM();
-#endif
-
-#ifdef RESET_EEPROM
- 	Times_WriteToEEPROM();
- 	Ref_WriteToEEPROM();
- 	Sample_WriteToEEPROM();
-#endif
-
+	HWI_enable();
 }     
 
 /**********************************************************************
@@ -683,9 +682,6 @@ void TimeBase500msPRD(void)
 void TimeBase20msPRD(void)
 {		
    static Uint16 scia_cnt=0;
-   //static Uint8 scib_reset=0;
-
-   //SEM_post(&SEM_MasterCommTx);
 
     scia_cnt++;
 	if(2 == scia_cnt)
@@ -695,13 +691,7 @@ void TimeBase20msPRD(void)
 		if(ScibRegs.SCICTL1.bit.SWRESET == 0)
 		{
 			ScibRegs.SCICTL1.bit.SWRESET = 1;
-			//scib_reset ++;
 		}
-		/*if(scib_reset >= 100)
-		{
-			scib_reset = 0;
-			g_SysWarningMessage.bit.LCD_Comm_Error = 1;
-		}*/
 	}
 	   
 } // end of TimerBase20msPRD()

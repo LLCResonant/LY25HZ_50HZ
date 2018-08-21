@@ -23,17 +23,6 @@
 #define SCL_1   			GpioDataRegs.GPBSET.bit.GPIO33=1;   			//SCL Output 1
 #define DELAY_UNIT	10																	//Time delay
 
-struct Time
-{
-	Uint16 	Second;
-	Uint16 	Minute;
-	Uint16 	Hour_L;
-	Uint16 	Hour_H;
-	Uint16 	OverFlow;
-	Uint16 	TimeCheck;
-};
-extern  struct Time  RunningTime;
-
 /********************************The definition of functions********************************/
 void writebyte(Uint16 addr,Uint16 data);
 Uint16 readbyte(Uint16 addr);

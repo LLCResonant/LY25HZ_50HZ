@@ -60,6 +60,7 @@
 #include "3KW_Regulator.h"
 #include "3KW_ParallelLogic.h"
 #include "3KW_Scib_PCOsc.h"
+#include "3KW_Safety_EEprom.h"
 #include "Sci.h"
 #include "Flash28335_API.h"
 #include "3KW_ECan_Basic.h"

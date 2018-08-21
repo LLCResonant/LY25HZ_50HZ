@@ -23,14 +23,15 @@
 #include "DSP2833x_Device.h"     	// DSP2833x Headerfile Include File
 #include "3KW_MAINHEADER.h"	    // Main include file
 
+struct Time  RunningTime;
 
-extern void Times_ReadFromEEPROM();
-extern void Times_WriteToEEPROM();
-extern void Ref_ReadFromEEPROM();
-extern void Ref_WriteToEEPROM();
-extern void Sample_ReadFromEEPROM();
-extern void Sample_WriteToEEPROM();
-
+void Times_ReadFromEEPROM();
+void Times_WriteToEEPROM();
+void VoltsRef_ReadFromEEPROM();
+void VoltsRef_WriteToEEPROM();
+void Sample_ReadFromEEPROM();
+void Sample_WriteToEEPROM();
+void EEPROMParamDefault();
 /*=============================================================================*
  * FUNCTION: 	ReadSafetyFromEEPROM()
  *
@@ -100,6 +101,21 @@ void TSK_Time_Record(void)
 	}
 }
 
+void EEPROMParamDefault(void)
+{
+	Eeprom_Gpio_Init();           // Initialize the I2C.
+	#ifdef NORMAL_EEPROM
+ 	Times_ReadFromEEPROM();
+ 	VoltsRef_ReadFromEEPROM();
+ 	Sample_ReadFromEEPROM();
+	#endif
+
+	#ifdef RESET_EEPROM
+ 	Times_WriteToEEPROM();
+ 	VoltsRef_WriteToEEPROM();
+ 	Sample_WriteToEEPROM();
+	#endif
+}
 
 void Times_ReadFromEEPROM()
 {
@@ -126,7 +142,6 @@ void Times_ReadFromEEPROM()
 	}
 	HWI_enable();
 }
-
 
 /*=============================================================================*
  * FUNCTION: 	SaveSafetyInEEPROM()
@@ -167,7 +182,7 @@ void Times_WriteToEEPROM()
 	HWI_enable();
 }
 
-void Ref_ReadFromEEPROM()
+void VoltsRef_ReadFromEEPROM()
 {
 	HWI_disable();
 	Uint16 read_ref_check1 = 0;
@@ -189,12 +204,12 @@ void Ref_ReadFromEEPROM()
 	{
 		SafetyReg.f32InvH_VoltRms_Ref_LCD = 220;
 		SafetyReg.f32InvL_VoltRms_Ref_LCD = 110;
-		Ref_WriteToEEPROM();
+		VoltsRef_WriteToEEPROM();
 	}
 	HWI_enable();
 }
 
-void Ref_WriteToEEPROM()
+void VoltsRef_WriteToEEPROM()
 {
 	HWI_disable();
 	Uint16 ref_check2= 0;

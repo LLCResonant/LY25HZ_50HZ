@@ -41,6 +41,8 @@
 #define BusBal_Kp  0.03f;
 #define BusBal_Ki   0.00002f;
 
+#define BusVoltRef   850;
+
 #ifdef 	LY25HZ
 //PFC
 #define CurrCon_Kp	30.0f
