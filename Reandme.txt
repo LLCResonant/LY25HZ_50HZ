@@ -16,5 +16,3 @@ The Folder 'Configuration and protocol files' is the ECAN protocol and hardware 
 25Hz50HzUnification is revised
 2018.8.19 GX
 25Hz50HzUnification is revised
-2018.8.21 WF
-Pull request test
