@@ -404,13 +404,17 @@ void TSK_InvVoltPeriod(void)
 				OutFrequencyCalc();
 
 				/*Software protection function*/
-				InvCurrentCheck();
-				InvVoltCheck();
-			    InvFreqCheck();
+				InvHCurrentCheck();
+				InvLCurrentCheck();
+				InvHVoltCheck();
+				InvLVoltCheck();
+			    InvHFreqCheck();
+			    InvLFreqCheck();
           		OverTemperatureLimit();
          		OutputCurrentLimit();
          		InvSyncCheck();
-         		CurrentProtectionIdentify();
+         		InvHCurrentProtectionIdentify();
+         		InvLCurrentProtectionIdentify();
 
 				/*Controller related function*/
 				SyncLogic_Control();
@@ -508,17 +512,11 @@ void GridVoltsRMSCalc(void)
  *============================================================================*/
 void GridCurrentPIConfig(void)
 {
+	static Uint8		s_u8temp1 = 0;
 	static float32 	s_f32VGrid_Volt_Subdivide1 = 0;
 	static float32 	s_f32VGrid_Volt_Subdivide2 = 0;
 	static float32 	s_f32VGrid_Volt_Subdivide3 = 0;
 	static float32 	s_f32Hys_Width = 5;
-	static float32	s_f32PFC_Curr_Kp1 = 0;
-	static float32	s_f32PFC_Curr_Kp2 = 0;
-	static float32	s_f32PFC_Curr_Kp3 = 0;
-	static float32	s_f32PFC_Curr_Kp4 = 0;
-	static float32	s_f32PFC_Curr_Kp5= 0;
-	static float32 	s_f32PFC_Curr_Ki	 = 3.0;
-	static Uint8		s_u8temp1 = 0;
 
 	if(s_u8temp1 == 0)
 	{
@@ -527,22 +525,12 @@ void GridCurrentPIConfig(void)
 			s_f32VGrid_Volt_Subdivide1 = 185;
 			s_f32VGrid_Volt_Subdivide2 = 210;
 			s_f32VGrid_Volt_Subdivide3 = 265;
-			s_f32PFC_Curr_Kp1 = 	10.0;
-			s_f32PFC_Curr_Kp2 = 	15.0;
-			s_f32PFC_Curr_Kp3 = 	30.0;
-			s_f32PFC_Curr_Kp4 = 	25.0;
-			s_f32PFC_Curr_Kp5	= 	20.0;
 		}
 		else
 		{
 			s_f32VGrid_Volt_Subdivide1 = 220;
 			s_f32VGrid_Volt_Subdivide2 = 260;
 			s_f32VGrid_Volt_Subdivide3 = 270;
-			s_f32PFC_Curr_Kp1 = 	10.0;
-			s_f32PFC_Curr_Kp2 = 	30.0;
-			s_f32PFC_Curr_Kp3 = 	25.0;
-			s_f32PFC_Curr_Kp4 = 	20.0;
-			s_f32PFC_Curr_Kp5	= 	20.0;
 		}
 		s_u8temp1 = 1;
 	}
@@ -550,8 +538,8 @@ void GridCurrentPIConfig(void)
 
 	if(Calc_Result.f32VGrid_rms<=s_f32VGrid_Volt_Subdivide1) //185 //220
 	{
-		CurrConReg.f32Kp = s_f32PFC_Curr_Kp1;
-		CurrConReg.f32Ki = s_f32PFC_Curr_Ki;
+		CurrConReg.f32Kp = CurrCon_Kp1;
+		CurrConReg.f32Ki = CurrConReg.f32Ki;
 	}
 	else if(Calc_Result.f32VGrid_rms > s_f32VGrid_Volt_Subdivide1 && \
 			Calc_Result.f32VGrid_rms <= (s_f32VGrid_Volt_Subdivide1 + s_f32Hys_Width))  //185~190 //220~225
@@ -562,8 +550,8 @@ void GridCurrentPIConfig(void)
 	else if(Calc_Result.f32VGrid_rms > (s_f32VGrid_Volt_Subdivide1 + s_f32Hys_Width) && \
 			Calc_Result.f32VGrid_rms <= s_f32VGrid_Volt_Subdivide2) //190~210 //225~260
 	{
-		CurrConReg.f32Kp = s_f32PFC_Curr_Kp2;
-		CurrConReg.f32Ki = s_f32PFC_Curr_Ki;
+		CurrConReg.f32Kp = CurrCon_Kp2;
+		CurrConReg.f32Ki = CurrConReg.f32Ki;
 	}
 	else if(Calc_Result.f32VGrid_rms > s_f32VGrid_Volt_Subdivide2 && \
 			Calc_Result.f32VGrid_rms <= (s_f32VGrid_Volt_Subdivide2 + s_f32Hys_Width)) //210~215 //260~265
@@ -574,8 +562,8 @@ void GridCurrentPIConfig(void)
 	else if(Calc_Result.f32VGrid_rms >(s_f32VGrid_Volt_Subdivide2 + s_f32Hys_Width) && \
 			Calc_Result.f32VGrid_rms <= s_f32VGrid_Volt_Subdivide3)  //215~165 //265~270
 	{
-		CurrConReg.f32Kp = s_f32PFC_Curr_Kp3;
-		CurrConReg.f32Ki = s_f32PFC_Curr_Ki;
+		CurrConReg.f32Kp = CurrCon_Kp3;
+		CurrConReg.f32Ki = CurrConReg.f32Ki;
 	}
 	else if(Calc_Result.f32VGrid_rms >s_f32VGrid_Volt_Subdivide3 &&
 			Calc_Result.f32VGrid_rms <= (s_f32VGrid_Volt_Subdivide3 + s_f32Hys_Width)) //265~270 //270~275
@@ -585,13 +573,13 @@ void GridCurrentPIConfig(void)
 	}
 	else if (Calc_Result.f32VGrid_rms > (s_f32VGrid_Volt_Subdivide3 + s_f32Hys_Width))//275
 	{
-		CurrConReg.f32Kp = s_f32PFC_Curr_Kp4;
-		CurrConReg.f32Ki = s_f32PFC_Curr_Ki;
+		CurrConReg.f32Kp = CurrCon_Kp4;
+		CurrConReg.f32Ki = CurrConReg.f32Ki;
 	}
 	else
 	{
-		CurrConReg.f32Kp = s_f32PFC_Curr_Kp5;
-		CurrConReg.f32Ki = s_f32PFC_Curr_Ki;
+		CurrConReg.f32Kp = CurrCon_Kp5;
+		CurrConReg.f32Ki = CurrConReg.f32Ki;
 	}
 }
 
@@ -607,9 +595,6 @@ void GridCurrentRefLimit(void)
 	static Uint8 s_u8temp1 = 0;
 	static float32 s_f32VGrid_Volt_Subdivide1= 0;
 	static float32 s_f32VGrid_Volt_Subdivide2= 0;
-	static float32 s_f32CurrentRefLimit1= 0;
-	static float32 s_f32CurrentRefLimit2= 0;
-	static float32 s_f32CurrentRefLimit3= 0;
 
 	if (s_u8temp1 == 0)
 	{
@@ -617,28 +602,22 @@ void GridCurrentRefLimit(void)
 		{
 			s_f32VGrid_Volt_Subdivide1= 185;
 			s_f32VGrid_Volt_Subdivide2= 230;
-			s_f32CurrentRefLimit1= 28;
-			s_f32CurrentRefLimit2= 26;
-			s_f32CurrentRefLimit3= 22;
 		}
 		else
 		{
 			s_f32VGrid_Volt_Subdivide1= 195;
 			s_f32VGrid_Volt_Subdivide2= 230;
-			s_f32CurrentRefLimit1= 34;
-			s_f32CurrentRefLimit2= 38;
-			s_f32CurrentRefLimit3= 34;
 		}
 		s_u8temp1 = 1;
 	}
 	if(Calc_Result.f32VGrid_rms <= s_f32VGrid_Volt_Subdivide1)
-		BusCon_Reg.f32IGrid_RefAmp_Limit   = s_f32CurrentRefLimit1;
+		BusCon_Reg.f32IGrid_RefAmp_Limit   = IGrid_RefAmp_Limit1;
 	else if(Calc_Result.f32VGrid_rms > s_f32VGrid_Volt_Subdivide1 && Calc_Result.f32VGrid_rms <= s_f32VGrid_Volt_Subdivide2)
-		BusCon_Reg.f32IGrid_RefAmp_Limit   = s_f32CurrentRefLimit2;
+		BusCon_Reg.f32IGrid_RefAmp_Limit   = IGrid_RefAmp_Limit2;
 	else if(Calc_Result.f32VGrid_rms > s_f32VGrid_Volt_Subdivide2)
-		BusCon_Reg.f32IGrid_RefAmp_Limit   = s_f32CurrentRefLimit3;
+		BusCon_Reg.f32IGrid_RefAmp_Limit   = IGrid_RefAmp_Limit3;
 	else
-		BusCon_Reg.f32IGrid_RefAmp_Limit   = s_f32CurrentRefLimit3;
+		BusCon_Reg.f32IGrid_RefAmp_Limit   = IGrid_RefAmp_Limit3;
 }
 
 /*=============================================================================*
@@ -1301,7 +1280,7 @@ void HwGridOCPDetection (void)
 		 * Input current protection is a Cycle-by-cycle hardware protection, which is need to be
 		 * ignored during the Grid voltage dip period.
 		 */
-		if (0 == GRID_OCP_LEVEL && g_StateCheck.bit.Input_dip_Disable_GridOCP == 0)
+		if (0 == GRID_OCP_LEVEL && g_StateCheck.bit.VGridDip_Disable_GridOCP == 0)
 		{
 			s_u16Cnt_Grid_OCP_Level ++;
 			if (s_u16Cnt_Grid_OCP_Level >= 3)					// 3 * 2ms = 6ms

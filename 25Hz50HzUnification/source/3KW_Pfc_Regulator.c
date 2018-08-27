@@ -2,15 +2,13 @@
  * Copyright(c)
  * 						ALL RIGHTS RESERVED
  *
- *  FILENAME: 3KW_Inv_Regulator.c
+ *  FILENAME : 3KW_DataAcquisition.c
  *
- *  PURPOSE :	Data acquisition and protection file of the module.
+ *  PURPOSE  : Data acquisition and protection file of the module.
  *  
  *  HISTORY  :
  *    DATE            VERSION         AUTHOR            NOTE
- *    2018.6.2		001					Li Zhang
- *    												Xun Gao
- *    												Jianxi Zhu
+ *    2018.6.2		001					NUAA XING
  *============================================================================*/
 
 #include "DSP2833x_Device.h"				// Peripheral address definitions
@@ -61,7 +59,7 @@ void ADC_INT_PFC_Control(void);
 void VGrid_Dip_Reset(void);
 
 /* No load or light load controller */
-void BusVoltHysteresis(void);
+void VGridFeedForwardCntl(void);
 
 /*=============================================================================*
  * FUNCTION:	void ADC_INT_PFC_Control(void)
@@ -104,18 +102,7 @@ void ADC_INT_PFC_Control(void)
   	CurrConReg.u8Drive_Open = 1;
 	#endif
 
-	//Scib_SnatchGraph();
 	ADAccGridCalc();
-
-	/*
-	* Software instantaneous current protection, which is used in tuning and abandoned in usual
-	*/
-	/*if((abs(GetRealValue.f32IGrid) > 40) && ( NormalState == g_Sys_Current_State))
-	{
-		g_SysFaultMessage.bit.unrecoverSW_OCP_Grid = 1;
-		PfcPWMOutputsDisable();
-	}*/
-
 } // end of ADC_INT_PFC_Control()
 
 /*=============================================================================*
@@ -129,16 +116,16 @@ void ADC_INT_PFC_Control(void)
  *============================================================================*/
 void VGrid_Dip_Reset (void)
 {
-	static Uint8 PFCPWM = 0;
+	static Uint8 u8PFCPWM = 0;
 
 	if(Calc_Result.f32VGrid_rms_instant <= 100)
 	{
 		PfcPWMOutputsDisable();
 		CurrConReg.u8Drive_Open = 0;
-		PFCPWM = 1;
-		g_StateCheck.bit.Input_dip_Disable_GridOCP = 1;
+		u8PFCPWM = 1;
+		g_StateCheck.bit.VGridDip_Disable_GridOCP = 1;
 	}
-	else if(Calc_Result.f32VGrid_rms_instant > 100 && PFCPWM == 1)
+	else if(Calc_Result.f32VGrid_rms_instant > 100 && u8PFCPWM == 1)
 	{
 		BusCon_Reg.f32BusVoltDiffErr_New = 0;
 		BusCon_Reg.f32BusVoltDiffErr_Old = 0;
@@ -149,7 +136,7 @@ void VGrid_Dip_Reset (void)
 		CurrConReg.f32PfcDuty_Con = 0;
 
 		CurrConReg.u8Drive_Open = 1;
-		PFCPWM = 0;
+		u8PFCPWM = 0;
 	}
 	else
 		;
@@ -165,7 +152,7 @@ void VGrid_Dip_Reset (void)
 void GridCurrentController(void)
 {
 	// start of CurrentPIDcontroller
-	static Uint8  BusOVP = 0;
+	static Uint8  u8BusOVP = 0;
 	/*
 	 * 'BusCon_Reg.f32IGridAmp_Ref * GridPLLConReg.Sin_Theta' is the original current reference
 	 * 'BusCon_Reg.f32BusVoltDiff_Out' is the Neutral Point Balance superposition
@@ -183,7 +170,7 @@ void GridCurrentController(void)
 	CurrConReg.f32PfcDuty_Con = CurrConReg.f32PfcDuty_Con + (CurrConReg.f32Kp + CurrConReg.f32Ki) * CurrConReg.f32IGridErr_New - CurrConReg.f32Kp * CurrConReg.f32IGridErr_Old;
 
 	if (CurrConReg.u8Drive_Open == 2)
-		BusVoltHysteresis();
+		VGridFeedForwardCntl();
 
 	//'CurrConReg.f32PfcDuty_ff' is the forward control superposition value
 	CurrConReg.f32PfcDuty = CurrConReg.f32PfcDuty_Con - CurrConReg.f32PfcDuty_ff;
@@ -226,13 +213,13 @@ void GridCurrentController(void)
 		 * When Bus voltage increase unusually, the drive should be closed.
 		 * When the voltage is back to normal, the drive should be opened and some variables should be clear.
 		 */
-		if((GetRealValue.f32VBusP+GetRealValue.f32VBusN) >= 900 && BusOVP == 0)
+		if((GetRealValue.f32VBusP+GetRealValue.f32VBusN) >= 900 && u8BusOVP == 0)
 		{
 			PfcPWMOutputsDisable();
-			BusOVP = 1;
+			u8BusOVP = 1;
 			g_StateCheck.bit.PwmForceOffFlag = 1;
 		}
-		else if((GetRealValue.f32VBusP+GetRealValue.f32VBusN) <= 870 && BusOVP == 1)
+		else if((GetRealValue.f32VBusP+GetRealValue.f32VBusN) <= 870 && u8BusOVP == 1)
 		{
 			CurrConReg.f32PfcDuty_Con=0;
 	        CurrConReg.f32IGridErr_New=0;
@@ -241,13 +228,13 @@ void GridCurrentController(void)
 	        BusCon_Reg.f32BusVoltDiffErr_Old = 0;
 	        BusCon_Reg.f32BusVoltDiff_Out = 0;
 	        CurrConReg.u8Drive_Open = 1;
-	        BusOVP = 0;
+	        u8BusOVP = 0;
 		}
 	}
 } // end of CurrentPIDcontroller
 
 /*=============================================================================*
- * FUNCTION:	void BusVoltHysteresis(void)
+ * FUNCTION:	void VGridFeedForwardCntl(void)
  *
  * PURPOSE:	No load or light load controller.
  * 						'GetRealValue.f32VGrid * Calc_Result.f32Coff_Dforward' is the normal forward value,
@@ -257,7 +244,7 @@ void GridCurrentController(void)
  *
  * CALLED BY:	void GridCurrentController(void)
  *============================================================================*/
-void BusVoltHysteresis(void)
+void VGridFeedForwardCntl(void)
 {
 	static float32 PfcDutyff_DCM = 0;
 

@@ -184,25 +184,23 @@ void InvParallel_Control(void)
 			SYNC_COM2_ON;
 			if(0==SYNC_COM2_LEVEL)	//COM2 high voltage (hardware-related)
 				InvRelay_Control();
-
-			InvHVoltConReg.f32VoltRms_Ref_Delta = 0;
-			InvLVoltConReg.f32VoltRms_Ref_Delta = 0;
 		}
 	}
 	else
 	{
 		RelaysOFF();
 		Parallel_Reg.u16Cnt_SCR_ON = 0;
-		InvHVoltConReg.f32VoltRms_Ref_Delta = 3;
-		InvLVoltConReg.f32VoltRms_Ref_Delta = 1.5;
 	}
 	/*
-	 *	掉电保持的时候，第一台掉电的机器，会将COM拉低，其余机器发现COM2变低之后，同时输入欠压保护
-	 *	 防止保护慢的机器承担所有负载
+	 * In hold up time, The first protection module will pull the COM2 down. Other modules will protect,
+	 * when they discover the low voltage on COM2 bus.
+	 * This logic aims to prevent the slow protection module to bear all the load.
 	 */
 	if (1 == g_StateCheck.bit.Inv_SoftStart && Calc_Result.f32VGrid_rms < SafetyReg.f32VGrid_LowLimit && \
 			1==SYNC_COM2_LEVEL)
-    	g_SysFaultMessage.bit.VGridUnderRating = 1;
+	{
+		g_SysFaultMessage.bit.VGridUnderRating = 1;
+	}
 } // end of InvParallel_Control
 
 /*=============================================================================*
@@ -233,10 +231,10 @@ void InvRelay_Control(void)
 		}
 		else
 		{
+			INVH_SCR_OFF;
 			INVL_SCR_OFF;
 			INVL_RELY_OFF;
 			INVH_RELY_OFF;
-			INVH_SCR_OFF;
 		}
 	}
 } // end of InvRelay_Control

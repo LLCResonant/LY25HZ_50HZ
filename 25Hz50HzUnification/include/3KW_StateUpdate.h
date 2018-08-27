@@ -100,8 +100,8 @@ union  STATE_CHECK
         Uint16  DcPreCharCheckOver:1; 			//B6
         Uint16  Slowupmode:1;    //B7	== 1 represents slowup mode
 		//byte 2
-        Uint16  :1;   			//
-        Uint16  :1;    			//
+        Uint16  FreVOutH_Fault:1;   			//
+        Uint16  FreVOutL_Fault:1;    			//
 		Uint16  :1;    			//
 		Uint16  :1;    				//
 		Uint16  :1;    		//
@@ -122,8 +122,8 @@ union  STATE_CHECK
 		Uint16  ECANPWMEnable:1;    //
 		Uint16  Time_Overflow:1;    //
 		Uint16  ECAN_Fault:1;    //
-		Uint16  Input_dip_Disable_GridOCP:1;    	//
-		Uint16  Input_dip_PLL_Keep:1;    //
+		Uint16  VGridDip_Disable_GridOCP:1;    	//
+		Uint16  :1;    //
 		Uint16  :1;    //
 		Uint16  :1;    //
 		//byte 5

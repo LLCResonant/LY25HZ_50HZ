@@ -2,15 +2,13 @@
  * Copyright(c)
  * 						ALL RIGHTS RESERVED
  *
- *  FILENAME: 3KW_Inv_Regulator.c
+ *  FILENAME : 3KW_DataAcquisition.c
  *
- *  PURPOSE :	Data acquisition and protection file of the module.
+ *  PURPOSE  : Data acquisition and protection file of the module.
  *  
  *  HISTORY  :
  *    DATE            VERSION         AUTHOR            NOTE
- *    2018.6.2		001					Li Zhang
- *    												Xun Gao
- *    												Jianxi Zhu
+ *    2018.6.2		001					NUAA XING
  *============================================================================*/
 
 #include "DSP2833x_Device.h"				// Peripheral address definitions
@@ -89,26 +87,6 @@ void ADC_INT_INV_Control(void)
 
   	ADAccInvCalc();
   	Scib_SnatchGraph();
-
-  	/*
-  	 * Software instantaneous current protection, which is used in tuning and abandoned in usual
-  	 */
-  	/*if( NormalState == g_Sys_Current_State )
-  	{
-  		if ( (abs(GetRealValue.f32IInvH) > 10) )
-  		{
-  			InvPWMOutputsDisable();
-  			RelaysOFF();
-  			g_SysFaultMessage.bit.unrecoverSW_OCP_InvH = 1;  //2017.4.20 GX
-  		}
-  		if ( (abs (GetRealValue.f32IInvL) > 13) )
-  		{
-  			InvPWMOutputsDisable();
-  			RelaysOFF();
-  			g_SysFaultMessage.bit.unrecoverSW_OCP_InvL = 1;  //2017.4.20 GX
-   		}
-  	}*/
-
 } // end of ADC_INT_INV_Control()
 
 /*=============================================================================*
@@ -121,35 +99,6 @@ void ADC_INT_INV_Control(void)
 void InvH_VoltControl(void)
 {
 	// start of InvH_VoltControl
-
-	/*
-	 *	Change INVH(220V) PR parameter according to output current amplitude.
-	 */
-	/*if(Calc_Result.f32IInvH_rms_instant <= 0.9f)
-	{
-		kp = 0.8f;
-		kr = 800* 0.00005f;
-	}
-	else if(Calc_Result.f32IInvH_rms_instant > 0.9f && Calc_Result.f32IInvH_rms_instant <= 1.3f)
-	{
-		kp=kp;
-		kr=kr;
-	}
-	else if(Calc_Result.f32IInvH_rms_instant > 1.3f && Calc_Result.f32IInvH_rms_instant <= 3.85f)
-	{
-		kp = 0.6f;
-		kr = 400* 0.00005f;
-	}
-	else if(Calc_Result.f32IInvH_rms_instant > 3.85f && Calc_Result.f32IInvH_rms_instant <= 4.15f)
-	{
-		kp=kp;
-		kr=kr;
-	}
-	else if(Calc_Result.f32IInvH_rms_instant > 4.15f)
-	{
-		kp = 0.8f;
-		kr = 800* 0.00005f;
-	}*/
 
 	InvHVoltConReg.f32VoltInst_Ref = InvHVoltConReg.f32VoltRms_Ref * 1.414f * OutPLLConReg.f32Sin_Theta * InvHVoltConReg.f32VoltGain;
 	InvHVoltConReg.f32VoltInst_Fdb = GetRealValue.f32VInvH;
@@ -215,35 +164,6 @@ void InvH_VoltControl(void)
 void InvL_VoltControl(void)
 {
 	// start of InvL_VoltControl
-
-	/*
-	 *	Change INVH(220V) PR parameter according to output current amplitude.
-	 */
-	/*if(Calc_Result.f32IInvL_rms_instant <= 0.9f)
-	{
-		kp = 2.0f;
-		kr = 1200* 0.00005f;
-	}
-	else if(Calc_Result.f32IInvL_rms_instant > 0.9f && Calc_Result.f32IInvL_rms_instant <= 1.1f)
-	{
-	    kp=kp;
-	    kr=kr;
-	}
-	else if(Calc_Result.f32IInvL_rms_instant > 1.1f && Calc_Result.f32IInvL_rms_instant <= 4.8f)
-	{
-		kp = 2.0f;
-		kr = 350* 0.00005f;
-	}
-	else if(Calc_Result.f32IInvL_rms_instant > 4.8f && Calc_Result.f32IInvL_rms_instant <= 5.1f)
-	{
-		kp=kp;
-		kr=kr;
-	}
-	else if(Calc_Result.f32IInvL_rms_instant > 5.1f)
-	{
-		kp = 1.5f;
-		kr = 1200* 0.00005f;
-	}*/
 
 	InvLVoltConReg.f32VoltInst_Ref =  InvLVoltConReg.f32VoltRms_Ref * 1.414f * OutPLLConReg.f32Cos_Theta * InvLVoltConReg.f32VoltGain;
 
@@ -515,12 +435,11 @@ void InvVoltSlowup(void)
 		 	else
 		 	{
 		 		InvHVoltConReg.f32VoltGain = 1;
-		 		InvLVoltConReg.f32VoltDutyLowLimit = 0.025f;
 		 		InvHVoltConReg.f32VoltDutyUpLimit = 0.95f;
 		 	}
 		}
 		else
-			InvHVoltConReg.f32VoltDutyUpLimit = 0.95f;
+			InvHVoltConReg.f32VoltDutyUpLimit = 0.05f;
 
 		InvLVoltConReg.f32VoltGain = InvHVoltConReg.f32VoltGain;
 		InvLVoltConReg.f32VoltDutyUpLimit = 0.6f * InvHVoltConReg.f32VoltDutyUpLimit;
@@ -531,29 +450,29 @@ void InvVoltSlowup(void)
 	 else
 	 	g_StateCheck.bit.Inv_SoftStart = 0;
 
-	 if (g_StateCheck.bit.Inv_SoftStart == 1 && SafetyReg.u8Short_Restart_times == 0)
+	 if (g_StateCheck.bit.Inv_SoftStart == 1 && SafetyReg.u16Short_Restart_times == 0)
 	 {
 		 if (InvHVoltConReg.f32VoltRms_Ref >= SafetyReg.f32InvH_VoltRms_Ref)
 		 {
-			 InvHVoltConReg.f32VoltRms_Ref -= 0.6;
+			 InvHVoltConReg.f32VoltRms_Ref -= VoltRefDelta;
 			 if (InvHVoltConReg.f32VoltRms_Ref <= SafetyReg.f32InvH_VoltRms_Ref)
 				 InvHVoltConReg.f32VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref;
 		 }
 		 else if (InvHVoltConReg.f32VoltRms_Ref <= SafetyReg.f32InvH_VoltRms_Ref)
 		 {
-			 InvHVoltConReg.f32VoltRms_Ref += 0.6;
+			 InvHVoltConReg.f32VoltRms_Ref += VoltRefDelta;
 			 if (InvHVoltConReg.f32VoltRms_Ref >= SafetyReg.f32InvH_VoltRms_Ref)
 				 InvHVoltConReg.f32VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref;
 		 }
 		 if (InvLVoltConReg.f32VoltRms_Ref >= SafetyReg.f32InvL_VoltRms_Ref)
 		 {
-			 InvLVoltConReg.f32VoltRms_Ref -= 0.6;
+			 InvLVoltConReg.f32VoltRms_Ref -= VoltRefDelta;
 			 if (InvLVoltConReg.f32VoltRms_Ref <= SafetyReg.f32InvL_VoltRms_Ref)
 				 InvLVoltConReg.f32VoltRms_Ref = SafetyReg.f32InvL_VoltRms_Ref;
 		 }
 		 else if (InvLVoltConReg.f32VoltRms_Ref <= SafetyReg.f32InvL_VoltRms_Ref)
 		 {
-			 InvLVoltConReg.f32VoltRms_Ref += 0.6;
+			 InvLVoltConReg.f32VoltRms_Ref += VoltRefDelta;
 			 if (InvLVoltConReg.f32VoltRms_Ref >= SafetyReg.f32InvL_VoltRms_Ref)
 				 InvLVoltConReg.f32VoltRms_Ref = SafetyReg.f32InvL_VoltRms_Ref;
 		 }
@@ -570,12 +489,10 @@ void InvVoltSlowup(void)
 void InverterStage_Init(void)
 {
 	// start of InverterStage_Init
-	InvHVoltConReg.f32VoltRms_Ref_Delta = 3;
 	InvHVoltConReg.f32VoltInst_ErrOld = 0;
 	InvHVoltConReg.f32VoltInst_ErrNew = 0;
 	InvHVoltConReg.f32VoltInst_ErrOut = 0;
 
-	InvLVoltConReg.f32VoltRms_Ref_Delta = 1.5;
 	InvLVoltConReg.f32VoltInst_ErrOld = 0;
 	InvLVoltConReg.f32VoltInst_ErrNew = 0;
 	InvLVoltConReg.f32VoltInst_ErrOut = 0;
@@ -583,7 +500,7 @@ void InverterStage_Init(void)
 	InvHVoltConReg.f32VoltGain = 0;
 	InvLVoltConReg.f32VoltGain = 0;
 	InvHVoltConReg.f32VoltDutyUpLimit = 0.05f;
-	InvHVoltConReg.f32VoltDutyLowLimit = 0.01f;
+	InvHVoltConReg.f32VoltDutyLowLimit = 0.025f;
 	InvLVoltConReg.f32VoltDutyUpLimit = 0.05f;
 	InvLVoltConReg.f32VoltDutyLowLimit = 0.01f;
 
@@ -612,19 +529,17 @@ void InvRestartCheck(void)
 
 	if((g_StateCheck.bit.Inv_SoftStart == 1) && (NormalState==g_Sys_Current_State))
 	{
-		if(SafetyReg.u8Short_Restart_times >=1)
+		if(SafetyReg.u16Short_Restart_times >=1)
 		{
 			if(u16temp1 <250)	//250 * 40ms = 10s
 				u16temp1++;
 			else
 			{
 				u16temp1=0;
-				SafetyReg.u8Short_Restart_times = 0;
+				SafetyReg.u16Short_Restart_times = 0;
 				g_Sys_Current_State = FaultState;
 				SafetyReg.f32InvH_VoltRms_Ref = InvH_RatedVolt_Ref;
 			    SafetyReg.f32InvL_VoltRms_Ref = InvL_RatedVolt_Ref;
-				//InvHVoltConReg.f32VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref;
-				//InvLVoltConReg.f32VoltRms_Ref = SafetyReg.f32InvL_VoltRms_Ref;
 			}
 		}
 	}

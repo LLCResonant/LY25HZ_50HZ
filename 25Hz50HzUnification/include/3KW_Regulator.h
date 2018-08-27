@@ -40,16 +40,25 @@
 
 #define BusBal_Kp  0.03f;
 #define BusBal_Ki   0.00002f;
-
 #define BusVoltRef   850;
+
+#define VoltRefDelta   0.6;
 
 #ifdef 	LY25HZ
 //PFC
-#define CurrCon_Kp	30.0f
-#define CurrCon_Ki	 	3.0f
+#define	CurrCon_Kp1	10.0f
+#define	CurrCon_Kp2  	15.0f;
+#define	CurrCon_Kp3  	30.0f;
+#define	CurrCon_Kp4  	25.0f;
+#define	CurrCon_Kp5	20.0f;
+#define	CurrCon_Ki	 	3.0f
 
 #define BusCon_Kp	0.2f
 #define BusCon_Ki	0.001f
+#define IGrid_RefAmp_Limit1 28
+#define IGrid_RefAmp_Limit2 26
+#define IGrid_RefAmp_Limit3 22
+
 //Inv
 /*
  * PR controller in s domain: Gpr =
@@ -78,11 +87,18 @@
 
 #ifdef 	LY50HZ
 //PFC
-#define CurrCon_Kp	10.0f
-#define CurrCon_Ki	 	3.0f
+#define	CurrCon_Kp1	10.0f
+#define	CurrCon_Kp2  	30.0f;
+#define	CurrCon_Kp3  	25.0f;
+#define	CurrCon_Kp4  	20.0f;
+#define	CurrCon_Kp5	20.0f;
+#define	CurrCon_Ki	 	3.0f
 
 #define BusCon_Kp	0.3f
 #define BusCon_Ki	0.0015f
+#define IGrid_RefAmp_Limit1 34
+#define IGrid_RefAmp_Limit2 38
+#define IGrid_RefAmp_Limit3 34
 //Inv
 #define InvH_Volt_Kp				0.01f
 #define InvH_Volt_Kr				800 * 0.00005f
@@ -142,7 +158,6 @@ extern	struct	CURRENTCONTREG	CurrConReg;
 struct INVVOLTCONTREG
 {
 	float32  f32VoltRms_Ref;
-	float32	 f32VoltRms_Ref_Delta;
 	float32  f32VoltInst_ErrOld;   		// Input: Reference input
 	float32  f32VoltInst_ErrNew;   			// Input: Feedback input
 	float32  f32VoltInst_ErrOut;

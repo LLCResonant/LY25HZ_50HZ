@@ -269,14 +269,16 @@ void SysParamDefault(void)
 
 	SafetyReg.f32FreGrid_HiLimit = FreGridHiLimit;
 	SafetyReg.f32FreGrid_LowLimit = FreGridLowLimit;
-	SafetyReg.f32FreGrid_ProtectionTime = FreGridProtectionTime;
+	SafetyReg.u16FreGrid_ProtectionTime = FreGridProtectionTime;
 
 	SafetyReg.f32VGrid_HiLimit = VGridHiLimit;
 	SafetyReg.f32VGrid_LowLimit = VGridLowLimit;
 	SafetyReg.f32VGrid_HiLimitBack = VGridHiLimitBack;
 	SafetyReg.f32VGrid_LowLimitBack = VGridLowLimitBack;
-	SafetyReg.f32VGrid_HighProtectionTime = VGridHighProtectionTime;
-	SafetyReg.f32VGrid_LowProtectionTime = VGridLowProtectionTime;
+	SafetyReg.u16VGrid_HighProtectionTime = VGridHighProtectionTime;
+	SafetyReg.u16VGrid_LowProtectionTime = VGridLowProtectionTime;
+	SafetyReg.f32VGridDipLimit = VGridDipLimit;
+	SafetyReg.f32VGridDip_BusVoltLimit = VGridDipBusVoltLimit;
 
 	SafetyReg.f32InvH_VoltRms_Ref_LCD = InvH_RatedVolt_Ref;
 	SafetyReg.f32InvL_VoltRms_Ref_LCD= InvL_RatedVolt_Ref;
@@ -292,31 +294,41 @@ void SysParamDefault(void)
 
 	SafetyReg.f32VBus_HiLimit = Bus_Over_Volt_Limit;
 	SafetyReg.f32VBus_LowLimit = Bus_Under_Volt_Limit;
-	SafetyReg.f32VBusProtectionTime = BusVoltProtectionTime;
+	SafetyReg.u16VBusProtectionTime = BusVoltProtectionTime;
 
 	SafetyReg.f32IInvH_Hi1Limit = Rated_InvH_OutputCurrentRms * 1.2;
 	SafetyReg.f32IInvH_Hi2Limit = Rated_InvH_OutputCurrentRms * 1.3;
 	SafetyReg.f32IInvH_Hi3Limit = Rated_InvH_OutputCurrentRms * 1.5;
 	SafetyReg.f32IInvH_Hi4Limit = Rated_InvH_OutputCurrentRms * 2;
-	SafetyReg.f32IInvH_Hi1ProtectionTime = IInvHi1ProtectionTime;
-	SafetyReg.f32IInvH_Hi2ProtectionTime = IInvHi2ProtectionTime;
-	SafetyReg.f32IInvH_Hi3ProtectionTime = IInvHi3ProtectionTime;
-	SafetyReg.f32IInvH_Hi4ProtectionTime = IInvHi4ProtectionTime;
-	SafetyReg.f32IInvH_HiLimitBackTime = IInvHiLimitBackTime;
+	SafetyReg.u16IInvH_Hi1ProtectionTime = IInvHi1ProtectionTime;
+	SafetyReg.u16IInvH_Hi2ProtectionTime = IInvHi2ProtectionTime;
+	SafetyReg.u16IInvH_Hi3ProtectionTime = IInvHi3ProtectionTime;
+	SafetyReg.u16IInvH_Hi4ProtectionTime = IInvHi4ProtectionTime;
+	SafetyReg.u16IInvH_HiLimitBackTime = IInvHiLimitBackTime;
+	SafetyReg.f32IInvH_Hi1LimitBack = SafetyReg.f32IInvH_Hi1Limit - 2;
 
 	SafetyReg.f32IInvL_Hi1Limit = Rated_InvL_OutputCurrentRms * 1.2;
 	SafetyReg.f32IInvL_Hi2Limit = Rated_InvL_OutputCurrentRms * 1.3;
 	SafetyReg.f32IInvL_Hi3Limit = Rated_InvL_OutputCurrentRms * 1.5;
 	SafetyReg.f32IInvL_Hi4Limit = Rated_InvL_OutputCurrentRms * 2;
-	SafetyReg.f32IInvL_Hi1ProtectionTime = IInvHi1ProtectionTime;
-	SafetyReg.f32IInvL_Hi2ProtectionTime = IInvHi2ProtectionTime;
-	SafetyReg.f32IInvL_Hi3ProtectionTime = IInvHi3ProtectionTime;
-	SafetyReg.f32IInvL_Hi4ProtectionTime = IInvHi4ProtectionTime;
-	SafetyReg.f32IInvL_HiLimitBackTime = IInvHiLimitBackTime;
+	SafetyReg.u16IInvL_Hi1ProtectionTime = IInvHi1ProtectionTime;
+	SafetyReg.u16IInvL_Hi2ProtectionTime = IInvHi2ProtectionTime;
+	SafetyReg.u16IInvL_Hi3ProtectionTime = IInvHi3ProtectionTime;
+	SafetyReg.u16IInvL_Hi4ProtectionTime = IInvHi4ProtectionTime;
+	SafetyReg.u16IInvL_HiLimitBackTime = IInvHiLimitBackTime;
+	SafetyReg.u16IInv_WarningTime = IInvWarningTime;
+	SafetyReg.f32IInvL_Hi1LimitBack = SafetyReg.f32IInvL_Hi1Limit - 2;
 
 	SafetyReg.f32IGrid_HiLimit = OverRated_InputCurrentPeak;
 	SafetyReg.f32InvTemp_HiLimit = ShutInvTemperatureLimit;
-	SafetyReg.u8Short_Restart_times = 0;
+	SafetyReg.u16Short_Restart_times = 0;
+
+	SafetyReg.f32FreVOut_LowLimit = InvFreq_Low_Limit;
+	SafetyReg.f32FreVOut_HiLimit = InvFreq_High_Limit;
+
+	SafetyReg.u16Para_Ave_ProtectionTime = ParaAveProtectionTime;
+	SafetyReg.f32InvHParaCurDeviationLimit = InvHParaCurDeviationLimit;
+	SafetyReg.f32InvLParaCurDeviationLimit = InvLParaCurDeviationLimit;
 
 	Output_VoltRe_Reg.u8InvH_Heavy_Flag = 0;
 	Output_VoltRe_Reg.u8InvH_Light_Flag = 0;
@@ -334,14 +346,14 @@ void SysParamDefault(void)
 	BusCon_Reg.f32BusVoltErr_Old = 0;
 	BusCon_Reg.f32BusVoltErr_New = 0;
 	BusCon_Reg.f32IGridAmp_Ref = 0;
-	BusCon_Reg.f32IGrid_RefAmp_Limit   = 28;
+	BusCon_Reg.f32IGrid_RefAmp_Limit  = IGrid_RefAmp_Limit2;
 	BusCon_Reg.f32BusVoltDiffErr_New = 0;
 	BusCon_Reg.f32BusVoltDiffErr_Old = 0;
 	BusCon_Reg.f32BusVoltDiff_Out = 0;
 	BusCon_Reg.f32Bus_Kp = BusCon_Kp;
 	BusCon_Reg.f32Bus_Ki = BusCon_Ki;
-	BusCon_Reg.f32BusBal_Kp = BusCon_Kp;
-	BusCon_Reg.f32BusBal_Ki = BusCon_Ki;
+	BusCon_Reg.f32BusBal_Kp = BusBal_Kp;
+	BusCon_Reg.f32BusBal_Ki = BusBal_Ki;
 
 	CurrConReg.f32IGrid_Ref = 0;
 	CurrConReg.f32IGrid_Fdb = 0;
@@ -350,7 +362,7 @@ void SysParamDefault(void)
 	CurrConReg.f32PfcDuty_Con = 0;
 	CurrConReg.u8Drive_Open = 0;
 	CurrConReg.f32PfcDuty_ff_factor = 1.0f;
-	CurrConReg.f32Kp = CurrCon_Kp;
+	CurrConReg.f32Kp = CurrCon_Kp3;
 	CurrConReg.f32Ki = CurrCon_Ki;
 	CurrConReg.f32PfcDuty = 0;
 	CurrConReg.f32PfcDuty_ff = 0;
@@ -419,7 +431,6 @@ void SysParamDefault(void)
   	OutPLLConReg.f32Sin_Theta = 0;
 
 	InvHVoltConReg.f32VoltRms_Ref = InvH_RatedVolt_Ref;
-	InvHVoltConReg.f32VoltRms_Ref_Delta =  0;
 	InvHVoltConReg.f32VoltInst_Ref = 0;
 	InvHVoltConReg.f32VoltInst_Fdb = 0;
 	InvHVoltConReg.f32VoltInst_ErrNew = 0;
@@ -440,7 +451,6 @@ void SysParamDefault(void)
   	InvHVoltConReg.f32VoltGain = 0;
 
 	InvLVoltConReg.f32VoltRms_Ref =  InvL_RatedVolt_Ref;
-	InvLVoltConReg.f32VoltRms_Ref_Delta =  0;
 	InvLVoltConReg.f32VoltInst_Ref = 0;
 	InvLVoltConReg.f32VoltInst_Fdb = 0;
 	InvLVoltConReg.f32VoltInst_ErrNew = 0;

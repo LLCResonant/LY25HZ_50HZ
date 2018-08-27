@@ -140,7 +140,7 @@ void Broadcast(void)
 	if (g_Mod_Status == Master)
 	{
 		EcanP2A_Tx.P2AMail_id.bit.bus = 0x0;
- 		if ( SafetyReg.u8Short_Restart_times == 0 && 0 == SYNC_COM2_LEVEL && NormalState == g_Sys_Current_State)//  //2018.4.3 GX
+ 		if ( SafetyReg.u16Short_Restart_times == 0 && 0 == SYNC_COM2_LEVEL && NormalState == g_Sys_Current_State)//  //2018.4.3 GX
  		{
  			Output_Revise(); //2018.4.3 GX
  			EcanP2A_Tx.P2AMail_data.Word.Word1= (Uint16)(SafetyReg.f32InvH_VoltRms_Ref_LCD * 10);
@@ -185,7 +185,7 @@ void Arbitrate(P2AMAIL P2A_RX)
 		}
 		else if (g_Mod_Status == Slave)
 		{
-			if ( ( SafetyReg.u8Short_Restart_times == 0 ) && 0 == SYNC_COM2_LEVEL&& (NormalState == g_Sys_Current_State )  &&  P2A_RX.P2AMail_id.bit.bus == 0  )//
+			if ( ( SafetyReg.u16Short_Restart_times == 0 ) && 0 == SYNC_COM2_LEVEL&& (NormalState == g_Sys_Current_State )  &&  P2A_RX.P2AMail_id.bit.bus == 0  )//
 			{
 				if(P2A_RX.P2AMail_data.Word.Word1 > 2110 && P2A_RX.P2AMail_data.Word.Word1 < 2290 \
 					&& 	P2A_RX.P2AMail_data.Word.Word2> 1010 && P2A_RX.P2AMail_data.Word.Word2 < 1190)
@@ -741,7 +741,7 @@ void Para_Revise_Oper(Uint8 temp)
 		if (Ecan_SysParaCalibration.u16IInvH_para_ave >= 0.0f && Ecan_SysParaCalibration.u16IInvH_para_ave < 800)  //2017.12.1 GX
 		{
 			Parallel_Reg.f32IInvH_para_ave = (float32)(Ecan_SysParaCalibration.u16IInvH_para_ave * 0.01);
-			InvParallelCurCheck();
+			InvHParallelCurCheck();
 		}
 
 		break;
@@ -749,7 +749,7 @@ void Para_Revise_Oper(Uint8 temp)
 		if (Ecan_SysParaCalibration.u16IInvL_para_ave >= 0.0f && Ecan_SysParaCalibration.u16IInvL_para_ave < 1000)  //2017.12.1 GX
 		{
 			Parallel_Reg.f32IInvL_para_ave = (float32)(Ecan_SysParaCalibration.u16IInvL_para_ave * 0.01);
-			InvParallelCurCheck();
+			InvLParallelCurCheck();
 		}
 
 		if (Ecan_SysParaCalibration.u16RestartTimes == 0x88)  //2017.12.1 GX
