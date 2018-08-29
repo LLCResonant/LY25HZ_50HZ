@@ -691,19 +691,27 @@ void TimeBase500msPRD(void)
 **********************************************************************/
 void TimeBase20msPRD(void)
 {		
-   static Uint16 scia_cnt=0;
+   static Uint8 s_u8scia_cnt = 0;
+   static Uint8 s_u8temp = 0;
 
-    scia_cnt++;
-	if(2 == scia_cnt)
+   s_u8scia_cnt++;
+
+	if (2 == s_u8scia_cnt)
 	{
 		SEM_post(&SEM_SCIAComm);
-		scia_cnt = 0;
-		if(ScibRegs.SCICTL1.bit.SWRESET == 0)
+		s_u8scia_cnt = 0;
+		if (ScibRegs.SCICTL1.bit.SWRESET == 0)
 		{
 			ScibRegs.SCICTL1.bit.SWRESET = 1;
 		}
 	}
-	   
+	if (s_u8temp == 100)
+	{
+		if (ModuleAdd == 0x00)
+			g_SysFaultMessage.bit.ECAN_Fault = 1;
+	}
+	else
+		s_u8temp++;
 } // end of TimerBase20msPRD()
 
 void TimeBase100msPRD(void)

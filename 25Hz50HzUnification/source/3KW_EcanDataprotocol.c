@@ -1,26 +1,16 @@
 /*=============================================================================*
- *         Copyright(c) 2009-2011, Convertergy Co., Ltd.
- *                          ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 5KW_Scib_Interface.c
+ *  FILENAME : 3KW_DataAcquisition.c
  *
- *  PURPOSE  : SCIb for IPOMS (Virtual PCOsci by Ken)
+ *  PURPOSE  : Data acquisition and protection file of the module.
  *
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *    2011-02-19      V0.1           Ken      	    Created
- *
- *----------------------------------------------------------------------------
- *  GLOBAL VARIABLES
- *    NAME                                    DESCRIPTION
- *
- *
- *----------------------------------------------------------------------------
- *  GLOBAL FUNCTIONS
- *    NAME                                    DESCRIPTION
- *
- *   Scib_SnatchGraph(void);
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
  *============================================================================*/
+
 #include "DSP2833x_Device.h"	// Peripheral address definitions
 #include "3KW_MAINHEADER.h"			// Main include file
 
@@ -30,10 +20,10 @@
 
 /******************************variable definition******************************/
 //#pragma DATA_SECTION(u8ECAN_UserDataBuf0,"SLOWDATA");
-MAIL  u8ECAN_UserDataBuf0[64];  						//64个待发送的缓冲数据
-MAIL  u8ECAN_CommandBuffer0;							//单个指令出队后的中转变量
-MAIL  *pECAN_CommandIn0;								//单个指令出队后中转变量的指针
-Uint16  u8ECAN_Temp = 0;								//用于检测指令队列中是否有 数据
+MAIL  u8ECAN_UserDataBuf0[64];  						//64 buffer data
+MAIL  u8ECAN_CommandBuffer0;						//temporary data structure for structures out of queue
+MAIL  *pECAN_CommandIn0;								//temporary data structure pointer for structures out of queue
+Uint16  u8ECAN_Temp = 0;									//detect whether there are data in the queue
 Uint8 g_InvH_Load = 0;
 Uint8 g_InvL_Load = 0;
 
@@ -96,15 +86,15 @@ void TSK_ECAN(void)
 		{
 			//__asm (" ESTOP0");
 
-			pECAN_CommandIn0 = &u8ECAN_CommandBuffer0;	        // eCAN buffer 的起始地址 。 只执行一次。修改到main函数中了
+			pECAN_CommandIn0 = &u8ECAN_CommandBuffer0;	        // Start address of eCAN buffer
 			while(1)
 			{
 
-				u8ECAN_Temp = ECANRead(pECAN_CommandIn0); 		//读取指令,将指令调到u8ECAN_CommandBuffer0指令队列中
+				u8ECAN_Temp = ECANRead(pECAN_CommandIn0); 		//Read data and put them into the queue which is pointed by 8ECAN_CommandBuffer0
 				if(ECAN_RX_EMPTY == u8ECAN_Temp)
 				{
 					break;
-				}																						// 如读取的指令队列空  就会返回  等待下一次发送调度
+				}																						// If the queue is empty, break and wait for next invoking
 				else
 				{
 					ECAN_Parsing(u8ECAN_CommandBuffer0);
@@ -124,14 +114,17 @@ void TSK_ECAN(void)
 			}
 			if(ECanaRegs.CANGIF0.bit.BOIF0 == 1)
 			{
-				InitECanGpio();                     // Initialize the ECan GPIO.  2017.10.26 GX
-				InitECan();							// Initialize the ECan.  2017.10.26 GX
-				InitECana();						// Initialize the ECana.  2017.10.26 GX
+				InitECan();							// Initialize the ECan.
+				InitECana();						// Initialize the ECana.
 			}
 		}
 	}
 }
 
+/*=============================================================================
+ * FUNCTION: Broadcast(void)
+ * PURPOSE : compete for the master and delivery the reference
+ *============================================================================*/
 void Broadcast(void)
 {
 	EcanP2A_Tx.P2AMail_id.all = 0XDFFF0007;
@@ -140,15 +133,15 @@ void Broadcast(void)
 	if (g_Mod_Status == Master)
 	{
 		EcanP2A_Tx.P2AMail_id.bit.bus = 0x0;
- 		if ( SafetyReg.u16Short_Restart_times == 0 && 0 == SYNC_COM2_LEVEL && NormalState == g_Sys_Current_State)//  //2018.4.3 GX
+ 		if ( SafetyReg.u16Short_Restart_times == 0 && 0 == SYNC_COM2_LEVEL && NormalState == g_Sys_Current_State)
  		{
- 			Output_Revise(); //2018.4.3 GX
+ 			Output_Revise();
  			EcanP2A_Tx.P2AMail_data.Word.Word1= (Uint16)(SafetyReg.f32InvH_VoltRms_Ref_LCD * 10);
  			EcanP2A_Tx.P2AMail_data.Word.Word2 = (Uint16)(SafetyReg.f32InvL_VoltRms_Ref_LCD * 10);
  			EcanP2A_Tx.P2AMail_data.Word.Word3 = (Uint16)(g_InvH_Load);
  			EcanP2A_Tx.P2AMail_data.Word.Word4 = (Uint16)(g_InvL_Load);
 
- 			eCAN_Broadcast(EcanP2A_Tx);   //  回送命令
+ 			eCAN_Broadcast(EcanP2A_Tx);
  		}
  		else
  		{
@@ -165,14 +158,17 @@ void Broadcast(void)
 		EcanP2A_Tx.P2AMail_data.DWord.CANL_Bytes = ModuleAdd;
 		EcanP2A_Tx.P2AMail_data.DWord.CANH_Bytes = Module_Type;
 		//__asm ("ESTOP0");
-		eCAN_Broadcast(EcanP2A_Tx);   //  回送命令
+		eCAN_Broadcast(EcanP2A_Tx);
 	}
 }
 
-
+/*=============================================================================
+ * FUNCTION: Arbitrate(P2AMAIL P2A_RX)
+ * PURPOSE : compete for the master and receive the reference
+ *============================================================================*/
 void Arbitrate(P2AMAIL P2A_RX)
 {
-	if ( ModuleAdd != 0X00 && g_Sys_Current_State != FaultState  && g_Sys_Current_State != PermanentState )  //	COM2 High Voltage
+	if ( ModuleAdd != 0X00 && g_Sys_Current_State != FaultState  && g_Sys_Current_State != PermanentState )
 	{
 		if (g_Mod_Status == idle)
 		{
@@ -185,13 +181,13 @@ void Arbitrate(P2AMAIL P2A_RX)
 		}
 		else if (g_Mod_Status == Slave)
 		{
-			if ( ( SafetyReg.u16Short_Restart_times == 0 ) && 0 == SYNC_COM2_LEVEL&& (NormalState == g_Sys_Current_State )  &&  P2A_RX.P2AMail_id.bit.bus == 0  )//
+			if ( ( SafetyReg.u16Short_Restart_times == 0 ) && 0 == SYNC_COM2_LEVEL && (NormalState == g_Sys_Current_State )  &&  P2A_RX.P2AMail_id.bit.bus == 0  )//
 			{
-				if(P2A_RX.P2AMail_data.Word.Word1 > 2110 && P2A_RX.P2AMail_data.Word.Word1 < 2290 \
-					&& 	P2A_RX.P2AMail_data.Word.Word2> 1010 && P2A_RX.P2AMail_data.Word.Word2 < 1190)
+				if(P2A_RX.P2AMail_data.Word.Word1 > 1010 && P2A_RX.P2AMail_data.Word.Word1 < 1190 \
+					&& 	P2A_RX.P2AMail_data.Word.Word2> 2110 && P2A_RX.P2AMail_data.Word.Word2 < 2290)
 				{
-					SafetyReg.f32InvH_VoltRms_Ref_LCD = P2A_RX.P2AMail_data.Word.Word1 * 0.1;
-					SafetyReg.f32InvL_VoltRms_Ref_LCD = P2A_RX.P2AMail_data.Word.Word2 * 0.1;
+					SafetyReg.f32InvL_VoltRms_Ref_LCD = P2A_RX.P2AMail_data.Word.Word1 * 0.1;
+					SafetyReg.f32InvH_VoltRms_Ref_LCD = P2A_RX.P2AMail_data.Word.Word2 * 0.1;
 					g_InvH_Load = (Uint8)(P2A_RX.P2AMail_data.Word.Word3);
 					g_InvL_Load = (Uint8)(P2A_RX.P2AMail_data.Word.Word4);
 
@@ -230,15 +226,14 @@ void Arbitrate(P2AMAIL P2A_RX)
 		u8_hostdrop++;
 }
 
-
 /*=============================================================================*
  * FUNCTION: ECAN_Parsing(MAIL mailp)
  * PURPOSE :
  *============================================================================*/
 void ECAN_Parsing(MAIL mailp)
 {
-	Uint8	Order_Code;		//指令信息
-	Uint8	Error_Code;		//错误信息
+	Uint8	Order_Code;
+	Uint8	Error_Code;
 	Uint8 	temp;
 
 	temp = mailp.Mailbox_data.Byte.Code;
@@ -254,7 +249,7 @@ void ECAN_Parsing(MAIL mailp)
 		{
 		case DATA_UPLOAD:
 			DataUpload();
-			ECAN_Response(DATA_NORMAL, ModuleAdd);//DATA_NORMAL
+			ECAN_Response(DATA_NORMAL, ModuleAdd);
 			break;
 		case SINGLEDATA_REVISED:
 			Para_Revised(mailp);
@@ -290,7 +285,7 @@ void ECAN_Parsing(MAIL mailp)
 
 /*=============================================================================*
  * FUNCTION: 	DataUpload(MAIL mailp)
- * PURPOSE : 	模块信息上传
+ * PURPOSE : 	module data upload
  *============================================================================*/
 void DataUpload(MAIL mailp)
 {
@@ -304,8 +299,8 @@ void DataUpload(MAIL mailp)
 
 	id = Get_ID(DataLength, ModuleAdd);
 	Temp.Mailbox_id.all = id;
-	Temp.Mailbox_data.Byte.Current_frame = 0x01;//第一帧
-	Temp.Mailbox_data.Byte.Frames_num = 0x07;//7帧
+	Temp.Mailbox_data.Byte.Current_frame = 0x01;//the 1st frame
+	Temp.Mailbox_data.Byte.Frames_num = 0x07;//7 frames in all
 	Temp.Mailbox_data.Byte.Code = 0x00;
 
 	Temp.Mailbox_data.Word.Data1 = Ecan_ModuleData.u16VGrid_rms;
@@ -316,7 +311,7 @@ void DataUpload(MAIL mailp)
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
 	bStrLen++;
 	/*--------------------------------------------------------------------------*/
-	Temp.Mailbox_data.Byte.Current_frame = 0x02;//第二帧
+	Temp.Mailbox_data.Byte.Current_frame = 0x02;//the 2nd frame
 
 	Temp.Mailbox_data.Word.Data1 = Ecan_ModuleData.u16VBusN;
 	Temp.Mailbox_data.Word.Data2 = Ecan_ModuleData.u16VOutH_rms;
@@ -326,7 +321,7 @@ void DataUpload(MAIL mailp)
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
 	bStrLen++;
 	/*--------------------------------------------------------------------------*/
-	Temp.Mailbox_data.Byte.Current_frame = 0x03;//第三帧
+	Temp.Mailbox_data.Byte.Current_frame = 0x03;//the 3rd frame
 
 	Temp.Mailbox_data.Word.Data1 = Ecan_ModuleData.u16VInvH_rms;
 	Temp.Mailbox_data.Word.Data2 = Ecan_ModuleData.u16VInvL_rms;
@@ -336,7 +331,7 @@ void DataUpload(MAIL mailp)
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
 	bStrLen++;
 	/*--------------------------------------------------------------------------*/
-	Temp.Mailbox_data.Byte.Current_frame = 0x04;//第四帧
+	Temp.Mailbox_data.Byte.Current_frame = 0x04;//the 4th frame
 
 	Temp.Mailbox_data.Word.Data1 = Ecan_ModuleData.u16IInvL_rms;
 	Temp.Mailbox_data.Word.Data2 = Ecan_ModuleData.u16Temp_PFC;
@@ -346,7 +341,7 @@ void DataUpload(MAIL mailp)
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
 	bStrLen++;
 	/*--------------------------------------------------------------------------*/
-	Temp.Mailbox_data.Byte.Current_frame = 0x05;//第五帧
+	Temp.Mailbox_data.Byte.Current_frame = 0x05;//the 5th frame
 
 	Temp.Mailbox_data.Word.Data1= Ecan_ModuleData.u16Temp_InvL;
 	Temp.Mailbox_data.Word.Data2= Ecan_ModuleData.u16VOutH_Freq;
@@ -366,7 +361,7 @@ void DataUpload(MAIL mailp)
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
 	bStrLen++;
 	/*--------------------------------------------------------------------------*/
-	DataLength = 0x05;  //校验字节也是有效字节
+	DataLength = 0x05;  //check byte is valid byte too
 	id = Get_ID(DataLength, ModuleAdd);
 	Temp.Mailbox_id.all = id;
 	Temp.Mailbox_data.Byte.Current_frame = 0x07;//the seventh frame
@@ -386,7 +381,7 @@ void DataUpload(MAIL mailp)
 
 /*=============================================================================*
  * FUNCTION: 	Para_Revised(MAIL mailp)
- * PURPOSE : 	从ECAN通讯信息中提取数据
+ * PURPOSE : 	extract data from ECAN mail box
  *============================================================================*/
 void Para_Revised(MAIL mailp)
 {
@@ -439,7 +434,7 @@ void Para_Revised(MAIL mailp)
 
 /*=============================================================================*
  * FUNCTION:  Sys_Set(MAIL mailp)
- * PURPOSE :    区分系统命令分类
+ * PURPOSE :    Separate computer orders
  *============================================================================*/
 void Sys_Set(MAIL mailp)
 {
@@ -469,7 +464,7 @@ void Sys_Set(MAIL mailp)
 
 /*=============================================================================*
  * FUNCTION: 	ECAN_Response(Uint8 Error_Code, Uint8 SAddress)
- * PURPOSE : 	统一应答帧函数
+ * PURPOSE : 	answer function
  *============================================================================*/
 void ECAN_Response(Uint8 Error_Code, Uint8 SAddress)
 {
@@ -481,9 +476,9 @@ void ECAN_Response(Uint8 Error_Code, Uint8 SAddress)
 	id = Get_ID(DataLength, SAddress);
 	Temp.Mailbox_id.all = id;
 
-	Temp.Mailbox_data.Byte.Current_frame = 0x01;//单帧填1
-	Temp.Mailbox_data.Byte.Frames_num = 0x01;//单帧填1
-	Temp.Mailbox_data.Byte.Code = Error_Code | DATA_UPLOAD;  //命令码为0，错误码来自外部
+	Temp.Mailbox_data.Byte.Current_frame = 0x01;//the answer data bag contains only one frame
+	Temp.Mailbox_data.Byte.Frames_num = 0x01;
+	Temp.Mailbox_data.Byte.Code = Error_Code | DATA_UPLOAD;  //order code is 0, and error code is from external
 
 
 	Temp.Mailbox_data.Word.Data1 = 0x00;
@@ -492,12 +487,12 @@ void ECAN_Response(Uint8 Error_Code, Uint8 SAddress)
 	__asm ("ESTOP0");
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
 	bStrLen++;
-	ECANWrite(u8ECAN_UserDataBuf0, bStrLen);   //  回送命令
+	ECANWrite(u8ECAN_UserDataBuf0, bStrLen);
 }
 
 /*=============================================================================*
  * FUNCTION: 	Get_ID (Uint8 DataLength, Uint8 SAddress)
- * PURPOSE : 	获取ECAN通讯的ID位
+ * PURPOSE : 	Get id of ECAN communication
  *============================================================================*/
 Uint32 Get_ID (Uint8 DataLength, Uint8 SAddress)
 {
@@ -526,15 +521,15 @@ Uint32 Get_ID (Uint8 DataLength, Uint8 SAddress)
 
 /*=============================================================================*
  * FUNCTION: 	XOR(MAIL temp)
- * PURPOSE : 	校验位产生
+ * PURPOSE :  Produce check byte
  *============================================================================*/
 Uint8 XOR(MAIL temp)
 {
 	Uint8 check = 0;
 	Uint8 length = 0;
 
-	if (temp.Mailbox_data.Byte.Current_frame == temp.Mailbox_data.Byte.Frames_num)//说明该帧还有校验字节
-		length = temp.Mailbox_id.bit.byte_num - 1;  //2017.11.21 GX
+	if (temp.Mailbox_data.Byte.Current_frame == temp.Mailbox_data.Byte.Frames_num)//which means this frame contains check byte
+		length = temp.Mailbox_id.bit.byte_num - 1;
 	else
 		length = temp.Mailbox_id.bit.byte_num;
 	if (length >= 1)
@@ -555,7 +550,7 @@ Uint8 XOR(MAIL temp)
 
 /*=============================================================================*
  * FUNCTION: 	Data_Format_Conver()
- * PURPOSE : 	上传数据格式转换
+ * PURPOSE : 	transform the format of the uploaded data
  *============================================================================*/
 void Data_Format_Conver()
 {
@@ -583,94 +578,95 @@ void Data_Format_Conver()
     Ecan_ModuleData.u16Phase_Diff = (Uint16)(Calc_Result.f32Phase_Diff_ave * 10);
     Ecan_ModuleData.u16RunTimeHour_L = RunningTime.Hour_L;
     Ecan_ModuleData.u16RunTimeHour_H = RunningTime.Hour_H;
-    //告警
-    //输出欠压 A03
+
+    //Warning
+    //Low output voltage A03
     Ecan_ModuleData.Alert.bit.VInvUnderRating = g_SysWarningMessage.bit.VInvHUnderRating | \
     											 g_SysWarningMessage.bit.VInvLUnderRating;
-    //温度超限告警A04
+    //Over temperature A04
     Ecan_ModuleData.Alert.bit.OverTemp = g_SysWarningMessage.bit.OverTemp;
-    //风扇1异常A05
+    //Fan 1 is abnormal A05
     Ecan_ModuleData.Alert.bit.Fan1Block = g_SysWarningMessage.bit.Fan1Block;
-    //风扇2异常A06
+    //Fan 2 is abnormal A06
     Ecan_ModuleData.Alert.bit.Fan2Block = g_SysWarningMessage.bit.Fan2Block;
-    //ECAN故障告警A10
-    Ecan_ModuleData.Alert.bit.Ecan_Fault = g_SysWarningMessage.bit.ECAN_Fault;
-
-    //输入欠压输出降额保护A12
+    //Overload A12
     Ecan_ModuleData.Alert.bit.InvOverLoad = g_SysWarningMessage.bit.InvH_OverLoad |  \
     		g_SysWarningMessage.bit.InvL_OverLoad;
 
-    //逆变器不同步A13
+    //Inverter out of sync A13
     Ecan_ModuleData.Alert.bit.InvAsyn = g_SysWarningMessage.bit.InvAsyn;
 
-    //故障
-    //输入欠压F01
+    //Fault
+    //Low Grid voltage F01
     Ecan_ModuleData.Fault.bit.VGridUnderRating = g_SysFaultMessage.bit.VGridUnderRating;
-    //输入过压F02
+    //Grid over voltage F02
     Ecan_ModuleData.Fault.bit.VGridOverRating = g_SysFaultMessage.bit.VGridOverRating;
 
-    //PFC可恢复故障F03
+    //PFC recover faultF03
     Ecan_ModuleData.Fault.bit.PFC_Recover_Fault = g_SysFaultMessage.bit.recoverSW_Bus_UVP | \
     										g_SysFaultMessage.bit.OCP_AC_RMS | \
     										g_SysFaultMessage.bit.BusVoltUnbalanceFault;
 
-    //轨道输出过压F04-1
+    //220V inverter low voltage F04-1
     Ecan_ModuleData.Fault.bit.InvH_OVP = g_SysFaultMessage.bit.unrecoverSW_InvH_OVP |  \
     										g_SysFaultMessage.bit.unrecoverHW_InvH_OVP;
-    //局部输出过压F04-2
+    //110V inverter low voltage F04-2
     Ecan_ModuleData.Fault.bit.InvL_OVP = g_SysFaultMessage.bit.unrecoverSW_InvL_OVP | \
     										g_SysFaultMessage.bit.unrecoverHW_InvL_OVP;
 
-    //过温关机F05
+    //Over temperature Fault F05
     Ecan_ModuleData.Fault.bit.OverTempFault = g_SysFaultMessage.bit.InvTempOverLimit | \
     									   g_SysFaultMessage.bit.PfcOverTempFault;
 
-    //风扇故障（两风扇同时异常F06
+    //Fan Fault, Two fans are all abnormal F06
     Ecan_ModuleData.Fault.bit.Fan_Fault = g_SysFaultMessage.bit.DcFanFault;
 
-    //启动异常F07
+    //Launch fault F07
     Ecan_ModuleData.Fault.bit.Launch_Fault = g_SysFaultMessage.bit.DcFuseFault |\
     										   g_SysFaultMessage.bit.HWADFault;
-    //输入频率异常F11
+    //Grid frequency is abnormal F11
     Ecan_ModuleData.Fault.bit.FreGridFault = g_SysFaultMessage.bit.FreGridOverRating | \
     										   g_SysFaultMessage.bit.FreGridUnderRating;
-    //轨道输出频率异常F12
+    //Out put frequency is abnormal F12
     Ecan_ModuleData.Fault.bit.FreInv_Fault = g_SysFaultMessage.bit.FreInvOverRating | \
     											g_SysFaultMessage.bit.FreInvUnderRating;
 
-    //轨道输出过载F13-1
+    //220V over load F13-1
     Ecan_ModuleData.Fault.bit.InvH_OverLoad = g_SysFaultMessage.bit.InvH_OverLoad | \
     											g_SysFaultMessage.bit.recoverHW_InvH_OCP;
-    //局部输出过载F13-2
+    //110V over load F13-2
     Ecan_ModuleData.Fault.bit.InvL_OverLoad = g_SysFaultMessage.bit.InvL_OverLoad | \
     											g_SysFaultMessage.bit.recoverHW_InvL_OCP;
 
-    //短路或并机极端异常F14
+    //Shortcut or current extremely highF14
     Ecan_ModuleData.Fault.bit.Unrecover_InvOCP = g_SysFaultMessage.bit.unrecoverHW_InvH_OCP | \
 		    								   g_SysFaultMessage.bit.unrecoverHW_InvL_OCP;
 
-    //并机均流故障F15
+    //Parallel current sharing fault F15
     Ecan_ModuleData.Fault.bit.Unrecover_InvCurrShar_Fault = g_SysFaultMessage.bit.unrecoverInvHCurrSharFault | \
 		    									  g_SysFaultMessage.bit.unrecoverInvLCurrSharFault;
 
-    //PFC不可恢复故障F03
+    //PFC unrecoverable fault F03
     Ecan_ModuleData.Fault.bit.PFC_Unrecover_Fault = g_SysFaultMessage.bit.unrecoverHW_OCP_AC | \
     										g_SysFaultMessage.bit.unrecoverHW_Bus_OVP | \
     										g_SysFaultMessage.bit.unrecoverSW_Bus_OVP;
 
-    //反复启动锁机保护F17
+    //Restart over times F17
 	 Ecan_ModuleData.Fault.bit.Unrecover_RestartNum = g_SysFaultMessage.bit.unrecover_RestartNum;
-	 //并机线断F18
+	 //Sync line cut F18
 	 Ecan_ModuleData.Fault.bit.SynLine_Cut = g_SysFaultMessage.bit.unrecoverHW_SynLine_cut;
+	 //ECAN Fault F19
+	 Ecan_ModuleData.Fault.bit.ECAN_Fault = g_SysFaultMessage.bit.ECAN_Fault;
 }
 
 /*=============================================================================*
  * FUNCTION: 	Data_Format_Conver()
- * PURPOSE : 	参数校正执行程序
+ * PURPOSE : 	Parameters calibration
  *============================================================================*/
 void Para_Revise_Oper(Uint8 temp)
 {
 	Uint8 Revised_Num;
+	float32 temp1 = 0;
 
 	Revised_Num = temp;
 
@@ -678,67 +674,136 @@ void Para_Revise_Oper(Uint8 temp)
 	{
 	case 1:
 		if (Ecan_SysParaCalibration.u16VGrid_rms > 800 && Ecan_SysParaCalibration.u16VGrid_rms < 1200)
-			ADCalibration.f32VGrid = (float32)(Ecan_SysParaCalibration.u16VGrid_rms * 0.001);
+		{
+			temp1 = ADCalibration.f32VGrid * (float32)(Ecan_SysParaCalibration.u16VGrid_rms * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32VGrid *= (float32)(Ecan_SysParaCalibration.u16VGrid_rms * 0.001);
+		}
 
 		if (Ecan_SysParaCalibration.u16VBusP > 900 && Ecan_SysParaCalibration.u16VBusP < 1100)
-			ADCalibration.f32VBusP  = (float32)(Ecan_SysParaCalibration.u16VBusP * 0.001);
+		{
+			temp1 = ADCalibration.f32VBusP * (float32)(Ecan_SysParaCalibration.u16VBusP * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32VBusP *= (float32)(Ecan_SysParaCalibration.u16VBusP * 0.001);
+		}
 
 		if (Ecan_SysParaCalibration.u16VBusN > 900 && Ecan_SysParaCalibration.u16VBusN < 1100)
-			ADCalibration.f32VBusN = (float32)(Ecan_SysParaCalibration.u16VBusN * 0.001);
-
+		{
+			temp1 = ADCalibration.f32VBusN * (float32)(Ecan_SysParaCalibration.u16VBusN * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32VBusN *= (float32)(Ecan_SysParaCalibration.u16VBusN * 0.001);
+		}
 		break;
 	case 2:
 		if (Ecan_SysParaCalibration.u16VInvH_rms > 800 && Ecan_SysParaCalibration.u16VInvH_rms < 1200)
-			ADCalibration.f32VInvH = (float32)(Ecan_SysParaCalibration.u16VInvH_rms * 0.001);
+		{
+			temp1 = ADCalibration.f32VInvH * (float32)(Ecan_SysParaCalibration.u16VInvH_rms * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32VInvH *= (float32)(Ecan_SysParaCalibration.u16VInvH_rms * 0.001);
+		}
 
 		if (Ecan_SysParaCalibration.u16VInvL_rms > 800 && Ecan_SysParaCalibration.u16VInvL_rms < 1200)
-			ADCalibration.f32VInvL = (float32)(Ecan_SysParaCalibration.u16VInvL_rms * 0.001);
+		{
+			temp1 = ADCalibration.f32VInvL * (float32)(Ecan_SysParaCalibration.u16VInvL_rms * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32VInvL *= (float32)(Ecan_SysParaCalibration.u16VInvL_rms * 0.001);
+		}
 
 		if (Ecan_SysParaCalibration.u16IInvH_rms > 800 && Ecan_SysParaCalibration.u16IInvH_rms < 1200)
-			ADCalibration.f32IOutH = (float32)(Ecan_SysParaCalibration.u16IInvH_rms * 0.001);
+		{
+			temp1 = ADCalibration.f32IOutH * (float32)(Ecan_SysParaCalibration.u16IInvH_rms * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32IOutH *= (float32)(Ecan_SysParaCalibration.u16IInvH_rms * 0.001);
+		}
 
 		break;
 	case 3:
 		if (Ecan_SysParaCalibration.u16IInvL_rms > 800 && Ecan_SysParaCalibration.u16IInvL_rms < 1200)
-			ADCalibration.f32IOutL= (float32)(Ecan_SysParaCalibration.u16IInvL_rms * 0.001);
+		{
+			temp1 = ADCalibration.f32IOutL * (float32)(Ecan_SysParaCalibration.u16IInvL_rms * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32IOutL *= (float32)(Ecan_SysParaCalibration.u16IInvL_rms * 0.001);
+		}
 
 		if (Ecan_SysParaCalibration.u16VOutH_rms > 800 && Ecan_SysParaCalibration.u16VOutH_rms < 1200)
-			ADCalibration.f32VOutH = (float32)(Ecan_SysParaCalibration.u16VOutH_rms * 0.001);
+		{
+			temp1 = ADCalibration.f32VOutH * (float32)(Ecan_SysParaCalibration.u16VOutH_rms * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32VOutH *= (float32)(Ecan_SysParaCalibration.u16VOutH_rms * 0.001);
+		}
 
 		if (Ecan_SysParaCalibration.u16VOutL_rms > 800 && Ecan_SysParaCalibration.u16VOutL_rms < 1200)
-			ADCalibration.f32VOutL = (float32)(Ecan_SysParaCalibration.u16VOutL_rms * 0.001);
+		{
+			temp1 = ADCalibration.f32VOutL * (float32)(Ecan_SysParaCalibration.u16VOutL_rms * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32VOutL *= (float32)(Ecan_SysParaCalibration.u16VOutL_rms * 0.001);
+		}
 
 		break;
 	case 4:
-		if (Ecan_SysParaCalibration.u16Temp_PFC > 800 && Ecan_SysParaCalibration.u16Temp_PFC < 1200)  //2017.11.21 GX
-			ADCalibration.f32TempPFC = (float32)(Ecan_SysParaCalibration.u16Temp_PFC * 0.001);
+		if (Ecan_SysParaCalibration.u16Temp_PFC > 800 && Ecan_SysParaCalibration.u16Temp_PFC < 1200)
+		{
+			temp1 = ADCalibration.f32TempPFC * (float32)(Ecan_SysParaCalibration.u16Temp_PFC * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32TempPFC *= (float32)(Ecan_SysParaCalibration.u16Temp_PFC * 0.001);
+		}
 
-		if (Ecan_SysParaCalibration.u16Temp_InvH > 800 && Ecan_SysParaCalibration.u16Temp_InvH < 1200)  //2017.12.1 GX
-			ADCalibration.f32TempInvH = (float32)(Ecan_SysParaCalibration.u16Temp_InvH * 0.001);
+		if (Ecan_SysParaCalibration.u16Temp_InvH > 800 && Ecan_SysParaCalibration.u16Temp_InvH < 1200)
+		{
+			temp1 = ADCalibration.f32TempInvH * (float32)(Ecan_SysParaCalibration.u16Temp_InvH * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32TempInvH *= (float32)(Ecan_SysParaCalibration.u16Temp_InvH * 0.001);
+		}
 
-		if (Ecan_SysParaCalibration.u16Temp_InvL > 800 && Ecan_SysParaCalibration.u16Temp_InvL < 1200)  //2017.12.1 GX
-			ADCalibration.f32TempInvL = (float32)(Ecan_SysParaCalibration.u16Temp_InvL * 0.001);
+		if (Ecan_SysParaCalibration.u16Temp_InvL > 800 && Ecan_SysParaCalibration.u16Temp_InvL < 1200)
+		{
+			temp1 = ADCalibration.f32TempInvL * (float32)(Ecan_SysParaCalibration.u16Temp_InvL * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32TempInvL *= (float32)(Ecan_SysParaCalibration.u16Temp_InvL * 0.001);
+		}
 
 		break;
 	case 5:
 		if (Ecan_SysParaCalibration.u16IGrid_rms > 800 && Ecan_SysParaCalibration.u16IGrid_rms < 1200)
-			ADCalibration.f32IGrid = (float32)(Ecan_SysParaCalibration.u16IGrid_rms * 0.001);
+		{
+			temp1 = ADCalibration.f32IGrid * (float32)(Ecan_SysParaCalibration.u16IGrid_rms * 0.001);
+			if (temp1 > 0.8f && temp1 < 1.2f)
+				ADCalibration.f32IGrid *= (float32)(Ecan_SysParaCalibration.u16IGrid_rms * 0.001);
+		}
 
-		if (Ecan_SysParaCalibration.u16InvH_VoltRms_Ref > 2020 && Ecan_SysParaCalibration.u16InvH_VoltRms_Ref < 2420)  //2017.12.1 GX
+		if (Ecan_SysParaCalibration.u16InvH_VoltRms_Ref > 2110 && Ecan_SysParaCalibration.u16InvH_VoltRms_Ref < 2290)
+		{
 			SafetyReg.f32InvH_VoltRms_Ref_LCD = (float32)(Ecan_SysParaCalibration.u16InvH_VoltRms_Ref * 0.1);
+			Output_VoltRe_Reg.u8InvH_Light_Flag = 0;
+			Output_VoltRe_Reg.u8InvH_Middle_Flag = 0;
+			Output_VoltRe_Reg.u8InvH_Heavy_Flag = 0;
+		}
 
-		if (Ecan_SysParaCalibration.u16InvL_VoltRms_Ref > 1010 && Ecan_SysParaCalibration.u16InvL_VoltRms_Ref  < 1210)  //2017.12.1 GX
+		if (Ecan_SysParaCalibration.u16InvL_VoltRms_Ref > 1050 && Ecan_SysParaCalibration.u16InvL_VoltRms_Ref  < 1150)
+		{
 			SafetyReg.f32InvL_VoltRms_Ref_LCD = (float32)(Ecan_SysParaCalibration.u16InvL_VoltRms_Ref * 0.1);
+			Output_VoltRe_Reg.u8InvL_Light_Flag = 0;
+			Output_VoltRe_Reg.u8InvL_Middle_Flag = 0;
+			Output_VoltRe_Reg.u8InvL_Heavy_Flag = 0;
+		}
 
 		break;
 	case 6:
-		if (Ecan_SysParaCalibration.u16VInvH_Comp_Coeff > 0 && Ecan_SysParaCalibration.u16VInvH_Comp_Coeff < 200)  //2017.12.1 GX
-			Parallel_Reg.f32VInvH_Comp_Coeff = (float32)(Ecan_SysParaCalibration.u16VInvH_Comp_Coeff * 0.001);
+		if (Ecan_SysParaCalibration.u16VInvH_Comp_Coeff > 9900 && Ecan_SysParaCalibration.u16VInvH_Comp_Coeff < 10100)
+		{
+			temp1 = Parallel_Reg.f32VInvH_Comp_Coeff * (float32)(Ecan_SysParaCalibration.u16VInvH_Comp_Coeff * 0.0001);
+			if (temp1 > 0.99f && temp1 < 1.01f)
+				Parallel_Reg.f32VInvH_Comp_Coeff *= (float32)(Ecan_SysParaCalibration.u16VInvH_Comp_Coeff * 0.0001);
+		}
 
-		if (Ecan_SysParaCalibration.u16VInvL_Comp_Coeff  > 0 && Ecan_SysParaCalibration.u16VInvL_Comp_Coeff  < 200)  //2017.12.1 GX
-			Parallel_Reg.f32VInvL_Comp_Coeff = (float32)(Ecan_SysParaCalibration.u16VInvL_Comp_Coeff * 0.001);
+		if (Ecan_SysParaCalibration.u16VInvL_Comp_Coeff  > 9900 && Ecan_SysParaCalibration.u16VInvL_Comp_Coeff  < 10100)
+		{
+			temp1 = Parallel_Reg.f32VInvL_Comp_Coeff * (float32)(Ecan_SysParaCalibration.u16VInvL_Comp_Coeff * 0.0001);
+			if (temp1 > 0.99f && temp1 < 1.01f)
+				Parallel_Reg.f32VInvL_Comp_Coeff *= (float32)(Ecan_SysParaCalibration.u16VInvL_Comp_Coeff * 0.0001);
+		}
 
-		if (Ecan_SysParaCalibration.u16IInvH_para_ave >= 0.0f && Ecan_SysParaCalibration.u16IInvH_para_ave < 800)  //2017.12.1 GX
+		if (Ecan_SysParaCalibration.u16IInvH_para_ave >= 0.1f && Ecan_SysParaCalibration.u16IInvH_para_ave < 800)
 		{
 			Parallel_Reg.f32IInvH_para_ave = (float32)(Ecan_SysParaCalibration.u16IInvH_para_ave * 0.01);
 			InvHParallelCurCheck();
@@ -746,44 +811,58 @@ void Para_Revise_Oper(Uint8 temp)
 
 		break;
 	case 7:
-		if (Ecan_SysParaCalibration.u16IInvL_para_ave >= 0.0f && Ecan_SysParaCalibration.u16IInvL_para_ave < 1000)  //2017.12.1 GX
+		if (Ecan_SysParaCalibration.u16IInvL_para_ave >= 0.1f && Ecan_SysParaCalibration.u16IInvL_para_ave < 1000)
 		{
 			Parallel_Reg.f32IInvL_para_ave = (float32)(Ecan_SysParaCalibration.u16IInvL_para_ave * 0.01);
 			InvLParallelCurCheck();
 		}
 
-		if (Ecan_SysParaCalibration.u16RestartTimes == 0x88)  //2017.12.1 GX
+		if (Ecan_SysParaCalibration.u16RestartTimes == 0x88)
 			g_SysFaultMessage.bit.unrecover_RestartNum = 1;
 
 		break;
 	default:
 		break;
 	}
-
 }
 
 /*=============================================================================*
  * FUNCTION: 	void Sys_Set_Oper()
- * PURPOSE : 	上位机命令执行程序
+ * PURPOSE : 	computer order operation
  *============================================================================*/
 void Sys_Set_Oper()
 {
 	if (0 == Ecan_SytemOrder.Defaluts)
 	{
-		/*ADCalibration.f32VGrid = 1;   //2017.8.16 GX
+		ADCalibration.f32VGrid = 1;
+		ADCalibration.f32VBusP = 1;
+		ADCalibration.f32VBusN = 1;
 
-		ADCalibration.f32IInvH = 1;
+		ADCalibration.f32IOutH = 1;
 		ADCalibration.f32VInvH = 1;
 
-		ADCalibration.f32IInvL = 1;
+		ADCalibration.f32IOutL = 1;
 		ADCalibration.f32VInvL = 1;
+		ADCalibration.f32VOutH = 1;
+		ADCalibration.f32VOutL = 1;
 
-		BusCon_Reg.f32BusVolt_Ref = 850;
-		SafetyReg.f32VBus_HiLimit = Bus_Over_Volt_Limit;
 		ADCalibration.f32TempPFC = 1.0f;
 		ADCalibration.f32TempInvH = 1.0f;
-		ADCalibration.f32TempInvL = 1.0f;*/
-		;
+		ADCalibration.f32TempInvL = 1.0f;
+		ADCalibration.f32IGrid = 1;
+
+		Parallel_Reg.f32VInvH_Comp_Coeff = 1;
+		Parallel_Reg.f32VInvL_Comp_Coeff = 1;
+
+		SafetyReg.f32InvH_VoltRms_Ref_LCD = 220;
+		SafetyReg.f32InvL_VoltRms_Ref_LCD = 110;
+
+		Output_VoltRe_Reg.u8InvL_Light_Flag = 0;
+		Output_VoltRe_Reg.u8InvL_Middle_Flag = 0;
+		Output_VoltRe_Reg.u8InvL_Heavy_Flag = 0;
+		Output_VoltRe_Reg.u8InvH_Light_Flag = 0;
+		Output_VoltRe_Reg.u8InvH_Middle_Flag = 0;
+		Output_VoltRe_Reg.u8InvH_Heavy_Flag = 0;
 	}
 	if (0x0055 == Ecan_SytemOrder.Output_Enable)
 	{
@@ -814,6 +893,10 @@ Uint8 ErrorCheck(MAIL temp)
 		return DATA_NORMAL;
 }
 
+/*=============================================================================*
+ * FUNCTION: 	Coeff_Feedback()
+ * PURPOSE : 	Coefficient feedback to computer
+ *============================================================================*/
 void Coeff_Feedback()
 {
 	Uint8	bStrLen = 0;
@@ -824,8 +907,8 @@ void Coeff_Feedback()
 
 	id = Get_ID(DataLength, ModuleAdd);
 	Temp.Mailbox_id.all = id;
-	Temp.Mailbox_data.Byte.Current_frame = 0x01;//第一帧
-	Temp.Mailbox_data.Byte.Frames_num = 0x06;//6帧
+	Temp.Mailbox_data.Byte.Current_frame = 0x01;//the 1st frame
+	Temp.Mailbox_data.Byte.Frames_num = 0x06;//six frames
 	Temp.Mailbox_data.Byte.Code = 0x00;
 
 	Temp.Mailbox_data.Word.Data1 = (Uint16)(ADCalibration.f32VGrid * 1000);
@@ -836,7 +919,7 @@ void Coeff_Feedback()
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
 	bStrLen++;
 	/*--------------------------------------------------------------------------*/
-	Temp.Mailbox_data.Byte.Current_frame = 0x02;//第二帧
+	Temp.Mailbox_data.Byte.Current_frame = 0x02;//the 2nd frame
 
 	Temp.Mailbox_data.Word.Data1 = (Uint16)(ADCalibration.f32VInvH * 1000);
 	Temp.Mailbox_data.Word.Data2 = (Uint16)(ADCalibration.f32VInvL * 1000);
@@ -846,7 +929,7 @@ void Coeff_Feedback()
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
 	bStrLen++;
 	/*--------------------------------------------------------------------------*/
-	Temp.Mailbox_data.Byte.Current_frame = 0x03;//第三帧
+	Temp.Mailbox_data.Byte.Current_frame = 0x03;//the 3rd frame
 
 	Temp.Mailbox_data.Word.Data1 = (Uint16)(ADCalibration.f32IOutL * 1000);
 	Temp.Mailbox_data.Word.Data2 = (Uint16)(ADCalibration.f32VOutH * 1000);
@@ -856,7 +939,7 @@ void Coeff_Feedback()
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
 	bStrLen++;
 	/*--------------------------------------------------------------------------*/
-	Temp.Mailbox_data.Byte.Current_frame = 0x04;//第四帧
+	Temp.Mailbox_data.Byte.Current_frame = 0x04;//the 4th frame
 
 	Temp.Mailbox_data.Word.Data1 = (Uint16)(ADCalibration.f32TempPFC * 1000);
 	Temp.Mailbox_data.Word.Data2 = (Uint16)(ADCalibration.f32TempInvH * 1000);
@@ -866,7 +949,7 @@ void Coeff_Feedback()
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
 	bStrLen++;
 	/*--------------------------------------------------------------------------*/
-	Temp.Mailbox_data.Byte.Current_frame = 0x05;//第五帧
+	Temp.Mailbox_data.Byte.Current_frame = 0x05;//the 5th frame
 
 	Temp.Mailbox_data.Word.Data1 = (Uint16)(ADCalibration.f32IGrid * 1000);
 	Temp.Mailbox_data.Word.Data2 = (Uint16)(SafetyReg.f32InvH_VoltRms_Ref_LCD * 10);
@@ -876,13 +959,13 @@ void Coeff_Feedback()
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
 	bStrLen++;
 	/*--------------------------------------------------------------------------*/
-	DataLength = 0x05;  //校验字节也是有效字节
+	DataLength = 0x05;  //check byte is valid byte also
 	id = Get_ID(DataLength, ModuleAdd);
 	Temp.Mailbox_id.all = id;
-	Temp.Mailbox_data.Byte.Current_frame = 0x06;//the seventh frame
+	Temp.Mailbox_data.Byte.Current_frame = 0x06;//the sixth frame
 
-	Temp.Mailbox_data.Word.Data1 = (Uint16)(Parallel_Reg.f32VInvH_Comp_Coeff * 1000);
-	Temp.Mailbox_data.Word.Data2 = (Uint16)(Parallel_Reg.f32VInvL_Comp_Coeff * 1000);
+	Temp.Mailbox_data.Word.Data1 = (Uint16)(Parallel_Reg.f32VInvH_Comp_Coeff * 10000);
+	Temp.Mailbox_data.Word.Data2 = (Uint16)(Parallel_Reg.f32VInvL_Comp_Coeff * 10000);
 
 	check ^= XOR(Temp);
 	Temp.Mailbox_data.Byte.byte7 = check;
@@ -893,7 +976,11 @@ void Coeff_Feedback()
 	ECANWrite(u8ECAN_UserDataBuf0, bStrLen);
 }
 
-void Output_Revise (void) //2018.4.3 GX
+/*=============================================================================*
+ * FUNCTION: 	Output_Revise()
+ * PURPOSE : 	Output references change according to the load
+ *============================================================================*/
+void Output_Revise (void)
 {
 	static  Uint8  lightH_temp= 0;
 	static  Uint8  heavyH_temp = 0;

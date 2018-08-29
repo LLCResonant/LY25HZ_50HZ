@@ -116,7 +116,7 @@ union  STATE_CHECK
 		Uint16  Grid_PhaseLock:1;    //B4
 		Uint16  Bus_OVP_Fault:1;    //B5
 		Uint16  ECAN_Noline:1;    //B6
-		Uint16  fflag:1;    //B7
+		Uint16  :1;    //B7
 		//byte 4
 		Uint16  ACPowerDerating:1;    //
 		Uint16  ECANPWMEnable:1;    //
@@ -159,7 +159,7 @@ union  SYS_WARN_MESSAGE
     struct
     {
 		//byte 0
-        Uint16  ECAN_Fault:1;    		// B0
+        Uint16  :1;    		// B0
         Uint16  :1;    		// B1
         Uint16  :1;    				// B2
         Uint16  OverTemp:1;    				// B3
@@ -248,7 +248,7 @@ union  SYS_FAULT_MESSAGE
         Uint16  :1;   	//B7
 
         //unrecover1
-        Uint16  :1;    	//B0
+        Uint16  ECAN_Fault:1;    	//B0
         Uint16  DcFuseFault:1;    	//B1
         Uint16  DcFanFault:1;     	//B2
         Uint16  HWADFault:1;    	//B3

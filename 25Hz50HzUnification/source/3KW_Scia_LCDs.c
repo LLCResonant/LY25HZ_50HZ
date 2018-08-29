@@ -1,25 +1,14 @@
 /*=============================================================================*
- *         Copyright(c) 
- *                          ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 20KW_Scia_Interface.c
- *   
- *  PURPOSE  : SCIa for PC monitoring
+ *  FILENAME : 3KW_DataAcquisition.c
+ *
+ *  PURPOSE  : Data acquisition and protection file of the module.
  *  
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *     
- *
- *----------------------------------------------------------------------------
- *  GLOBAL VARIABLES
- *    NAME                                    DESCRIPTION
- *          
- *      
- *----------------------------------------------------------------------------
- *  GLOBAL FUNCTIONS
- *    NAME                                    DESCRIPTION
- *    
- *   Scib_SnatchGraph(void);    
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
  *============================================================================*/
 
 #include "DSP2833x_Device.h"			// Peripheral address definitions
@@ -116,7 +105,7 @@ void SetValue_StateRefresh()
 Uint8 i = 0;	
 	
 	u16TxBuf[i++] = 100;													  //Version
-	u16TxBuf[i++] = Calc_Result.f32VInvH_rms;
+	u16TxBuf[i++] = Calc_Result.f32VOutH_rms;
 	if (Calc_Result.f32IOutH_rms * 10 < 5)
 		u16TxBuf[i++] = 0;
 	else
@@ -129,7 +118,7 @@ Uint8 i = 0;
 
 	u16TxBuf[i++] = 0;
 	u16TxBuf[i++] = Calc_Result.f32TempInvH * 10;
-	u16TxBuf[i++] = Calc_Result.f32VInvL_rms;
+	u16TxBuf[i++] = Calc_Result.f32VOutL_rms;
 	if (Calc_Result.f32IOutL_rms * 10 < 5)
 		u16TxBuf[i++] = 0;
 	else
@@ -184,7 +173,6 @@ void SetVaule_ControlRefresh()
 	}
 }
 
-
 void GetVaule_ControlRefresh( Uint16 address)
 {
 	if (g_Mod_Status == Master)
@@ -213,14 +201,13 @@ void GetVaule_ControlRefresh( Uint16 address)
 		;
 }
 
-
 /* ========= Send Byte=======*/
 void ComSendByte(unsigned int data)
 {
     Uint16 SendDelay=0x0;
 	
 	ScibRegs.SCITXBUF=data;
-	while(ScibRegs.SCICTL2.bit.TXEMPTY == 0)               /*发送数据*/
+	while(ScibRegs.SCICTL2.bit.TXEMPTY == 0)               /*Send data*/
     {
        SendDelay++;
        if(SendDelay>=COM_DELAY_TIME)
@@ -261,7 +248,7 @@ void ComRcvDeal()
 	Uint16 rx_runnum=0x0;
 	Uint16 rx_start=0x0;
 	Uint16 ADDRinit=0x0;
-	static Uint8 u8_Num = 0; //2017.11.21 GX
+	static Uint8 u8_Num = 0;
 
     if((ComCnt.ComRecByteNum>2)&&(ComCnt.ComRecByteNum<10))
 	{	
@@ -269,7 +256,7 @@ void ComRcvDeal()
 
 		if((ComRcvData[0]==0x03)||(ComRcvData[0]==0x00))  
 		{  
-		    ComSendData[0]=ComRcvData[0];    //地址码和功能码原样返回
+		    ComSendData[0]=ComRcvData[0];    //address and function code return
 			ComSendData[1]=ComRcvData[1];
 			rx_command=ComRcvData[1];
 			rx_start=ComRcvData[2];
@@ -278,17 +265,17 @@ void ComRcvDeal()
 
 		    if (ComRcvData[0]==0x00)
 		    {
-		    	if (ComRcvData[3] >= 1 && ComRcvData[3] <= 63 && u8_Num == 0) //2017.12.23 GX
+		    	if (ComRcvData[3] >= 1 && ComRcvData[3] <= 63 && u8_Num == 0)
 		    	{
-		    		ModuleAdd = ComRcvData[3];  //子模块地址  //2017.11.21 GX
+		    		ModuleAdd = ComRcvData[3];
 		    		InitECana();
 		    		u8_Num = 1;
 		    	}
 		    }
 
 			rx_runnum=ComRcvData[4];
-			rx_runnum=((rx_runnum<<8)&0xFF00)|ComRcvData[5];  //数据个数
-			ComSendData[2]=rx_runnum * 2;  //数据个数乘2为字节数
+			rx_runnum=((rx_runnum<<8)&0xFF00)|ComRcvData[5];  //the number of data
+			ComSendData[2]=rx_runnum * 2;  //the number of data multiples 2 equals byte numbers
 		    rx_crc=ComRcvData[7];
 			rx_crc=((rx_crc<<8)&0xFF00)|ComRcvData[6];
 
@@ -324,12 +311,12 @@ void ComRcvDeal()
 			    else if(rx_command==COM_CODE_WRITE_CONTROL)			// 0x06
 			    {	 
 	 				ptCom=&u16RxBuf[0]+ADDRinit; 
-	 			   *ptCom=rx_runnum;             					//将接收数据合成后存入相应单元     
+	 			   *ptCom=rx_runnum;             					//combine the received data and save them into new units
 
 	 			   GetVaule_ControlRefresh(ADDRinit);
 	 			   ComCnt.SaveFactorySettings = 1;
 
-	        	   for(i=0;i<8;i++)                        //接收正确数据原样返回
+	        	   for(i=0;i<8;i++)                        //receiving right data and send back them unchangeably
 				   {
 					   ComSendByte(ComRcvData[i]);
 				   }
@@ -395,7 +382,7 @@ void ComRcvDeal()
 
 }
 
-/*======字节型的CRC校验=======*/
+/*======Byte CRC check=======*/
 unsigned int CRCB16(unsigned int CRCini,unsigned int *ADDRini,unsigned int BITnum)
 {  
 	unsigned int i,j;
@@ -425,7 +412,7 @@ unsigned int CRCB16(unsigned int CRCini,unsigned int *ADDRini,unsigned int BITnu
 	return(CRCini);
 }
 
-/*==========字型CRC校验=============*/
+/*==========Word CRC Check=============*/
 unsigned int CRCW16(unsigned int CRCini,unsigned int *ADDRini,unsigned int BITnum)
 {   unsigned int i,j,k;
 	unsigned int CRCtempH;
@@ -471,10 +458,4 @@ unsigned int CRCW16(unsigned int CRCini,unsigned int *ADDRini,unsigned int BITnu
 	}
 	return(CRCini);
 } 
-
-
-
-
-
-
 //--- end of file -----------------------------------------------------

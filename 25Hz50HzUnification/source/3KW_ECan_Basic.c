@@ -1,21 +1,30 @@
-/*
+/*=============================================================================*
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  Revised on: 2017.10.23 by Gao Xun
- */
+ *  FILENAME : 3KW_DataAcquisition.c
+ *
+ *  PURPOSE  : Data acquisition and protection file of the module.
+ *
+ *  HISTORY  :
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
+ *============================================================================*/
 
 #include "DSP2833x_Device.h"	// Peripheral address definitions
 #include "3KW_MAINHEADER.h"			// Main include file
 
 
-static	ECANStruct	ECANList;							//eCAN发送状态、发送数据量、缓冲区队列指针
-static	ECANQUEUE	ECANQList;							//eCAN缓冲区队列指针：入指针、出指针、起始指针、缓冲区总长度、现有帧数目
+static	ECANStruct	ECANList;							//contain transmit state, the amount of data and pointers of queue in buffer
+//pointers of queue in buffer: In-Pointer, Out-Pointer, Start-Pointer, The length of buffer, The number of frames
+static	ECANQUEUE	ECANQList;
 ECAN_ERROR Ecan_Error;
 
-ECANStruct	*pECANIndex = {NULL};				//eCAN索引指针
+ECANStruct	*pECANIndex = {NULL};				//eCAN Index pointer
 //#pragma DATA_SECTION(szECANRxBuf,"SLOWDATA");
 
-MAIL	szECANRxBuf[MAX_ECAN_BUF_SIZE]={NULL};		//  开辟的eCAN通讯缓冲区之和
-MAIL	*pECANBuf = szECANRxBuf;			//  指针指向该缓冲区，初始化分配空间的时候使用
+MAIL	szECANRxBuf[MAX_ECAN_BUF_SIZE]={NULL};		//Buffer
+MAIL	*pECANBuf = szECANRxBuf;			//Pointer of buffer
 Uint8 u8EACNCommFaultCnt = 0;
 Uint8 Broadcast_Entry = 0;
 Uint8 Transmit_Entry = 0;
@@ -40,195 +49,165 @@ void InitECana(void)
 	Uint32 u32_Add = 0;
 
 
-		//********************************************
-		//*************PART Initialization*************
-		//the following part focus on initializationtion
-		EALLOW;
-		ECanaShadow.CANMC.all=ECanaRegs.CANMC.all;
-		//to work in normal mode
-		ECanaShadow.CANMC.bit.STM=0;				//to work in normal mode
-		//ECanaShadow.CANMC.bit.STM=1;				//to work in Self_test mode
-		//to work in eCAN mode
+	//********************************************
+	//*************PART Initialization*************
+	//the following part focus on initializationtion
+	EALLOW;
+	ECanaShadow.CANMC.all=ECanaRegs.CANMC.all;
+	//to work in normal mode
+	ECanaShadow.CANMC.bit.STM=0;				//to work in normal mode
+	//ECanaShadow.CANMC.bit.STM=1;				//to work in Self_test mode
+	//to work in eCAN mode
 
-		   ECanaShadow.CANMC.bit.WUBA = 1;
-		   ECanaShadow.CANMC.bit.DBO = 1;				//接收发送低位优先
-		//		ECanaShadow.CANMC.bit.DBO = 0;				//接收发送高位优先
-			ECanaShadow.CANMC.bit.ABO = 1;				//Auto bus on.发送故障后自动重新切入总线
-		//	ECanaShadow.CANMC.bit.ABO = 0;				//Auto bus on.发送故障后,需要手动清零CCR位重新切入总线
+	   ECanaShadow.CANMC.bit.WUBA = 1;
+	   ECanaShadow.CANMC.bit.DBO = 1;				//LSB
+	//	ECanaShadow.CANMC.bit.DBO = 0;				//MSB
+		ECanaShadow.CANMC.bit.ABO = 1;				//Auto bus on.
+	//	ECanaShadow.CANMC.bit.ABO = 0;				//Auto bus on.
 
-		ECanaRegs.CANMC.all=ECanaShadow.CANMC.all;
-		EDIS;
-
-
-		//Step 1, set CANME to 0 to disable the mailboxes
-		ECanaRegs.CANME.all=0;
-
-		//Step 2, apply to change data area through CANMC
-		EALLOW;
-		ECanaShadow.CANMC.all=ECanaRegs.CANMC.all;
-		ECanaShadow.CANMC.bit.CDR=1;
-		ECanaRegs.CANMC.all=ECanaShadow.CANMC.all;
-		EDIS;
-
-		//Step 3, config the ID,control, data, direction of the mailboxes
-		//mailbox 0 config as  acceptting box
-		ECanaShadow.CANMD.all=ECanaRegs.CANMD.all;
-		ECanaShadow.CANMD.bit.MD0=0;	//deliver
-		ECanaShadow.CANMD.bit.MD1=1;	//receiver，point to point
-		ECanaShadow.CANMD.bit.MD2=0;	//deliver，broadcast
-		ECanaShadow.CANMD.bit.MD3=1;	//receiver，broadcast
-		//ECanaShadow.CANMD.bit.MD4=1;
-		//ECanaShadow.CANMD.bit.MD5=0;
-		ECanaRegs.CANMD.all=ECanaShadow.CANMD.all;
-		//config the box's ID
+	ECanaRegs.CANMC.all=ECanaShadow.CANMC.all;
+	EDIS;
 
 
-		ECanaMboxes.MBOX0.MSGID.all=0x80000000;//发送邮箱不需要屏蔽位
-	//	ECanaMboxes.MBOX0.MSGID.all=0x//extension identifier mode,发送邮箱的地址
-		u32_Add = ModuleAdd;
-		ECanaMboxes.MBOX1.MSGID.all=0xC1400000 | (u32_Add << 16);
-		ECanaMboxes.MBOX2.MSGID.all=0x80000000; //extension identifier mode,接收到的为广播命令
-		ECanaMboxes.MBOX3.MSGID.all=0xCFFF0007;//样机1
+	//Step 1, set CANME to 0 to disable the mailboxes
+	ECanaRegs.CANME.all=0;
+
+	//Step 2, apply to change data area through CANMC
+	EALLOW;
+	ECanaShadow.CANMC.all=ECanaRegs.CANMC.all;
+	ECanaShadow.CANMC.bit.CDR=1;
+	ECanaRegs.CANMC.all=ECanaShadow.CANMC.all;
+	EDIS;
+
+	//Step 3, config the ID,control, data, direction of the mailboxes
+	//mailbox 0 config as  acceptting box
+	ECanaShadow.CANMD.all=ECanaRegs.CANMD.all;
+	ECanaShadow.CANMD.bit.MD0=0;	//deliver
+	ECanaShadow.CANMD.bit.MD1=1;	//receiver, point to point
+	ECanaShadow.CANMD.bit.MD2=0;	//deliver, broadcast
+	ECanaShadow.CANMD.bit.MD3=1;	//receiver, broadcast
+	//ECanaShadow.CANMD.bit.MD4=1;
+	//ECanaShadow.CANMD.bit.MD5=0;
+	ECanaRegs.CANMD.all=ECanaShadow.CANMD.all;
+	//config the box's ID
+
+
+	ECanaMboxes.MBOX0.MSGID.all=0x80000000;//Send mail box do not need mask bit
+	//	ECanaMboxes.MBOX0.MSGID.all=0x//extension identifier mode
+	u32_Add = ModuleAdd;
+	ECanaMboxes.MBOX1.MSGID.all=0xC1400000 | (u32_Add << 16);//Upload to computer
+	ECanaMboxes.MBOX2.MSGID.all=0x80000000; //Send mail box do not need mask bit
+	ECanaMboxes.MBOX3.MSGID.all=0xCFFF0007; //Broadcast
 
 
 
-	//	ECanaMboxes.MBOX3.MSGID.all=0xC607F813; //样机2
-	//	ECanaMboxes.MBOX3.MSGID.all=0xC607F81B; //样机3
-	//	ECanaMboxes.MBOX3.MSGID.all=0xC607F823; //样机4
+	//	ECanaMboxes.MBOX3.MSGID.all=0xC607F813;
+	//	ECanaMboxes.MBOX3.MSGID.all=0xC607F81B;
+	//	ECanaMboxes.MBOX3.MSGID.all=0xC607F823;
 	//	ECanaMboxes.MBOX4.MSGID.all=0xC0000011;
 	//	ECanaMboxes.MBOX5.MSGID.all=0x80000011;
 		//config acceptance filter for MBOX1~MBOX2
-		ECanaLAMRegs.LAM0.all = 0xF000FFFF;     //SCC mode, LAM0 for MBOX0,MBOX1,点对点通信
-	//	ECanaLAMRegs.LAM0.all = 0xFFFFFFFF;     //SCC mode, LAM0 for MBOX0,MBOX1
-		ECanaLAMRegs.LAM3.all = 0xF000FFFC;     //SCC mode, LAM0 for MBOX3,接收到的为广播命令
-	//	ECanaLAMRegs.LAM1.all = 0x0000FF02;     //eCAN mode, LAM0 for MBOX1,点对点通信
-	//	ECanaLAMRegs.LAM2.all = 0x000007FF;     //eCAN mode, LAM0 for MBOX2,接收到的为广播命令
-	//	ECanaLAMRegs.LAM4.all = 0xFFFFFFFF;     //eCAN mode, LAM0 for MBOX1,点对点通信
-	//	ECanaLAMRegs.LAM2.all = 0xFFFFFFFF;     //eCAN mode, LAM0 for MBOX2,接收到的为广播命令
+		ECanaLAMRegs.LAM0.all = 0xF000FFFF;    	//SCC mode, LAM0 for MBOX0,MBOX1, received information from computer
+	//	ECanaLAMRegs.LAM0.all = 0xFFFFFFFF;     	//SCC mode, LAM0 for MBOX0,MBOX1
+		ECanaLAMRegs.LAM3.all = 0xF000FFFC;    	//SCC mode, LAM0 for MBOX3, received broadcast information
+	//	ECanaLAMRegs.LAM1.all = 0x0000FF02;    	//eCAN mode, LAM0 for MBOX1
+	//	ECanaLAMRegs.LAM2.all = 0x000007FF;    	//eCAN mode, LAM0 for MBOX2
+	//	ECanaLAMRegs.LAM4.all = 0xFFFFFFFF;     	//eCAN mode, LAM0 for MBOX1
+	//	ECanaLAMRegs.LAM2.all = 0xFFFFFFFF;     	//eCAN mode, LAM0 for MBOX2
 
 	//	config data length as 8-bytes
-		ECanaMboxes.MBOX0.MSGCTRL.bit.DLC=8;
-		ECanaMboxes.MBOX1.MSGCTRL.bit.DLC=8;
-		ECanaMboxes.MBOX2.MSGCTRL.bit.DLC=8;
-		ECanaMboxes.MBOX3.MSGCTRL.bit.DLC=8;
-		//ECanaMboxes.MBOX4.MSGCTRL.bit.DLC=8;
-		//ECanaMboxes.MBOX5.MSGCTRL.bit.DLC=8;
-		//config transmitting prior
-		ECanaMboxes.MBOX0.MSGCTRL.bit.TPL=0;
-		ECanaMboxes.MBOX1.MSGCTRL.bit.TPL=0;
-		ECanaMboxes.MBOX2.MSGCTRL.bit.TPL=0;
-		ECanaMboxes.MBOX3.MSGCTRL.bit.TPL=0;
-		//ECanaMboxes.MBOX4.MSGCTRL.bit.TPL=0;
-		//ECanaMboxes.MBOX5.MSGCTRL.bit.TPL=0;
-		//no long-distance answer frame was applied
-		ECanaMboxes.MBOX0.MSGCTRL.bit.RTR=0;
-		ECanaMboxes.MBOX1.MSGCTRL.bit.RTR=0;
-		ECanaMboxes.MBOX2.MSGCTRL.bit.RTR=0;
-		ECanaMboxes.MBOX3.MSGCTRL.bit.RTR=0;
-		//ECanaMboxes.MBOX4.MSGCTRL.bit.RTR=0;
-		//ECanaMboxes.MBOX5.MSGCTRL.bit.RTR=0;
-		//write data to boxes' RAM
-		ECanaMboxes.MBOX0.MDL.all=0x00000000;
-		ECanaMboxes.MBOX0.MDH.all=0x00000000;
-		ECanaMboxes.MBOX1.MDL.all=0x00000000;
-		ECanaMboxes.MBOX1.MDH.all=0x00000000;
-		ECanaMboxes.MBOX2.MDL.all=0x00000000;
-		ECanaMboxes.MBOX2.MDH.all=0x00000000;
-		ECanaMboxes.MBOX3.MDL.all=0x00000000;
-		ECanaMboxes.MBOX3.MDH.all=0x00000000;
-		//ECanaMboxes.MBOX4.MDL.all=0x00000000;
-		//ECanaMboxes.MBOX4.MDH.all=0x00000000;
-		//ECanaMboxes.MBOX5.MDL.all=0x00000000;
-		//ECanaMboxes.MBOX5.MDH.all=0x00000000;
+	ECanaMboxes.MBOX0.MSGCTRL.bit.DLC=8;
+	ECanaMboxes.MBOX1.MSGCTRL.bit.DLC=8;
+	ECanaMboxes.MBOX2.MSGCTRL.bit.DLC=8;
+	ECanaMboxes.MBOX3.MSGCTRL.bit.DLC=8;
+	//ECanaMboxes.MBOX4.MSGCTRL.bit.DLC=8;
+	//ECanaMboxes.MBOX5.MSGCTRL.bit.DLC=8;
+	//config transmitting prior
+	ECanaMboxes.MBOX0.MSGCTRL.bit.TPL=0;
+	ECanaMboxes.MBOX1.MSGCTRL.bit.TPL=0;
+	ECanaMboxes.MBOX2.MSGCTRL.bit.TPL=0;
+	ECanaMboxes.MBOX3.MSGCTRL.bit.TPL=0;
+	//ECanaMboxes.MBOX4.MSGCTRL.bit.TPL=0;
+	//ECanaMboxes.MBOX5.MSGCTRL.bit.TPL=0;
+	//no long-distance answer frame was applied
+	ECanaMboxes.MBOX0.MSGCTRL.bit.RTR=0;
+	ECanaMboxes.MBOX1.MSGCTRL.bit.RTR=0;
+	ECanaMboxes.MBOX2.MSGCTRL.bit.RTR=0;
+	ECanaMboxes.MBOX3.MSGCTRL.bit.RTR=0;
+	//ECanaMboxes.MBOX4.MSGCTRL.bit.RTR=0;
+	//ECanaMboxes.MBOX5.MSGCTRL.bit.RTR=0;
+	//write data to boxes' RAM
+	ECanaMboxes.MBOX0.MDL.all=0x00000000;
+	ECanaMboxes.MBOX0.MDH.all=0x00000000;
+	ECanaMboxes.MBOX1.MDL.all=0x00000000;
+	ECanaMboxes.MBOX1.MDH.all=0x00000000;
+	ECanaMboxes.MBOX2.MDL.all=0x00000000;
+	ECanaMboxes.MBOX2.MDH.all=0x00000000;
+	ECanaMboxes.MBOX3.MDL.all=0x00000000;
+	ECanaMboxes.MBOX3.MDH.all=0x00000000;
+	//ECanaMboxes.MBOX4.MDL.all=0x00000000;
+	//ECanaMboxes.MBOX4.MDH.all=0x00000000;
+	//ECanaMboxes.MBOX5.MDL.all=0x00000000;
+	//ECanaMboxes.MBOX5.MDH.all=0x00000000;
 
-		//Step 4, apply for normal operations
-		EALLOW;
-		ECanaShadow.CANMC.all=ECanaRegs.CANMC.all;
-		ECanaShadow.CANMC.bit.CDR=0;
-		ECanaRegs.CANMC.all=ECanaShadow.CANMC.all;
-		EDIS;
-		//Step 5,set CANME to 1 to enable mailboxes
-		ECanaShadow.CANME.all=ECanaRegs.CANME.all;
-		ECanaShadow.CANME.bit.ME0=1;
-		ECanaShadow.CANME.bit.ME1=1;
-		ECanaShadow.CANME.bit.ME2=1;
-		ECanaShadow.CANME.bit.ME3=1;
-		//ECanaShadow.CANME.bit.ME4=1;
-		//ECanaShadow.CANME.bit.ME5=1;
-		ECanaRegs.CANME.all=ECanaShadow.CANME.all;
+	//Step 4, apply for normal operations
+	EALLOW;
+	ECanaShadow.CANMC.all=ECanaRegs.CANMC.all;
+	ECanaShadow.CANMC.bit.CDR=0;
+	ECanaRegs.CANMC.all=ECanaShadow.CANMC.all;
+	EDIS;
+	//Step 5,set CANME to 1 to enable mailboxes
+	ECanaShadow.CANME.all=ECanaRegs.CANME.all;
+	ECanaShadow.CANME.bit.ME0=1;
+	ECanaShadow.CANME.bit.ME1=1;
+	ECanaShadow.CANME.bit.ME2=1;
+	ECanaShadow.CANME.bit.ME3=1;
+	//ECanaShadow.CANME.bit.ME4=1;
+	//ECanaShadow.CANME.bit.ME5=1;
+	ECanaRegs.CANME.all=ECanaShadow.CANME.all;
 
-		//*********************************************
-		EALLOW; //enable mailbox interrupts
-		ECanaRegs.CANMIM.all=0x000000A;			// MBOX1 Receive interrupt
-		ECanaRegs.CANMIL.all=0; 					//interrupt will be generated at ECAN0INT
-	    ECanaRegs.CANGIF0.all=0xFFFFFFFF;
-	    ECanaRegs.CANGIM.all= 0;
-		ECanaRegs.CANGIM.bit.I0EN= 1; //ECAN0INT interrupt application permitted
-		EDIS;
+	//*********************************************
+	EALLOW; //enable mailbox interrupts
+	ECanaRegs.CANMIM.all=0x000000A;			// MBOX1 Receive interrupt
+	ECanaRegs.CANMIL.all=0; 							//interrupt will be generated at ECAN0INT
+	ECanaRegs.CANGIF0.all=0xFFFFFFFF;
+	ECanaRegs.CANGIM.all= 0;
+	ECanaRegs.CANGIM.bit.I0EN= 1; //ECAN0INT interrupt application permitted
+	EDIS;
 
-		SetECAN(pECANBuf,ECANA_BUF_SIZE);   // 清零 并规定各队列的起始地址
-	//    PieCtrlRegs.PIEIER9.bit.INTx5 = 1;
-		//*********************************************
-
-		//*************PART Initialization END*********
-		//*********************************************
+	SetECAN(pECANBuf,ECANA_BUF_SIZE);   //Clear and set start address of the queue
+	//*************PART Initialization END*********
 }
-
-
 
 /**********************************************************************
 * Function: SetSci()
 *
-* Description:
-
-//  入口参数： 1） id号  scia=0  scib=1  scic=2
-//             2)  Uint8 *pStartAddr   缓冲起始地址
-//             3)  缓冲长度  ECANA_BUF_SIZE					64
-
-typedef struct{
-	Uint8	*pIn;
-	Uint8	*pOut;
-	Uint8	*pStart;
-	Uint16	u16Length;
-	Uint16 	u16Size;
-}ECANQUEUE;
-
-typedef struct{
-	Uint8	u8TxStatus;
-	Uint16	u16TxLength;
-	ECANQUEUE	*pqRx;
-}ECANStruct;
-
-* Function: SetECAN()
-*
-* Description:
-*  Uint8 *pStartAddr------缓冲指针
-*  Uint16 u16Size--------所申请的缓冲区长度
+* Description: Clear and set start address of the queue
 **********************************************************************/
 void SetECAN(MAIL *pStartAddr, Uint16 u16Size)
 {
-	ECANStruct	*pECAN;   			// 结构体 指针
-	ECANQUEUE	*pq;     			// 队列结构体  指针
+	ECANStruct	*pECAN;
+	ECANQUEUE	*pq;
 
-	if( NULL == pECANIndex )   		//  ID号都为零
+	if( NULL == pECANIndex )   		// ID is zero
 	{
-		pECAN = &ECANList;   			// 相应eCAN的结构体指针
-		pECANIndex= pECAN;     			// 加入到索引中
+		pECAN = &ECANList;
+		pECANIndex= pECAN;
 
-		pECAN->pqRx = &ECANQList;		//队列链接到索引中
+		pECAN->pqRx = &ECANQList;
 		pq = pECAN->pqRx;
 		InitECANQueue(pq, pStartAddr, u16Size);
 		pECANBuf += u16Size;
 
-		pECAN->u8TxStatus = ECAN_TX_RDY;    //  状态初始化
-		pECAN->u16TxLength = 0;            // 发送长度为0
+		pECAN->u8TxStatus = ECAN_TX_RDY;    //Status initialization
+		pECAN->u16TxLength = 0;            //data length is 0
 	}
 }
 
 /**********************************************************************
-* Function:InitECANQueue   指针指向初始地址
+* Function: InitECANQueue()
 *
-* Description:   队列初始
+* Description:   queue initialization
 **********************************************************************/
 static void InitECANQueue(ECANQUEUE *pQue, MAIL *pStart, Uint16 u16BufSize)
 {
@@ -241,27 +220,27 @@ static void InitECANQueue(ECANQUEUE *pQue, MAIL *pStart, Uint16 u16BufSize)
 /**********************************************************************
 * Function: QueDataIn()
 *
-* Description:   队列   数据入队列
+* Description:   data is put in the queue
 **********************************************************************/
 static Uint16 ECANQueDataIn(ECANQUEUE *pQue, MAIL MAILQueData)
 {
-	if(pQue->u16Length == pQue->u16Size) // 满队列处理
+	if(pQue->u16Length == pQue->u16Size) //deal with full queues
 	{
 		if(pQue->pIn == pQue->pStart)
 		{
-			*(pQue->pStart + pQue->u16Size - 1) = MAILQueData;// 改写上一次最新的数据
+			*(pQue->pStart + pQue->u16Size - 1) = MAILQueData;//Rewrite previous data
 		}
 		else
 		{
-			*(pQue->pIn - 1) = MAILQueData; // 改写上一次最新的数据
+			*(pQue->pIn - 1) = MAILQueData;//Rewrite previous data
 		}
 		return ECAN_QUE_BUF_FULL;
 	}
 	else
 	{
-		*(pQue->pIn) = MAILQueData;    //  返回队列已满
-		pQue->u16Length += 1;            // 正常入队列
-		if(pQue->pIn == pQue->pStart + pQue->u16Size - 1)   //  是否到最后
+		*(pQue->pIn) = MAILQueData;
+		pQue->u16Length += 1;
+		if(pQue->pIn == pQue->pStart + pQue->u16Size - 1)   //whether it is the last in queue
 		{
 			pQue->pIn = pQue->pStart;
 		}
@@ -273,9 +252,9 @@ static Uint16 ECANQueDataIn(ECANQUEUE *pQue, MAIL MAILQueData)
 	}
 }
 /**********************************************************************
-* Function: QueDataOut
+* Function: QueDataOut()
 *
-* Description:   队列   数据出队列
+* Description:   data is get out of the queue
 **********************************************************************/
 static Uint16 ECANQueDataOut(ECANQUEUE *pQue, MAIL *MAILQueData)
 {
@@ -285,9 +264,9 @@ static Uint16 ECANQueDataOut(ECANQUEUE *pQue, MAIL *MAILQueData)
 	}
 	else
 	{
-		*MAILQueData = *(pQue->pOut);    //    出队列
+		*MAILQueData = *(pQue->pOut);
 		pQue->u16Length -= 1;
-		if(pQue->pOut == (pQue->pStart + pQue->u16Size - 1))   //  指针是否指向最后
+		if(pQue->pOut == (pQue->pStart + pQue->u16Size - 1))   //whether the pointer points the last one?
 		{
 			pQue->pOut = pQue->pStart;
 		}
@@ -301,7 +280,7 @@ static Uint16 ECANQueDataOut(ECANQUEUE *pQue, MAIL *MAILQueData)
 /**********************************************************************
 * Function: eCANRead
 *
-* Description:   eCAN  读取数据
+* Description:   read data
 **********************************************************************/
 Uint16 ECANRead(MAIL *pBuf)
 {
@@ -309,11 +288,11 @@ Uint16 ECANRead(MAIL *pBuf)
 	ECANQUEUE	*pq;
 	ECANStruct	*pECAN;
 
-//	  __asm ("      ESTOP0");
-	pECAN = pECANIndex;							//可以发送的数据
-	pq = pECAN->pqRx;        				//  队列指针
+// __asm ("      ESTOP0");
+	pECAN = pECANIndex;
+	pq = pECAN->pqRx;
 
-	u16Tmp = ECANQueDataOut(pq, pBuf);			//读取pECANIndex索引下的eCANA接收到的指令数据
+	u16Tmp = ECANQueDataOut(pq, pBuf);	//read data in the queue which pECANIndex points
 
 	if(u16Tmp == ECAN_QUE_BUF_EMPTY)
 	{
@@ -327,9 +306,8 @@ Uint16 ECANRead(MAIL *pBuf)
 /**********************************************************************
 * Function: ECANWrite
 *
-* Description:   ECAN 写数据
+* Description:   write data
 **********************************************************************/
-/*********需要再修改************/
 
 Uint16 ECANWrite(MAIL *pBuf, Uint16 u16Length)
 {
@@ -350,13 +328,11 @@ Uint16 ECANWrite(MAIL *pBuf, Uint16 u16Length)
 	pECAN->u8TxStatus = ECAN_TX_RDY;
 	return ECAN_TX_RDY;
 }
-
-
 /**********************************************************************
 * Function: ECANErrorCheck
 *
-* Description: 检查ECAN寄存器的错误位，
-* 如果有错误g_SysFaultMessage.bit.Ecan_Error置位
+* Description: check fault bits in DSP ECAN Register, if anyone is set,
+* set g_StateCheck.bit.ECAN_Fault.
 **********************************************************************/
 
 Uint8 ECANErrorCheck()
@@ -369,7 +345,7 @@ Uint8 ECANErrorCheck()
 		EALLOW;
 		ECanaShadow.CANMC.all=ECanaRegs.CANMC.all;
 		ECanaShadow.CANMC.bit.SRES = 1;
-	    ECanaShadow.CANMC.bit.CCR = 0;            // CLEAR CCR = 0,重新启动CCR模式
+	    ECanaShadow.CANMC.bit.CCR = 0;            // CLEAR CCR = 0, Restart CCR mode
 		ECanaShadow.CANMC.all=ECanaRegs.CANMC.all;
 		EDIS;
 
@@ -388,7 +364,7 @@ Uint8 ECANErrorCheck()
 /**********************************************************************
 * Function: SWI_ECANRXISR
 *
-* Description: Ecan接收中断函数
+* Description: Ecan receiving interruption
 **********************************************************************/
 void SWI_ECANRXISR()
 {
@@ -397,7 +373,7 @@ void SWI_ECANRXISR()
 	errortemp = ECANErrorCheck();
 	if (errortemp == 0)
 	{
-		if (ECanaRegs.CANGIF0.bit.MIV0 == 1) 		  //判断是否是1号邮箱接收中断
+		if (ECanaRegs.CANGIF0.bit.MIV0 == 1) //whether mail box 1 receives interruption
 		{
 //			__asm ("ESTOP0");
 			MailTmp.Mailbox_id.all = ECanaMboxes.MBOX1.MSGID.all;
@@ -407,7 +383,7 @@ void SWI_ECANRXISR()
 			ECANQueDataIn(pECANIndex->pqRx,MailTmp);
 			ECanaRegs.CANRMP.all=0x00000002;
 		}
-		else if(ECanaRegs.CANGIF0.bit.MIV0 == 3)
+		else if(ECanaRegs.CANGIF0.bit.MIV0 == 3) //whether mail box 3 receives interruption
 		{
 			EcanP2A_Rx.P2AMail_id.all = ECanaMboxes.MBOX3.MSGID.all;
 			EcanP2A_Rx.P2AMail_data.DWord.CANL_Bytes = ECanaMboxes.MBOX3.MDL.all;
@@ -425,12 +401,11 @@ void SWI_ECANRXISR()
 	PieCtrlRegs.PIEACK.bit.ACK9=1;
 }
 
-/**********************************************************************
-* Function: ECANErrorCheck
+/********************************************************************************************
+* Function: eCAN_Transmit()
 *
-* Description: eCAN发送通用程序
-*
-**********************************************************************/
+* Description: eCAN transmit function, which is used in communicating with the computer
+********************************************************************************************/
 void eCAN_Transmit(MAIL Mail_Tx)
 {
 	struct ECAN_REGS ECanaShadow;
@@ -445,7 +420,7 @@ void eCAN_Transmit(MAIL Mail_Tx)
 	ECanaRegs.CANTRR.all = ECanaShadow.CANTRR.all;
 
 	ECanaShadow.CANTA.all = ECanaRegs.CANTA.all;
-	ECanaShadow.CANTA.bit.TA0 = 1;						//为防止赋值失败用到了影子寄存器
+	ECanaShadow.CANTA.bit.TA0 = 1;						//Shadow register is used to prevent assignment failure
 	ECanaRegs.CANTA.all = ECanaShadow.CANTA.all;
 
 	//Step 2, initialize mailboxes
@@ -454,8 +429,8 @@ void eCAN_Transmit(MAIL Mail_Tx)
 	ECanaShadow.CANME.bit.ME0 = 0;
 	ECanaRegs.CANME.all = ECanaShadow.CANME.all;
 
-	ECanaMboxes.MBOX0.MSGID.all = Mail_Tx.Mailbox_id.all;			//设置邮箱发送的ID
-	ECanaMboxes.MBOX0.MSGCTRL.bit.DLC = 8;					//config data length as 8-bytes
+	ECanaMboxes.MBOX0.MSGID.all = Mail_Tx.Mailbox_id.all;			//set mail box id
+	ECanaMboxes.MBOX0.MSGCTRL.bit.DLC = 8;					//configure data length as 8-bytes
 
 	ECanaShadow.CANME.all = ECanaRegs.CANME.all;
 	ECanaShadow.CANME.bit.ME0 = 1;
@@ -463,19 +438,19 @@ void eCAN_Transmit(MAIL Mail_Tx)
 
 
 	ECanaMboxes.MBOX0.MDH.all = Mail_Tx.Mailbox_data.DWord.CANH_Bytes;
-	ECanaMboxes.MBOX0.MDL.all = Mail_Tx.Mailbox_data.DWord.CANL_Bytes;			//数据结构
+	ECanaMboxes.MBOX0.MDL.all = Mail_Tx.Mailbox_data.DWord.CANL_Bytes;
 
 
 	EALLOW;
 //	__asm ("      ESTOP0");
-	//Step 3, config TRS to apply for transmitting
+	//Step 3, configure TRS to apply for transmitting
 	ECanaShadow.CANTRS.all = ECanaRegs.CANTRS.all;
 	ECanaShadow.CANTRS.bit.TRS0=1;
 	ECanaRegs.CANTRS.all = ECanaShadow.CANTRS.all;
 
 //	__asm ("      ESTOP0");
 
-	//Step 4, wait for response to complete transmition
+	//Step 4, wait for response to complete transmission
 	do
 	{
 		ECanaShadow.CANTA.all = ECanaRegs.CANTA.all;
@@ -495,16 +470,20 @@ void eCAN_Transmit(MAIL Mail_Tx)
 
 	Transmit_Entry = 0;
 
-	//Step 5,reset TA and transmition flag by writing 1 to corresponding register bits
+	//Step 5,reset TA and transmission flag by writing 1 to corresponding register bits
 	ECanaShadow.CANTA.all = 0;
-//	__asm ("      ESTOP0");
+	//	__asm ("      ESTOP0");
 	ECanaShadow.CANTA.bit.TA0 = 1;
 	ECanaRegs.CANTA.all=ECanaShadow.CANTA.all;
 
 	EDIS;
 //*************PART I END**********************
 }
-
+/********************************************************************************************
+* Function: eCAN_Broadcast()
+*
+* Description: eCAN transmit function, which is used in communicating with other modules
+********************************************************************************************/
 
 void eCAN_Broadcast(P2AMAIL P2A_Tx)
 {
@@ -520,7 +499,7 @@ void eCAN_Broadcast(P2AMAIL P2A_Tx)
 	ECanaRegs.CANTRR.all = ECanaShadow.CANTRR.all;
 
 	ECanaShadow.CANTA.all = ECanaRegs.CANTA.all;
-	ECanaShadow.CANTA.bit.TA2 = 1;						//为防止赋值失败用到了影子寄存器
+	ECanaShadow.CANTA.bit.TA2 = 1;						//Shadow register is used to prevent assignment failure
 	ECanaRegs.CANTA.all = ECanaShadow.CANTA.all;
 
 	//Step 2, initialize mailboxes
@@ -529,8 +508,8 @@ void eCAN_Broadcast(P2AMAIL P2A_Tx)
 	ECanaShadow.CANME.bit.ME2 = 0;
 	ECanaRegs.CANME.all = ECanaShadow.CANME.all;
 
-	ECanaMboxes.MBOX2.MSGID.all = P2A_Tx.P2AMail_id.all;			//设置邮箱发送的ID
-	ECanaMboxes.MBOX2.MSGCTRL.bit.DLC = 8;					//config data length as 8-bytes
+	ECanaMboxes.MBOX2.MSGID.all = P2A_Tx.P2AMail_id.all;			//set mail box id
+	ECanaMboxes.MBOX2.MSGCTRL.bit.DLC = 8;					//configure data length as 8-bytes
 
 	ECanaShadow.CANME.all = ECanaRegs.CANME.all;
 	ECanaShadow.CANME.bit.ME2 = 1;
@@ -538,19 +517,19 @@ void eCAN_Broadcast(P2AMAIL P2A_Tx)
 
 
 	ECanaMboxes.MBOX2.MDH.all = P2A_Tx.P2AMail_data.DWord.CANH_Bytes;
-	ECanaMboxes.MBOX2.MDL.all = P2A_Tx.P2AMail_data.DWord.CANL_Bytes;			//数据结构
+	ECanaMboxes.MBOX2.MDL.all = P2A_Tx.P2AMail_data.DWord.CANL_Bytes;
 
 
 	EALLOW;
 //	__asm ("      ESTOP0");
-	//Step 3, config TRS to apply for transmitting
+	//Step 3, configure TRS to apply for transmitting
 	ECanaShadow.CANTRS.all = ECanaRegs.CANTRS.all;
 	ECanaShadow.CANTRS.bit.TRS2=1;
 	ECanaRegs.CANTRS.all = ECanaShadow.CANTRS.all;
 
 //	__asm ("      ESTOP0");
 
-	//Step 4, wait for response to complete transmition
+	//Step 4, wait for response to complete transmission
 	do
 	{
 		ECanaShadow.CANTA.all = ECanaRegs.CANTA.all;
@@ -570,7 +549,7 @@ void eCAN_Broadcast(P2AMAIL P2A_Tx)
 
 	Broadcast_Entry = 0;
 
-	//Step 5,reset TA and transmition flag by writing 1 to corresponding register bits
+	//Step 5,reset TA and transmission flag by writing 1 to corresponding register bits
 	ECanaShadow.CANTA.all = 0;
 //	__asm ("      ESTOP0");
 	ECanaShadow.CANTA.bit.TA2 = 1;

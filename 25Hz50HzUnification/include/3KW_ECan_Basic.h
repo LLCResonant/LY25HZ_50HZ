@@ -193,5 +193,4 @@ extern void SWI_ECANRXISR(void);
 extern void eCAN_Transmit(MAIL);
 extern void eCAN_Broadcast(P2AMAIL);
 
-
 #endif

@@ -47,15 +47,15 @@
 #define InvL_CurrShare_ON			GpioDataRegs.GPBCLEAR.bit.GPIO48 = 1;
 #define InvL_CurrShare_OFF			GpioDataRegs.GPBSET.bit.GPIO48 = 1;
 
-#define SyncPhase_Hi1Limit          0.53f * 6.283185307
+#define 	SyncPhase_Hi1Limit          0.53f * 6.283185307
 #define	SyncPhase_Low1Limit         0.47f * 6.283185307
 #define	SyncPhase_Hi2Limit          0.508f * 6.283185307
 #define	SyncPhase_Low2Limit         0.492 * 6.283185307
-#define SyncPhase_Hi3Limit          0.515f * 6.283185307
+#define 	SyncPhase_Hi3Limit          0.515f * 6.283185307
 #define	SyncPhase_Low3Limit         0.485f * 6.283185307
-#define SyncPhase_ReguStep1         0.001f * 6.283185307
-#define SyncPhase_ReguStep2         0.01f * 6.283185307
-#define SyncPhase_Hi4Limit          0.503f * 6.283185307
+#define 	SyncPhase_ReguStep1         0.001f * 6.283185307
+#define 	SyncPhase_ReguStep2         0.01f * 6.283185307
+#define 	SyncPhase_Hi4Limit          0.503f * 6.283185307
 #define	SyncPhase_Low4Limit         0.497f * 6.283185307
 
 //******************************************************************************
@@ -64,11 +64,11 @@ struct PARALLEL_REG
 	Uint16 	u16Cnt_COM1_Receive;
 	Uint16  u16Cnt_SCR_ON;
 
-	float32		f32VInvH_Comp_Coeff;				// Inv Output Voltage 220V compensate coefficient
-	float32		f32VInvL_Comp_Coeff;				// Inv Output Voltage 110V compensate coefficient
+	float32	f32VInvH_Comp_Coeff;				// Inv Output Voltage 220V compensate coefficient
+	float32	f32VInvL_Comp_Coeff;				// Inv Output Voltage 110V compensate coefficient
 
-	float32		f32IInvH_para_ave;
-	float32		f32IInvL_para_ave;
+	float32	f32IInvH_para_ave;
+	float32	f32IInvL_para_ave;
 };
 extern  struct PARALLEL_REG  Parallel_Reg;
 

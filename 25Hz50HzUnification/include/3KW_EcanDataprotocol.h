@@ -59,7 +59,7 @@ typedef union
 		Uint8 OverTemp:1;
 		Uint8 Fan1Block:1;
 		Uint8 Fan2Block:1;
-		Uint8 Ecan_Fault:1;
+		Uint8 :1;
 		Uint8 InvOverLoad :1;
 		Uint8 InvAsyn :1;
 		Uint8 rsvr7 :1;
@@ -95,7 +95,7 @@ typedef union
 		Uint8 Unrecover_RestartNum:1;
 		//Fault3
 		Uint8 SynLine_Cut:1;
-		Uint8 u8rsvr1:1;
+		Uint8 ECAN_Fault:1;
 		Uint8 u8rsvr2:1;
 		Uint8 u8rsvr3:1;
 		Uint8 u8rsvr4:1;

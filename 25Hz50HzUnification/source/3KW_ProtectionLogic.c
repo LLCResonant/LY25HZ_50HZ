@@ -1200,20 +1200,20 @@ void InvLCurrentProtectionIdentify(void)
 ******************************************************************************************************/
 void ShortRecover(void)
 {
-	static Uint16 u16Restart_time_interval = 0;
+	static Uint16 s_u16Restart_time_interval = 0;
 	if((1 == g_SysFaultMessage.bit.recoverHW_InvH_OCP)||(1 == g_SysFaultMessage.bit.recoverHW_InvL_OCP))
 	{
-		u16Restart_time_interval ++;
+		s_u16Restart_time_interval ++;
 		if(SafetyReg.u16Short_Restart_times<=2)
 		{
 			//After short protection, the module will restart with 22V and 16.5V output voltage to test
 			//whether the output is still shorted
-			if(u16Restart_time_interval==5000)  //2ms * 5000 = 10s
+			if(s_u16Restart_time_interval==5000)  //2ms * 5000 = 10s
 			{
 				g_SysFaultMessage.bit.recoverHW_InvH_OCP = 0;
 				g_SysFaultMessage.bit.recoverHW_InvL_OCP = 0;
 				DRV_RST_ON;
-				u16Restart_time_interval = 0;
+				s_u16Restart_time_interval = 0;
 				SafetyReg.u16Short_Restart_times ++;
 				SafetyReg.f32InvH_VoltRms_Ref = 0.1 * InvH_RatedVolt_Ref;
 				SafetyReg.f32InvL_VoltRms_Ref = 0.15 * InvL_RatedVolt_Ref;
@@ -1223,7 +1223,7 @@ void ShortRecover(void)
 		}
 		else
 		{
-			u16Restart_time_interval = 0;
+			s_u16Restart_time_interval = 0;
 			SafetyReg.u16Short_Restart_times = 0;
 			g_SysFaultMessage.bit.unrecoverHW_InvH_OCP = 1;
 			g_SysFaultMessage.bit.unrecoverHW_InvL_OCP = 1;

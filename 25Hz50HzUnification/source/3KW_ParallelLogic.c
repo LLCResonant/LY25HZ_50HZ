@@ -2,17 +2,14 @@
  * Copyright(c)
  * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 3KW_ParallelLogic.c
- *   
- *  PURPOSE  : Definition of parallel function and synchronization function
+ *  FILENAME : 3KW_DataAcquisition.c
+ *
+ *  PURPOSE  : Data acquisition and protection file of the module.
  *  
  *  HISTORY  :
  *    DATE            VERSION         AUTHOR            NOTE
- *    2018.6.2        001             		Li Zhang
- *    												Xun Gao
- *    												Jianxi Zhu
+ *    2018.6.2		001					NUAA XING
  *============================================================================*/
-
 
 #include "DSP2833x_Device.h"				// Peripheral address definitions
 #include "3KW_MAINHEADER.h"			// Main include file
