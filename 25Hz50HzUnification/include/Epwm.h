@@ -1,15 +1,14 @@
 /*=============================================================================*
- *         Copyright(c) 2009-2011, ALL RIGHTS RESERVED
- *                          
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : Epwm.h 
+ *  FILENAME : Epwm.h
  *
- *  PURPOSE  : Header file for EPwm.c
+ *  PURPOSE  :
  *  
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *    
- *
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
  *============================================================================*/
 
 #include "DSP2833x_Device.h"			// Peripheral address definitions

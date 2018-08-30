@@ -2,7 +2,7 @@
  * Copyright(c)
  * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 3KW_ProtectionLogic.h
+ *  FILENAME : 3KW_Safety_EEprom.h
  *
  *  PURPOSE  :
  *

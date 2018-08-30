@@ -1,16 +1,22 @@
-/********************************************************************
-程序说明：1.调用Eerom_Gpio_Init函数，初始化与Eeprom相关的IO
-		  2.调用 writebyte(Uint16 addr,Uint16 data); //写Eeprom
-            	 readbyte(Uint16 addr);				 //读Eeprom
-		  3.查看读取的内容与写入内容是否一致
-********************************************************************/
+/*=============================================================================*
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
+ *
+ *  FILENAME : 3KW_I2cEeprom.c
+ *
+ *  PURPOSE  :
+ *
+ *  HISTORY  :
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
+ *============================================================================*/
 
 #include "DSP2833x_Device.h"			// Peripheral address definitions
 #include "3KW_MAINHEADER.h"			// Main include file
 
-Uint16 i2c_err;							//Eeprom读写错误指示
+Uint16 u16i2c_err;							//Eeprom error indication
 
-/******************************函数声明****************************/
+/******************************function declaration****************************/
 void writebyte(Uint16 addr,Uint16 data);
 Uint16 readbyte(Uint16 addr);
 void Eeprom_Gpio_Init(void);
@@ -20,35 +26,35 @@ void stoptrans();
 void ack();
 void bytein(Uint8 ch);
 Uint8 byteout(void);
-/*****************IIC模拟总线部分*************************************/
+/*****************IIC Simulation Bus*************************************/
 
-/*****************AT24C512应用函数声明部分****************************/
-void AT24c512_WriteByte(Uint16 addr,Uint8 data);//向指定地址写入一字节数据
-Uint8 AT24c512_ReadByte(Uint16 addr);//从指定地址读出一字节数据
+/*****************AT24C512 Application Function Declaration****************************/
+void AT24c512_WriteByte(Uint16 addr,Uint8 data);//write a byte data into an address space
+Uint8 AT24c512_ReadByte(Uint16 addr);//read a byte data from an address space
 void AT24c512_WriteWord(Uint16 addr,Uint16 data);
 Uint16 AT24c512_ReadWord(Uint16 addr);
-void AT24c512_WriteSeriseByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber);
-void AT24c512_ReadSeriseByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber);
-void AT24c512_WriteSeriseWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber);
-void AT24c512_ReadSeriseWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber);
-void AT24c512_ClearSeriseWord(Uint16 startaddr,Uint16 wordNumber);
-/*****************AT24C512应用函数声明部分结束***************************/
+void AT24c512_WriteSeriesByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber);
+void AT24c512_ReadSeriesByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber);
+void AT24c512_WriteSeriesWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber);
+void AT24c512_ReadSeriesWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber);
+void AT24c512_ClearSeriesWord(Uint16 startaddr,Uint16 wordNumber);
+/*****************End of AT24C512 Application Function Declaration***************************/
 
 
-///////////////////以下程序不可改动///////////////////////////////////
+///////////////////Don not change the following content///////////////////////////////////
 
 void Eeprom_Gpio_Init(void)
 {
 	EALLOW;
-    GpioCtrlRegs.GPBPUD.bit.GPIO32 = 0;	  	//上拉
-    GpioCtrlRegs.GPBDIR.bit.GPIO32 = 1;   	// 输出端口
-    GpioCtrlRegs.GPBMUX1.bit.GPIO32 = 0;  	// IO口
-    GpioCtrlRegs.GPBQSEL1.bit.GPIO32 = 3; 	// 不同步
+    GpioCtrlRegs.GPBPUD.bit.GPIO32 = 0;	  	//pull up
+    GpioCtrlRegs.GPBDIR.bit.GPIO32 = 1;   		//output port
+    GpioCtrlRegs.GPBMUX1.bit.GPIO32 = 0;  	// IO port
+    GpioCtrlRegs.GPBQSEL1.bit.GPIO32 = 3; 	// out of sync
 
-    GpioCtrlRegs.GPBPUD.bit.GPIO33 = 0;	  	//上拉
-    GpioCtrlRegs.GPBDIR.bit.GPIO33 = 1;   	// 输出端口
-    GpioCtrlRegs.GPBMUX1.bit.GPIO33 = 0;  	// IO口
-    GpioCtrlRegs.GPBQSEL1.bit.GPIO33 = 3;   // 不同步
+    GpioCtrlRegs.GPBPUD.bit.GPIO33 = 0;	  	//pull up
+    GpioCtrlRegs.GPBDIR.bit.GPIO33 = 1;   		//output port
+    GpioCtrlRegs.GPBMUX1.bit.GPIO33 = 0;  	//IO port
+    GpioCtrlRegs.GPBQSEL1.bit.GPIO33 = 3;   //out of sync
     EDIS;
 }
 
@@ -66,7 +72,7 @@ __inline void SDA_WRITE(void)
     EDIS;
 }
 ///=========================GPIO SIMULATE I2c communication=====================*/
-void delay(Uint16 time) 					//延时函数
+void delay(Uint16 time) 					//delay function
 {
     for(; time>0 ; time--)
     {
@@ -82,26 +88,26 @@ void delay(Uint16 time) 					//延时函数
 		asm(" nop");
     }
 }
-void begintrans(void)       				//发送START 信号
+void begintrans(void)       				//send START signal
 {
-    SDA_W1;         						//SDA=1
-    delay(DELAY_UNIT * 10);         		//延时
-    SDA_WRITE();            				//SDA 方向为输出到EEPROM
-    delay(DELAY_UNIT * 10);         		//延时
-    SCL_1;          						//SCL=1
-    delay(DELAY_UNIT * 10);         		//延时
-    SDA_W0;         						//SDA=0
-    delay(DELAY_UNIT * 10);        			//延时
+    SDA_W1;         								//SDA=1
+    delay(DELAY_UNIT * 10);         		//delay
+    SDA_WRITE();            					//SDA direction is output to EEPROM
+    delay(DELAY_UNIT * 10);         		//delay
+    SCL_1;          									//SCL=1
+    delay(DELAY_UNIT * 10);         		//delay
+    SDA_W0;         								//SDA=0
+    delay(DELAY_UNIT * 10);        		//delay
 }
-void stoptrans(void)        				//发送STOP 信号
+void stoptrans(void)        				//send STOP signal
 {
-    SDA_WRITE();            				//SDA方向为输出到EEPROM
-    delay(DELAY_UNIT * 10);        			//延时
-    SDA_W0;         						//SDA=0
-    delay(DELAY_UNIT * 10);         		//延时
-    SCL_1;          						//SCL=1
-    delay(DELAY_UNIT * 10);         		//延时
-    SDA_W1;         						//SDA=1
+    SDA_WRITE();            					//SDA direction is output to EEPROM
+    delay(DELAY_UNIT * 10);        		//delay
+    SDA_W0;         								//SDA=0
+    delay(DELAY_UNIT * 10);         		//delay
+    SCL_1;          									//SCL=1
+    delay(DELAY_UNIT * 10);         		//delay
+    SDA_W1;         								//SDA=1
     delay(DELAY_UNIT * 10);
 }
 void writenoack()
@@ -113,7 +119,7 @@ void writenoack()
     SCL_0;
 }
 /********************************************
-内部函数，输出ACK=0
+inner function，output ACK=0
 ********************************************/
 void WriteACK()
 {
@@ -123,15 +129,15 @@ void WriteACK()
     delay(DELAY_UNIT * 10);
     SCL_0;
 }
-void ack(void)              				//等待ACK 信号
+void ack(void)              				//wait ACK signal
 {
     Uint16 d;
     Uint16  i;
 
-    SDA_READ();             				//SDA方向为从EEPROM 输入
-    delay(DELAY_UNIT * 10);          		//延时
-    SCL_1;          						//SCL=1
-    delay(DELAY_UNIT * 10);         		//延时
+    SDA_READ();             				//SDA direction is input from EEPROM
+    delay(DELAY_UNIT * 10);          	//delay
+    SCL_1;          								//SCL=1
+    delay(DELAY_UNIT * 10);         	//delay
     i = 0;
     do
     {
@@ -139,112 +145,112 @@ void ack(void)              				//等待ACK 信号
         i++;
         delay(DELAY_UNIT);
     }
-    while((d == 1) && (i <= 500));      	//等待EEPROM 输出低电平,4ms后退出循环
+    while((d == 1) && (i <= 500));      //wait EEPROM output voltage level gets low , 4ms later end the loop automatically
 
     if (i >= 499)
     {
-        i2c_err = 0xff;
+        u16i2c_err = 0xff;
     }
 
     i = 0;
-    SCL_0;          						//SCL=0
-    delay(DELAY_UNIT * 10);          		//延时
+    SCL_0;          									//SCL=0
+    delay(DELAY_UNIT * 10);          		//delay
 }
 
-void bytein(Uint8 ch)  					//向EEPROM 写入一个字节
+void bytein(Uint8 ch)  					//write a byte into EEPROM
 {
     Uint8 i;
-    SCL_0;          						//SCL=0
-    delay(DELAY_UNIT * 10);					//延时
-    SDA_WRITE();            				//SDA方向为输出到EEPROM
-    delay(DELAY_UNIT * 10);         		//延时
+    SCL_0;          								//SCL=0
+    delay(DELAY_UNIT * 10);			//delay
+    SDA_WRITE();            				//SDA direction is output to EEPROM
+    delay(DELAY_UNIT * 10);         	//delay
     for(i=8;i>0;i--)
     {
         if ((ch & 0x80)== 0)
     	{
-            SDA_W0;     					//数据通过SDA 串行移入EEPROM
-            delay(DELAY_UNIT * 10);				//延时
+            SDA_W0;     						//Data serial input into EEPROM through SDA
+            delay(DELAY_UNIT * 10);	//delay
     	}
         else
     	{
             SDA_W1;
-            delay(DELAY_UNIT * 10);				//延时
+            delay(DELAY_UNIT * 10);	//delay
     	}
-        SCL_1;      						//SCL=1
-        delay(DELAY_UNIT * 10);      		//延时
+        SCL_1;      								//SCL=1
+        delay(DELAY_UNIT * 10);      	//delay
         ch <<= 1;
-        SCL_0;      						//SCL=0
-        delay(DELAY_UNIT * 10);      		//延时
+        SCL_0;      								//SCL=0
+        delay(DELAY_UNIT * 10);      	//delay
     }
     ack();
 }
 
-Uint8 byteout(void)        				//从EEPROM 输出一个字节
+Uint8 byteout(void)        				//read a byte out of EEPROM
 {
     unsigned char i;
     Uint8 ch;
     ch = 0;
 
-    SDA_READ();             				//SDA 的方向为从EEPROM 输出
-    delay(DELAY_UNIT * 10);         			//延时
+    SDA_READ();             				//SDA direction is out of EEPROM
+    delay(DELAY_UNIT * 10);         	//delay
     for(i=8;i>0;i--)
     {
         ch <<= 1;
-        SCL_1;      						//SCL=1
-        delay(DELAY_UNIT * 10);      	   //延时
-        ch |= SDA_R;    					//数据通过SDA 串行移出EEPROM
-        delay(DELAY_UNIT * 10);     		//延时
-        SCL_0;      						//SCL=0
-        delay(DELAY_UNIT * 10);      		//延时
+        SCL_1;      								//SCL=1
+        delay(DELAY_UNIT * 10);      	//delay
+        ch |= SDA_R;    						//Data serial output from EEPROM through SDA
+        delay(DELAY_UNIT * 10);     	//delay
+        SCL_0;      								//SCL=0
+        delay(DELAY_UNIT * 10);      	//delay
     }
     return(ch);
 }
-/////////////////////////////////以上为I2c 模拟部分（以上程序不可动）////////////////////////////////////////////
+/////////////////////////////////Above content are I2c simulation part（do not change above function）////////////////////////////////////////////
 
-////////////////////////////////////AT24C512应用程序部分////////////////////////////////////////////////////////////
-/***************************************************************
-*名称: void AT24c512_WriteByte(Uint16 addr,Uint8 data)
-*描述: 向AT24C512指定地址写入一字节数据
-*参数: addr--地址；data--一字节数据
-*返回: 无
-****************************************************************/
+////////////////////////////////////AT24C512 Application function////////////////////////////////////////////////////////////
+/*=============================================================================*
+ * FUNCTION: void AT24c512_WriteByte(Uint16 addr, Uint8 data)
+ * PURPOSE:	write a byte into a specific address space of AT24C512
+ * PRARMETER: addr--address；data--a byte data
+ * RETURN: none
+ *============================================================================*/
 void AT24c512_WriteByte(Uint16 addr,Uint8 data)
 {
-	begintrans();							//开始
-    bytein(0xA0);  //写入写控制字0xA0  此地方要做改动！
-    bytein( (Uint8)(addr & 0xff00)>>8);       //写入指定地址
-	bytein( (Uint8)(addr & 0x00ff));       //写入指定地址
-    bytein(data);      						//写入待写入EEPROM 的数据
-    stoptrans();							//停止
+	begintrans();									//begin
+    bytein(0xA0);  								//write writing control byte 0xA0, according to different IC
+    bytein( (Uint8)(addr & 0xff00)>>8);       //write specific address
+	bytein( (Uint8)(addr & 0x00ff));       		//write specific address
+    bytein(data);      									//write data into EEPROM
+    stoptrans();									//stop
     delay(8000);
 	delay(8000);	
 }
-/***************************************************************
-*名称: Uint8 AT24c512_ReadByte(Uint16 addr)
-*描述: 从AT24c512指定地址读出一字节数据
-*参数: addr--地址
-*返回: 读出的数据
-****************************************************************/
+/*=============================================================================*
+ * FUNCTION: Uint8 AT24c512_ReadByte(Uint16 addr)
+ * PURPOSE:	read a byte from a specific address space of AT24C512
+ * PRARMETER: addr--address
+ * RETURN: a byte data
+ *============================================================================*/
 Uint8 AT24c512_ReadByte(Uint16 addr)
 {
 	Uint8 c;    
-    begintrans();       					//开始
-    bytein(0xA0);  							//写入写控制字0xA0
-    bytein( (Uint8)(addr & 0xff00)>>8);       //写入指定地址
-	bytein( (Uint8)(addr & 0x00ff));       //写入指定地址       					//写入指定地址
-    begintrans();       					//开始
-    bytein(0xA1);       					//写入读控制字0xA1
-    c = byteout();      					//读出EEPROM 涑龅氖�
-    stoptrans();        					//停止
-    delay(2000);        					//延时
+    begintrans();       								//begin
+    bytein(0xA0);  									//write writing control byte 0xA0, according to different IC
+    bytein( (Uint8)(addr & 0xff00)>>8);   //write specific address
+	bytein( (Uint8)(addr & 0x00ff));       	//write specific address
+    begintrans();       								//begin
+    bytein(0xA1);       								//write reading control byte 0xA1, according to different IC
+    c = byteout();      								//read data from EEPROM
+    stoptrans();        								//stop
+    delay(2000);        								//delay
     return(c);	
 }
-/***************************************************************
-*名称: void AT24c512_WriteWord(Uint16 addr,Uint16 data)
-*描述: 向AT24c512指定地址写入一字数据
-*参数: addr-地址；data-一字数据
-*返回: 无
-****************************************************************/
+/*=============================================================================*
+ * FUNCTION: void AT24c512_WriteWord(Uint16 addr, Uint16 data)
+ * PURPOSE:	write a word into a specific address space of AT24C512
+ * PRARMETER: addr--address；data--a word data
+ * RETURN: none
+ *============================================================================*/
 void AT24c512_WriteWord(Uint16 addr,Uint16 data)
 {
 	Uint8 HighData = 0;
@@ -253,14 +259,13 @@ void AT24c512_WriteWord(Uint16 addr,Uint16 data)
   	HighData = (Uint8)( data >> 8 );
 	AT24c512_WriteByte(addr,LowData);
 	AT24c512_WriteByte(addr+1,HighData);
-
 }
-/***************************************************************
-*名称: Uint16 AT24c512_ReadWord(Uint16 addr)
-*描述: 从AT24c512指定地址读出一字数据
-*参数: addr-地址；
-*返回: 读出的一字数据
-****************************************************************/
+/*=============================================================================*
+ * FUNCTION: Uint16 AT24c512_ReadWord(Uint16 addr)
+ * PURPOSE:	read a word from a specific address space of AT24C512
+ * PRARMETER: addr--address
+ * RETURN: a word data
+ *============================================================================*/
 Uint16 AT24c512_ReadWord(Uint16 addr)
 {
 	Uint8 HighData = 0;
@@ -271,27 +276,26 @@ Uint16 AT24c512_ReadWord(Uint16 addr)
 	Data     = (Uint16)(HighData << 8) + (Uint16)LowData;
 	return(Data);
 }
-/***************************************************************
-*名称: void AT24c512_WriteSeriseByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber)
-*描述:
-*参数: 无
-*返回: 无
-****************************************************************/
-void AT24c512_WriteSeriseByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber)
+/*=============================================================================*
+ * FUNCTION: void AT24c512_WriteSeriseByte(Uint16 startaddr, Uint8* pdata, Uint16 byteNumber)
+ * PURPOSE:	write series bytes into specific address space of AT24C512
+ * PRARMETER: startaddr-- the start address  *pdata-- data pointer byteNumber-- the number of the bytes
+ * RETURN: none
+ *============================================================================*/
+void AT24c512_WriteSeriesByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber)
 {
 	Uint16 i;
 	for(i = 0; i < byteNumber; i++)
 	{
 		AT24c512_WriteByte(startaddr + i,* (pdata + i));
 	}
-			
 }
-/***************************************************************
-*名称: void AT24c512_ReadSeriseByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber)
-*描述:
-*参数: 无
-*返回: 无
-****************************************************************/
+/*=============================================================================*
+ * FUNCTION: void AT24c512_ReadSeriseByte(Uint16 startaddr, Uint8* pdata, Uint16 byteNumber)
+ * PURPOSE:	read series bytes out of specific address space of AT24C512
+ * PRARMETER: startaddr-- the start address  *pdata-- data pointer byteNumber-- the number of the bytes
+ * RETURN: none
+ *============================================================================*/
 void AT24c512_ReadSeriseByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber)
 {
 	Uint16 i;
@@ -302,13 +306,13 @@ void AT24c512_ReadSeriseByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber)
 		pdata++;
 	}
 }
-/***************************************************************
-*名称:void AT24c512_WriteSeriseWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber)
-*描述:
-*参数: 无
-*返回: 无
-****************************************************************/
-void AT24c512_WriteSeriseWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber)
+/*=============================================================================*
+ * FUNCTION: void AT24c512_WriteSeriseWord(Uint16 startaddr, Uint16* pdata, Uint16 wordNumber)
+ * PURPOSE:	write series words into specific address space of AT24C512
+ * PRARMETER: startaddr-- the start address  *pdata-- data pointer wordNumber-- the number of the words
+ * RETURN: none
+ *============================================================================*/
+void AT24c512_WriteSeriesWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber)
 {
 	Uint16 i;
 	//0000=startaddr
@@ -320,7 +324,13 @@ void AT24c512_WriteSeriseWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber)
 		startaddr += 1;
 	}	
 }
-void AT24c512_ClearSeriseWord(Uint16 startaddr,Uint16 wordNumber)
+/*=============================================================================*
+ * FUNCTION: void AT24c512_ClearSeriesWord(Uint16 startaddr, Uint16 wordNumber)
+ * PURPOSE:	clear series words of specific address space of AT24C512
+ * PRARMETER: startaddr-- the start address  wordNumber-- the number of the words
+ * RETURN: none
+ *============================================================================*/
+void AT24c512_ClearSeriesWord(Uint16 startaddr,Uint16 wordNumber)
 {
 	Uint16 i;
 	for(i = 0; i < wordNumber; i++)
@@ -329,13 +339,13 @@ void AT24c512_ClearSeriseWord(Uint16 startaddr,Uint16 wordNumber)
 		startaddr += 1;
 	}
 }
-/***************************************************************
-*名称: void AT24c512_ReadSeriseWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber)
-*描述:
-*参数: 无
-*返回: 无
-****************************************************************/
-void AT24c512_ReadSeriseWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber)
+/*=============================================================================*
+ * FUNCTION: void AT24c512_ReadSeriseWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber)
+ * PURPOSE:	write series words into specific address space of AT24C512
+ * PRARMETER: startaddr-- the start address  *pdata-- data pointer wordNumber-- the number of the words
+ * RETURN: none
+ *============================================================================*/
+void AT24c512_ReadSeriesWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber)
 {
 	Uint16 i;
 	for(i = 0; i < wordNumber; i++)
@@ -345,29 +355,24 @@ void AT24c512_ReadSeriseWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber)
 		pdata++;
 	}	
 }
-/***************************************************************
-*名称:
-*描述:
-*参数: 无
-*返回: 无
-****************************************************************/
+/*=================================================================*/
 #if 0
 Uint16 AT24c512_ReadWord(Uint16 addr)
 {
 	Uint16 c;
 	Uint8 HighData = 0;
 	Uint8 LowData  = 0;    
-    begintrans();       					//开始
-    bytein(0xA0);  							//写入写控制字0xA0
-    bytein( (Uint8)(addr & 0xff00)>>8);       //写入指定地址
-	bytein( (Uint8)(addr & 0x00ff));       //写入指定地址       					//写入指定地址
-    begintrans();       					//开始
-    bytein(0xA1);       					//写入读控制字0xA1
-    LowData = byteout();      					//读出EEPROM 输出的数据
+    begintrans();       									//begin
+    bytein(0xA0);  										//write writing control byte 0XA0
+    bytein( (Uint8)(addr & 0xff00)>>8);       //write specific address
+	bytein( (Uint8)(addr & 0x00ff));      		 //write specific address
+    begintrans();       									//begin
+    bytein(0xA1);       									//write read control byte 0xA1
+    LowData = byteout();      						//Read data from EEPROM
 	HighData = byteout();
 	
-    stoptrans();        					//停止
-    delay(2000);        					//延时
+    stoptrans();        									//stop
+    delay(2000);        									//delay
 	c = (Uint16)(HighData << 8) + (Uint16)LowData;
     return(c);	
 }
@@ -379,23 +384,15 @@ void AT24c512_WriteWord(Uint16 addr,Uint16 data)
 	Uint8 LowData  = 0;
 	LowData  = (Uint8)(data & 0x00ff);
   	HighData = (Uint8)( data >> 8 );
-	bytein(0xA0);  //写入写控制字0xA0  此地方要做改动！
-    bytein( (Uint8)(addr & 0xff00)>>8);       //写入指定地址
-	bytein( (Uint8)(addr & 0x00ff));       //写入指定地址
-	bytein(LowData);      					//写入待写入EEPROM 的数据
+	bytein(0xA0);  										//write writing control byte 0XA0
+    bytein( (Uint8)(addr & 0xff00)>>8);       //write specific address
+	bytein( (Uint8)(addr & 0x00ff));       		//write specific address
+	bytein(LowData);      								//write data into EEPROM
 	bytein(HighData);
-    stoptrans();							//停止
+    stoptrans();											//stop
     delay(8000);
 }
 #endif
-////////////////////////////////////AT24C512应用程序部分////////////////////////////////////////////////////////////
-/***************************************************************
-*名称:
-*描述:
-*参数: 无
-*返回: 无
-****************************************************************/
-
 //===========================================================================
 // No more.
 //===========================================================================

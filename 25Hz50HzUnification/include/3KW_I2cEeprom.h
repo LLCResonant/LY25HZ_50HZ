@@ -34,17 +34,16 @@ void ack();
 void bytein(Uint8 ch);
 Uint8 byteout(void);
 
-
 /*****************The definition of AT24C512 application function****************************/
 extern void AT24c512_WriteByte(Uint16 addr,Uint8 data);//Write a data byte into a memory space with a specified address
 extern Uint8 AT24c512_ReadByte(Uint16 addr);//Read a data byte from a memory space with a specified address
 extern void AT24c512_WriteWord(Uint16 addr,Uint16 data);
 extern Uint16 AT24c512_ReadWord(Uint16 addr);
-extern void AT24c512_WriteSeriseByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber);
-extern void AT24c512_ReadSeriseByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber);
-extern void AT24c512_WriteSeriseWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber);
-extern void AT24c512_ReadSeriseWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber);
-extern void AT24c512_ClearSeriseWord(Uint16 startaddr,Uint16 wordNumber);
+extern void AT24c512_WriteSeriesByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber);
+extern void AT24c512_ReadSeriesByte(Uint16 startaddr,Uint8* pdata,Uint16 byteNumber);
+extern void AT24c512_WriteSeriesWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber);
+extern void AT24c512_ReadSeriesWord(Uint16 startaddr,Uint16* pdata,Uint16 wordNumber);
+extern void AT24c512_ClearSeriesWord(Uint16 startaddr,Uint16 wordNumber);
 
 #endif
 

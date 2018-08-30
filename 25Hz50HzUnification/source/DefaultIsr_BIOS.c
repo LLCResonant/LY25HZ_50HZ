@@ -1,22 +1,14 @@
 /*=============================================================================*
- *         Copyright(c) 2009-2011, ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : DefaultIsr_BIOS.c 
+ *  FILENAME : DefaultIsr_BIOS.c
  *
- *  PURPOSE  : ADC, EPWMx_TRIP, ECAP1 and SCIRXINT ISR frames.
+ *  PURPOSE  :
  *  
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *    
- *
- *----------------------------------------------------------------------------
- *  GLOBAL VARIABLES
- *    NAME                                    DESCRIPTION
- *      
- *----------------------------------------------------------------------------
- *  GLOBAL FUNCTIONS
- *    NAME                                    DESCRIPTION
- *    
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
  *============================================================================*/
  
 #include "DSP2833x_Device.h"		    // Peripheral address definitions

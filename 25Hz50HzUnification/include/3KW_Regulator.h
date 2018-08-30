@@ -2,7 +2,7 @@
  * Copyright(c)
  * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 3KW_ProtectionLogic.h
+ *  FILENAME : 3KW_Regulator.h
  *
  *  PURPOSE  :
  *
@@ -66,14 +66,20 @@
  *  kp + --------------
  *  		  s^2 + w0^2
  */
-#define InvH_Volt_Kp				0.6f
-#define InvH_Volt_Kr				400* 0.00005f
+#define InvH_Volt_Kp1				0.6f
+#define InvH_Volt_Kr1				400* 0.00005f
+
+#define InvH_Volt_Kp2				0.8f
+#define InvH_Volt_Kr2				800* 0.00005f
+
+#define InvL_Volt_Kp1				1.5f
+#define InvL_Volt_Kr1			350* 0.00005f
+
+#define InvL_Volt_Kp2				2.0f
+#define InvL_Volt_Kr2			1200* 0.00005f
+
 #define Inv_Volt_Coff_a2			0.00006168503f  // (w0 * Ts) * (w0 * Ts), where w0 is 2 * pi * 25Hz; Ts is the sample period 1 / 20000Hz
 #define Inv_Volt_Coff_a3			0.2499961f   		// 1 / (4 + w0 * w0 * Ts * Ts)
-
-#define InvL_Volt_Kp				1.5f
-#define InvL_Volt_Kr				350* 0.00005f
-
 #define LPF_B0_INV	0.00003913f
 #define LPF_B1_INV	0.00007826f
 #define LPF_B2_INV	0.00003913f
@@ -100,8 +106,18 @@
 #define IGrid_RefAmp_Limit2 38
 #define IGrid_RefAmp_Limit3 34
 //Inv
-#define InvH_Volt_Kp				0.01f
-#define InvH_Volt_Kr				800 * 0.00005f
+#define InvH_Volt_Kp1				0.01f
+#define InvH_Volt_Kr1				800 * 0.00005f
+
+#define InvH_Volt_Kp2				0
+#define InvH_Volt_Kr2				0
+
+#define InvL_Volt_Kp1				1.5f
+#define InvL_Volt_Kr1				350* 0.00005f
+
+#define InvL_Volt_Kp2				0
+#define InvL_Volt_Kr2				0
+
 #define Inv_Volt_Coff_a2			0.0002467401f  	// (w0 * Ts) * (w0 * Ts), where w0 is 2 * pi * 25Hz; Ts is the sample period 1 / 20000Hz
 #define Inv_Volt_Coff_a3			0.2499846f   		// 1 / (4 + w0 * w0 * Ts * Ts)
 

@@ -2,7 +2,7 @@
  * Copyright(c)
  * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 3KW_ProtectionLogic.h
+ *  FILENAME : 3KW_StateUpdate.h
  *
  *  PURPOSE  :
  *
@@ -17,6 +17,7 @@
 #define FAN_CHECK
 #define LY25HZ	0x05
 //#define LY50HZ	0x07
+#define Module_Type     LY25HZ
 
 /*
  * PFC PWM test
@@ -65,6 +66,12 @@ enum   SYS_STATE
  WaitState, CheckState,NormalState,FaultState,PermanentState
 } ; 
 extern enum	SYS_STATE	g_Sys_Current_State;
+
+enum   SYS_STRUCTURE
+{
+ Single_noBypass, Single_Bypass, Multiple_noBypass, Multiple_Bypass
+} ;
+extern enum	SYS_STRUCTURE 	g_Sys_Structure_State;
 
 union  STATE_CHECK 
 {

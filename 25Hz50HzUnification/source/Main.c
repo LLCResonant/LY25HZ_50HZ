@@ -2,7 +2,7 @@
  * Copyright(c)
  * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 3KW_ProtectionLogic.h
+ *  FILENAME : Main.c
  *
  *  PURPOSE  :
  *
@@ -17,13 +17,14 @@
 //--- variables
 Uint8 	u8ecan_cnt = 1;
 Uint8 	u8hosttemp = 0;
+enum SYS_STRUCTURE	 g_Sys_Structure_State = Single_noBypass;
 
 //--- functions
 void SysParamDefault(); 
 
 /********************************************************************************************************
-* FUNCION : 	void main(void)
-* PURPOSE : 	Initializtion of CPU system , AD sampling, three phase pwm output, Peripheral
+* FUNCION : void main(void)
+* PURPOSE : 	Initialization of CPU system , AD sampling, three phase pwm output, Peripheral
 * 						Interrupt Expansion equal,and  system default parameter  defined
 ********************************************************************************************************/
 void main(void)
@@ -59,6 +60,21 @@ void main(void)
   	InitECan();							// Initialize the ECan.
  	InitECana();						// Initialize the ECana.
  	EEPROMParamDefault();	// Initialize the EEprom
+
+ 	if (Single_Module_Level == 1)
+ 	{
+ 		if (Bypass_Module_Level == 1)
+ 			g_Sys_Structure_State = Multiple_noBypass;
+ 		else
+ 			g_Sys_Structure_State = Multiple_Bypass;
+ 	}
+ 	else
+ 	{
+ 		if (Bypass_Module_Level == 1)
+ 			g_Sys_Structure_State = Single_noBypass;
+ 		else
+ 			g_Sys_Structure_State = Single_Bypass;
+ 	}
 
     SetDBGIER(IER | 0x6000);							// Enable everything in IER, plus INT14 and DLOGINT
     *(volatile unsigned int *)0x00000C14 |= 0x0C00;		// Set TIMER2 FREE=SOFT=1
@@ -319,6 +335,9 @@ void SysParamDefault(void)
 	SafetyReg.u16IInv_WarningTime = IInvWarningTime;
 	SafetyReg.f32IInvL_Hi1LimitBack = SafetyReg.f32IInvL_Hi1Limit - 2;
 
+	SafetyReg.f32InvH_Para_CurrentLimit = InvHParallelCurrentLimit * 100;
+	SafetyReg.f32InvL_Para_CurrentLimit = InvLParallelCurrentLimit * 100;
+
 	SafetyReg.f32IGrid_HiLimit = OverRated_InputCurrentPeak;
 	SafetyReg.f32InvTemp_HiLimit = ShutInvTemperatureLimit;
 	SafetyReg.u16Short_Restart_times = 0;
@@ -443,8 +462,8 @@ void SysParamDefault(void)
 	InvHVoltConReg.f32Output[1] = 0;
 	InvHVoltConReg.f32Output[2] = 0;
 	InvHVoltConReg.f32MAC = 0;
-	InvHVoltConReg.f32Kp = InvH_Volt_Kp;
-	InvHVoltConReg.f32Kr = InvH_Volt_Kr;
+	InvHVoltConReg.f32Kp = InvH_Volt_Kp1;
+	InvHVoltConReg.f32Kr = InvH_Volt_Kr1;
 	InvHVoltConReg.f32VoltDutyUpLimit = 0;
 	InvHVoltConReg.f32VoltDutyLowLimit = 0;
   	InvHVoltConReg.f32InvDuty = 0;
@@ -463,8 +482,8 @@ void SysParamDefault(void)
     InvLVoltConReg.f32Output[1] = 0;
     InvLVoltConReg.f32Output[2] = 0;
     InvLVoltConReg.f32MAC = 0;
-	InvLVoltConReg.f32Kp = InvL_Volt_Kp;
-	InvLVoltConReg.f32Kr = InvL_Volt_Kr;
+	InvLVoltConReg.f32Kp = InvL_Volt_Kp1;
+	InvLVoltConReg.f32Kr = InvL_Volt_Kr1;
 	InvLVoltConReg.f32VoltDutyUpLimit = 0;
 	InvLVoltConReg.f32VoltDutyLowLimit = 0;
   	InvLVoltConReg.f32InvDuty = 0;
@@ -500,8 +519,8 @@ void SysParamDefault(void)
 	Parallel_Reg.u16Cnt_SCR_ON = 0;
 	Parallel_Reg.f32IInvH_para_ave = 0;
 	Parallel_Reg.f32IInvL_para_ave = 0;
-	Parallel_Reg.f32VInvH_Comp_Coeff = 0;
-	Parallel_Reg.f32VInvL_Comp_Coeff = 0;
+	Parallel_Reg.f32VInvH_Comp_Coeff = 1.0f;
+	Parallel_Reg.f32VInvL_Comp_Coeff = 1.0f;
 //Controller parameter
 
 //Power limit parameter

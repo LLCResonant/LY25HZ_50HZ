@@ -1,11 +1,15 @@
-/**********************************************************************
-* File: SysCtrl.c
-* Devices: TMS320F2833x
-* Author: David M. Alter, Texas Instruments Inc.
-* History:
-*   12/18/07 - original (D. Alter)
-*   09/09/09 - changed PLL init to meet production datasheet (D. Alter)
-**********************************************************************/
+/*=============================================================================*
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
+ *
+ *  FILENAME : SysCtrl.c
+ *
+ *  PURPOSE  :
+ *
+ *  HISTORY  :
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
+ *============================================================================*/
 #include "DSP2833x_Device.h"			// Peripheral address definitions
 #include "3KW_MAINHEADER.h"				// Main include file
 

@@ -2,7 +2,7 @@
  * Copyright(c)
  * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 3KW_DataAcquisition.h
+ *  FILENAME : 3KW_EcanDataprotocol.h
  *
  *  PURPOSE  :
  *
@@ -16,7 +16,6 @@
 
 #define 	Computer_Address  		0x02
 #define 	Computer_Type 		    0x00
-#define 	Module_Type 		    	LY25HZ
 #define 	Module_Address 		    0x01
 extern Uint8   	ModuleAdd;
 extern Uint8  	u8_hostdrop;
@@ -102,7 +101,6 @@ typedef union
 		Uint8 u8rsvr5:1;
 		Uint8 u8rsvr6:1;
 		Uint8 u8rsvr7:1;
-
 	}bit;
 }ECAN_MODULE_Fault;
 /*----------------------------The intermediate variable of the data frame sent by a module to a computer------------------------------------*/

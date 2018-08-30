@@ -1,15 +1,15 @@
-// TI File $Revision: /main/4 $
-// Checkin $Date: June 2, 2008   11:12:33 $
-//###########################################################################
-//
-// FILE:	DSP2833x_GlobalVariableDefs.c
-//
-// TITLE:	DSP2833x Global Variables and Data Section Pragmas.
-//
-//###########################################################################
-// $TI Release: DSP2833x/DSP2823x C/C++ Header Files V1.31 $
-// $Release Date: August 4, 2009 $
-//###########################################################################
+/*=============================================================================*
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
+ *
+ *  FILENAME : DSP2833x_GlobalVariableDefs.c
+ *
+ *  PURPOSE  :
+ *
+ *  HISTORY  :
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
+ *============================================================================*/
 
 #include "DSP2833x_Device.h"     // DSP2833x Headerfile Include File
 

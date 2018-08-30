@@ -1,15 +1,15 @@
-//###########################################################################
-//
-// FILE:    DSP2803x_ECan.c
-//
-// TITLE:   DSP2803x Enhanced CAN Initialization & Support Functions.
-//
-//###########################################################################
-// $TI Release: F2803x C/C++ Header Files and Peripheral Examples V130 $
-// $Release Date: May  8, 2015 $
-// $Copyright: Copyright (C) 2009-2015 Texas Instruments Incorporated -
-//             http://www.ti.com/ ALL RIGHTS RESERVED $
-//###########################################################################
+/*=============================================================================*
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
+ *
+ *  FILENAME : ECan.c
+ *
+ *  PURPOSE  :
+ *
+ *  HISTORY  :
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
+ *============================================================================*/
 #include "DSP2833x_Device.h"	// Peripheral address definitions
 #include "3KW_MAINHEADER.h"			// Main include file
 

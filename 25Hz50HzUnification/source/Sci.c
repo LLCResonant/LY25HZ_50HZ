@@ -1,22 +1,14 @@
 /*=============================================================================*
- *         Copyright(c) 2009-2011, ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : Sci.c 
+ *  FILENAME : 3KW_DataAcquisition.c
  *
- *  PURPOSE  :  
+ *  PURPOSE  : Data acquisition and protection file of the module.
  *  
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *    
- *
- *----------------------------------------------------------------------------
- *  GLOBAL VARIABLES
- *    NAME                                    DESCRIPTION
- *      
- *----------------------------------------------------------------------------
- *  GLOBAL FUNCTIONS
- *    NAME                                    DESCRIPTION
- *   
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
  *============================================================================*/
 #include "DSP2833x_Device.h"			// Peripheral address definitions
 #include "3KW_MAINHEADER.h"
@@ -221,11 +213,18 @@ void InitScib(Uint32 u32BaudRate, Uint16 u16RxMode)
 	SetSci(ID_SCIB, pSciBuf, SCIB_BUF_SIZE);
 }
 
-/**********************************************************************
-* Function: InitScic()
-*
-* Description:
-**********************************************************************/
+/*=============================================================================*
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
+ *
+ *  FILENAME : Sci.c
+ *
+ *  PURPOSE  :
+ *
+ *  HISTORY  :
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
+ *============================================================================*/
 void InitScic(Uint32 u32BaudRate, Uint16 u16RxMode)
 {
     Uint16 u16Br;

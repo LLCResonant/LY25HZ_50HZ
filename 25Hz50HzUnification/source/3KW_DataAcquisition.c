@@ -49,6 +49,7 @@ void InvVoltsAveCalc();
 void GridCurrentPIConfig();
 void GridCurrentRefLimit();
 
+void InvVoltPRConfig();
 /*RMS calculator function */
 void GridCurrentsRMSCalc();
 void GridCurrentsRMSAveCalc();
@@ -404,19 +405,35 @@ void TSK_InvVoltPeriod(void)
 				OutFrequencyCalc();
 
 				/*Software protection function*/
-				InvHCurrentCheck();
-				InvLCurrentCheck();
-				InvHVoltCheck();
-				InvLVoltCheck();
-			    InvHFreqCheck();
-			    InvLFreqCheck();
+				if (Module_Type == 0x05)
+				{
+					InvHCurrentCheck();
+					InvLCurrentCheck();
+					InvHVoltCheck();
+					InvLVoltCheck();
+					InvHFreqCheck();
+					InvLFreqCheck();
+	        		InvHCurrentProtectionIdentify();
+	         		InvLCurrentProtectionIdentify();
+				}
+				else
+				{
+					InvHCurrentCheck();
+					InvHVoltCheck();
+					InvHFreqCheck();
+	        		InvHCurrentProtectionIdentify();
+				}
+
           		OverTemperatureLimit();
          		OutputCurrentLimit();
          		InvSyncCheck();
-         		InvHCurrentProtectionIdentify();
-         		InvLCurrentProtectionIdentify();
+
 
 				/*Controller related function*/
+         		if ( g_Sys_Structure_State == Single_noBypass || g_Sys_Structure_State == Single_Bypass )
+         		{
+         			InvVoltPRConfig();
+         		}
 				SyncLogic_Control();
 				InvVoltSlowup();
 				InvRestartCheck();
@@ -520,7 +537,7 @@ void GridCurrentPIConfig(void)
 
 	if(s_u8temp1 == 0)
 	{
-		if (Module_Type == LY25HZ)
+		if (Module_Type == 0x05)
 		{
 			s_f32VGrid_Volt_Subdivide1 = 185;
 			s_f32VGrid_Volt_Subdivide2 = 210;
@@ -598,7 +615,7 @@ void GridCurrentRefLimit(void)
 
 	if (s_u8temp1 == 0)
 	{
-		if (Module_Type == LY25HZ)
+		if (Module_Type == 0x05)
 		{
 			s_f32VGrid_Volt_Subdivide1= 185;
 			s_f32VGrid_Volt_Subdivide2= 230;
@@ -638,7 +655,7 @@ void PFCTempCalc(void)
 
 	f32temp1 = (AD_Sum.f32TempPFC * f32SumCounterReci);
 
-	if (Module_Type == LY25HZ)
+	if (Module_Type == 0x05)
 	{
 		if (f32temp1 <= f32TempTab[u16length])
 			f32temp2 = u8PFCTempHiValue;
@@ -821,7 +838,109 @@ void InvVoltsRMSCalc(void)
 	Calc_Result.f32VInvH_rms = f32temp1;
 	Calc_Result.f32VInvL_rms = f32temp2;
 }
+/*=============================================================================*
+ * FUNCTION:	void InvVoltPRConfig(void)
+ *
+ * PURPOSE:	Change PR parameters
+ *
+ * CALLED BY:	void TSK_InvVoltPeriod(void)
+ *============================================================================*/
+void InvVoltPRConfig()
+{
+	static Uint8		s_u8temp1 = 0;
+	static float32 	s_f32IInvH_Current_Subdivide1 = 0;
+	static float32 	s_f32IInvH_Current_Subdivide2 = 0;
+	static float32 	s_f32IInvH_Current_Subdivide3 = 0;
+	static float32 	s_f32IInvH_Current_Subdivide4 = 0;
+	static float32 	s_f32IInvL_Current_Subdivide1 = 0;
+	static float32 	s_f32IInvL_Current_Subdivide2 = 0;
+	static float32 	s_f32IInvL_Current_Subdivide3 = 0;
+	static float32 	s_f32IInvL_Current_Subdivide4 = 0;
 
+	if(s_u8temp1 == 0)
+	{
+		if (Module_Type == 0x05)
+		{
+			s_f32IInvH_Current_Subdivide1 = 0.9f;
+			s_f32IInvH_Current_Subdivide2 = 1.3f;
+			s_f32IInvH_Current_Subdivide3 = 3.85f;
+			s_f32IInvH_Current_Subdivide4 = 4.15f;
+			s_f32IInvL_Current_Subdivide1 = 0.9f;
+			s_f32IInvL_Current_Subdivide2 = 1.1f;
+			s_f32IInvL_Current_Subdivide3 = 4.8f;
+			s_f32IInvL_Current_Subdivide4 = 5.1f;
+		}
+		else
+		{
+			s_f32IInvH_Current_Subdivide1 = 0;
+			s_f32IInvH_Current_Subdivide2 = 0;
+			s_f32IInvH_Current_Subdivide3 = 0;
+			s_f32IInvH_Current_Subdivide4 = 0;
+			s_f32IInvL_Current_Subdivide1 = 0;
+			s_f32IInvL_Current_Subdivide2 = 0;
+			s_f32IInvL_Current_Subdivide3 = 0;
+			s_f32IInvL_Current_Subdivide4 = 0;
+		}
+		s_u8temp1 = 1;
+	}
+	/*
+	 *	Change INVH(220V) PR parameter according to output current amplitude.
+	 */
+	if(Calc_Result.f32IInvH_rms_instant <= s_f32IInvH_Current_Subdivide1)
+	{
+		InvHVoltConReg.f32Kp = InvH_Volt_Kp2;
+		InvHVoltConReg.f32Kr = InvH_Volt_Kr2;
+	}
+	else if(Calc_Result.f32IInvH_rms_instant > s_f32IInvH_Current_Subdivide1 && Calc_Result.f32IInvH_rms_instant <= s_f32IInvH_Current_Subdivide2)
+	{
+		InvHVoltConReg.f32Kp = InvHVoltConReg.f32Kp;
+		InvHVoltConReg.f32Kr = InvHVoltConReg.f32Kr;
+	}
+	else if(Calc_Result.f32IInvH_rms_instant > s_f32IInvH_Current_Subdivide2 && Calc_Result.f32IInvH_rms_instant <= s_f32IInvH_Current_Subdivide3)
+	{
+		InvHVoltConReg.f32Kp = InvH_Volt_Kp1;
+		InvHVoltConReg.f32Kr = InvH_Volt_Kr1;
+	}
+	else if(Calc_Result.f32IInvH_rms_instant > s_f32IInvH_Current_Subdivide3 && Calc_Result.f32IInvH_rms_instant <= s_f32IInvH_Current_Subdivide4)
+	{
+		InvHVoltConReg.f32Kp = InvHVoltConReg.f32Kp;
+		InvHVoltConReg.f32Kr = InvHVoltConReg.f32Kr;
+	}
+	else if(Calc_Result.f32IInvH_rms_instant > s_f32IInvH_Current_Subdivide4)
+	{
+		InvHVoltConReg.f32Kp = InvH_Volt_Kp2;
+		InvHVoltConReg.f32Kr =  InvH_Volt_Kr2;
+	}
+
+	/*
+	*	Change INVL(110V) PR parameter according to output current amplitude.
+    */
+	if(Calc_Result.f32IInvL_rms_instant <= s_f32IInvL_Current_Subdivide1)
+	{
+		InvLVoltConReg.f32Kp = InvL_Volt_Kp2;
+		InvLVoltConReg.f32Kr = InvL_Volt_Kr2;
+	}
+	else if(Calc_Result.f32IInvL_rms_instant > s_f32IInvL_Current_Subdivide1 && Calc_Result.f32IInvL_rms_instant <= s_f32IInvL_Current_Subdivide2 )
+	{
+		InvLVoltConReg.f32Kp=InvLVoltConReg.f32Kp;
+		InvLVoltConReg.f32Kr =InvLVoltConReg.f32Kr;
+	}
+	else if(Calc_Result.f32IInvL_rms_instant > s_f32IInvL_Current_Subdivide2 && Calc_Result.f32IInvL_rms_instant <= s_f32IInvL_Current_Subdivide3)
+	{
+		InvLVoltConReg.f32Kp = InvL_Volt_Kp2;
+		InvLVoltConReg.f32Kr = InvL_Volt_Kr1;
+	}
+	else if(Calc_Result.f32IInvL_rms_instant > s_f32IInvL_Current_Subdivide3 && Calc_Result.f32IInvL_rms_instant <= s_f32IInvL_Current_Subdivide4)
+	{
+		InvLVoltConReg.f32Kp=InvLVoltConReg.f32Kp;
+		InvLVoltConReg.f32Kr =InvLVoltConReg.f32Kr;
+	}
+	else if(Calc_Result.f32IInvL_rms_instant > s_f32IInvL_Current_Subdivide4)
+	{
+		InvLVoltConReg.f32Kp = InvL_Volt_Kp1;
+		InvLVoltConReg.f32Kr = InvL_Volt_Kr2;
+	}
+}
 /*=============================================================================*
  * FUNCTION:	void InvTempCalc(void)
  *
@@ -841,7 +960,7 @@ void InvTempCalc(void)
 	f32temp_invh1 = (AD_Sum.f32TempInvH * f32SumCounterInv);
 	f32temp_invl1 = (AD_Sum.f32TempInvL * f32SumCounterInv);
 
-	if (Module_Type == LY25HZ)
+	if (Module_Type == 0x05)
 	{
 		if (f32temp_invh1 <= f32TempTab[u16length])
 			f32temp_invh2 = f32InvTempHiValue;

@@ -15,10 +15,10 @@ typedef struct{
 	Uint16 	u16Size;
 }QUEUE;
 			
-/************************************************************************************
+/********************************************************************************************
 *Sci structure																		*
-*Including  tranmit and receive queue structure and Tx,Rx threshold control variabls*
-*************************************************************************************/
+*Including  transmit and receive queue structure and Tx,Rx threshold control variables
+***********************************************************************************************/
 typedef struct{
 	Uint8	u8TxStatus;
 	Uint16	u16TxLength;

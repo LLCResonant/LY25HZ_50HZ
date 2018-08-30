@@ -2,9 +2,9 @@
  * Copyright(c)
  * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 3KW_DataAcquisition.c
+ *  FILENAME : 3KW_Scia_LCDs.c
  *
- *  PURPOSE  : Data acquisition and protection file of the module.
+ *  PURPOSE  :
  *  
  *  HISTORY  :
  *    DATE            VERSION         AUTHOR            NOTE

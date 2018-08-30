@@ -2,9 +2,9 @@
  * Copyright(c)
  * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 3KW_DataAcquisition.c
+ *  FILENAME : 3KW_EcanDataprotocol.c
  *
- *  PURPOSE  : Data acquisition and protection file of the module.
+ *  PURPOSE  :
  *
  *  HISTORY  :
  *    DATE            VERSION         AUTHOR            NOTE
@@ -803,7 +803,7 @@ void Para_Revise_Oper(Uint8 temp)
 				Parallel_Reg.f32VInvL_Comp_Coeff *= (float32)(Ecan_SysParaCalibration.u16VInvL_Comp_Coeff * 0.0001);
 		}
 
-		if (Ecan_SysParaCalibration.u16IInvH_para_ave >= 0.1f && Ecan_SysParaCalibration.u16IInvH_para_ave < 800)
+		if (Ecan_SysParaCalibration.u16IInvH_para_ave >= 0.1f && Ecan_SysParaCalibration.u16IInvH_para_ave < SafetyReg.f32InvH_Para_CurrentLimit)
 		{
 			Parallel_Reg.f32IInvH_para_ave = (float32)(Ecan_SysParaCalibration.u16IInvH_para_ave * 0.01);
 			InvHParallelCurCheck();
@@ -811,7 +811,7 @@ void Para_Revise_Oper(Uint8 temp)
 
 		break;
 	case 7:
-		if (Ecan_SysParaCalibration.u16IInvL_para_ave >= 0.1f && Ecan_SysParaCalibration.u16IInvL_para_ave < 1000)
+		if (Ecan_SysParaCalibration.u16IInvL_para_ave >= 0.1f && Ecan_SysParaCalibration.u16IInvL_para_ave < SafetyReg.f32InvL_Para_CurrentLimit)
 		{
 			Parallel_Reg.f32IInvL_para_ave = (float32)(Ecan_SysParaCalibration.u16IInvL_para_ave * 0.01);
 			InvLParallelCurCheck();

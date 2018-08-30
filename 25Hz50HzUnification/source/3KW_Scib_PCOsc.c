@@ -1,25 +1,14 @@
 /*=============================================================================*
- *         Copyright(c) 
- *                          ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 20KW_Scib_Interface.c
- *   
- *  PURPOSE  : SCIb for IPOMS (Virtual PCOsci by XXXXX)
+ *  FILENAME : 3KW_Scib_PCOsc.c
+ *
+ *  PURPOSE  :
  *  
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *     
- *
- *----------------------------------------------------------------------------
- *  GLOBAL VARIABLES
- *    NAME                                    DESCRIPTION
- *          
- *      
- *----------------------------------------------------------------------------
- *  GLOBAL FUNCTIONS
- *    NAME                                    DESCRIPTION
- *    
- *   Scib_SnatchGraph(void);    
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
  *============================================================================*/
 
 

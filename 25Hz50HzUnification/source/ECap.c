@@ -1,23 +1,14 @@
 /*=============================================================================*
- *         Copyright(c) 2009-2011, ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : ECap.c 
+ *  FILENAME : ECap.c
  *
- *  PURPOSE  : Capture falling/rising edge for Grid_Frequecy calculation and 
- *  		       phase sequency detection.
+ *  PURPOSE  :
  *  
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *   
- *
- *----------------------------------------------------------------------------
- *  GLOBAL VARIABLES
- *    NAME                                    DESCRIPTION
- *      
- *----------------------------------------------------------------------------
- *  GLOBAL FUNCTIONS
- *    NAME                                    DESCRIPTION
- *    
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
  *============================================================================*/
 
 

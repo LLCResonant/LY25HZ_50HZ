@@ -15,8 +15,8 @@
 
 //======================= Global constants========== ==================
 #ifdef		LY25HZ
-#define	Rated_InvH_OutputCurrentRms	5.5
-#define 	Rated_InvL_OutputCurrentRms 	7.3
+#define	Rated_InvH_OutputCurrentRms		5.5
+#define 	Rated_InvL_OutputCurrentRms 		7.3
 #define 	IInvHi1ProtectionTime       	15000
 #define 	IInvHi2ProtectionTime       	75
 #define 	IInvHi3ProtectionTime       	25
@@ -25,11 +25,13 @@
 #define 	Rated_InputCurrentRms		13.5
 #define 	OverRated_InputCurrentRms		Rated_InputCurrentRms * 1.3
 #define 	OverRated_InputCurrentPeak  		OverRated_InputCurrentRms * 1.414
+#define 	InvHParallelCurrentLimit  				8
+#define 	InvLParallelCurrentLimit  				10
 
 #define 	InvTheta_StepRated				RatedInvFrequency*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Hi_Limit			25*1.1*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Low_Limit		25*0.9*Value_2Pi/PWM_FREQ*2
-#define 	InvFreq_Low_Limit				24.6
+#define 	InvFreq_Low_Limit					24.6
 #define 	InvFreq_High_Limit				25.4
 
 #define 	VGridDipBusVoltLimit 			680
@@ -38,32 +40,35 @@
 #endif
 
 #ifdef		LY50HZ
-#define	Rated_Inv_OutputCurrentRms		13
+#define	Rated_InvH_OutputCurrentRms		13
+#define 	Rated_InvL_OutputCurrentRms 		0
 #define 	IInvHi1ProtectionTime       		30000
 #define 	IInvHi2ProtectionTime       		150
 #define 	IInvHi3ProtectionTime       		7
 #define 	IInvHi4ProtectionTime       		3
-#define 	IInvHiLimitBackTime				3000
+#define 	IInvHiLimitBackTime					3000
 #define 	Rated_InputCurrentRms			19
-#define 	OverRated_InputCurrentRms	Rated_InputCurrentRms * 1.3
-#define 	OverRated_InputCurrentPeak  OverRated_InputCurrentRms * 1.414
+#define 	OverRated_InputCurrentRms		Rated_InputCurrentRms * 1.3
+#define 	OverRated_InputCurrentPeak  	OverRated_InputCurrentRms * 1.414
+#define 	InvHParallelCurrentLimit  				15
+#define 	InvLParallelCurrentLimit  				15
 
-#define 	RatedInvFrequency 				50
 #define 	InvTheta_StepRated				RatedInvFrequency*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Hi_Limit			50*1.1*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Low_Limit		50*0.9*Value_2Pi/PWM_FREQ*2
-#define 	InvFreq_Low_Limit				49.6
+#define 	InvFreq_Low_Limit					49.6
 #define 	InvFreq_High_Limit				50.4
 
 #define 	VGridDipBusVoltLimit 				660
 #define	InvHParaCurDeviationLimit  		6.5
+#define	InvLParaCurDeviationLimit  		0
 #endif
 
 //-------------------------------------------------------------------------------
 
 #define VGridHiLimit						289
 #define VGridHiLimitBack 				279
-#define VGridLowLimit	 				149
+#define VGridLowLimit	 					149
 #define VGridLowLimit2 					165
 #define VGridLowLimitBack  			159
 #define VGridHighProtectionTime	6
@@ -178,6 +183,8 @@ typedef struct
 	Uint16 	u16IInvH_Hi4ProtectionTime;
 	Uint16 	u16IInvH_HiLimitBackTime;
 	float32 f32IInvH_Hi1LimitBack;
+	float32 f32InvH_Para_CurrentLimit;
+	float32 f32InvL_Para_CurrentLimit;
 
 	float32	f32IInvL_Hi1Limit;
 	float32 f32IInvL_Hi2Limit;

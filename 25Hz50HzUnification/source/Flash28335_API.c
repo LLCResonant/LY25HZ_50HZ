@@ -1,18 +1,15 @@
-//###########################################################################
-//
-// FILE:  Flash28335_API.c	
-//
-// TITLE: F28335 Flash API Example
-//
-// NOTE:  This example runs from Flash.  First program the example
-//        into flash.  The code will then copy the API's to RAM and 
-//        modify the flash. 
-//
-//
-//###########################################################################
-// $TI Release: F28335 API Release V1.0 $
-// $Release Date:
-//###########################################################################
+/*=============================================================================*
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
+ *
+ *  FILENAME : Flash28335_API.c
+ *
+ *  PURPOSE  :
+ *
+ *  HISTORY  :
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
+ *============================================================================*/
 
 
 /*---- Flash API include file -------------------------------------------------*/

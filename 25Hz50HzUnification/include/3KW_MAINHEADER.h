@@ -1,21 +1,18 @@
 /*=============================================================================*
- *         
- *                          ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 50KW_MAINHEADER.h 
-
- *  PURPOSE  : main include file involves constants and other including
- *			   files besides standard DSP2833x header files.  
+ *  FILENAME : 3KW_MAINHEADER.h
+ *
+ *  PURPOSE  :
  *
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *    
- *
- ******************************************************************************/
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
+ *============================================================================*/
  
-   
 /*=============================================================================*
- * 	Software Development Evironment Notification: 
+ * 	Software Development Environment Notification:
  *	-- CCS 3.3.49.1
  * 	-- BIOS 5.33.06
  *	-- Code Generation v5.2.0 or v5.2.4
@@ -35,7 +32,7 @@
 /* DSP/BIOS Macros for ADC calibration */
 #define ADC_cal_func_ptr (void (*)(void))0x380080
 /*=============================================================================*
- * 	Includings 
+ * 	Including
  *============================================================================*/
 
 /* Include Standard C Language Header Files */
@@ -99,8 +96,8 @@ extern Uint16 g_u16sciaRamFun_runstart;
 extern void InitEPwm(void);
 extern void InitECap(void);
 extern void InitAdc(void);
-extern void InitECanGpio(void);  //2017.10.26 GX
-extern void InitECan(void);		//2017.10.26 GX
+extern void InitECanGpio(void);
+extern void InitECan(void);
 
 /*=============================================================================*
  * 	Global functions for system level initialization

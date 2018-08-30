@@ -1,21 +1,14 @@
 /*=============================================================================*
- *         Copyright(c) 2009-2010, ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : Gpio.c 
+ *  FILENAME : Gpio.c
  *
- *  PURPOSE  : Gpio configuration according to application board for 3KW
+ *  PURPOSE  :
  *  
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *
- *----------------------------------------------------------------------------
- *  GLOBAL VARIABLES
- *    NAME                                    DESCRIPTION
- *
- *----------------------------------------------------------------------------
- *  GLOBAL FUNCTIONS
- *    NAME                                    DESCRIPTION
- *
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
  *============================================================================*/
 
 
@@ -314,11 +307,11 @@ void InitGpio(void)
 	GpioCtrlRegs.GPADIR.bit.GPIO13 = 1;			// Configures the GPIO pin as an output
 
 	// GPIO14 Output pin for 220V Output SCR Control
-	GpioDataRegs.GPASET.bit.GPIO14 = 1;			// output 1 by default //2017.6.29 GX inverter test
+	GpioDataRegs.GPASET.bit.GPIO14 = 1;			// output 1 by default
 	GpioCtrlRegs.GPADIR.bit.GPIO14 = 1;			// Configures the GPIO pin as an output
 
 	// GPIO15 Output pin for 110V Output Relay Control
-	GpioDataRegs.GPASET.bit.GPIO15 = 1;			// output 1 by default //2017.6.29 GX inverter test
+	GpioDataRegs.GPASET.bit.GPIO15 = 1;			// output 1 by default
 	GpioCtrlRegs.GPADIR.bit.GPIO15 = 1;			// Configures the GPIO pin as an output
 
 	// GPIO16 Output pin for 110V Output SCR Control
@@ -350,6 +343,11 @@ void InitGpio(void)
 
 	/* ------------Group B pins-----------*/
 
+	// GPIO42 Input for whether there is a bypass module. Set means no bypass, Clear means existing bypass
+	GpioCtrlRegs.GPBDIR.bit.GPIO42 = 0;			// Configures the GPIO pin as an input
+	// GPIO43 Input for whether the system is single module. Set means more than one module, clear mean single module.
+	GpioCtrlRegs.GPBDIR.bit.GPIO43 = 0;			// Configures the GPIO pin as an input
+
 	// GPIO48 Output pin for Bypass Relay/SCR Control
 	GpioDataRegs.GPBSET.bit.GPIO48 = 1;		// output 1 by default
 	GpioCtrlRegs.GPBDIR.bit.GPIO48 = 1;			// Configures the GPIO pin as an output
@@ -358,7 +356,7 @@ void InitGpio(void)
 	GpioDataRegs.GPBCLEAR.bit.GPIO50 = 1;		// output 0 by default
 	GpioCtrlRegs.GPBDIR.bit.GPIO50 = 1;			// Configures the GPIO pin as an output
 
-	GpioDataRegs.GPBSET.bit.GPIO51 = 1;		// output 1 by default		// Johnny 0426
+	GpioDataRegs.GPBSET.bit.GPIO51 = 1;		// output 1 by default
 	GpioCtrlRegs.GPBDIR.bit.GPIO51 = 1;			// Configures the GPIO pin as an output
 
 	/* ------------Group C pins-----------*/

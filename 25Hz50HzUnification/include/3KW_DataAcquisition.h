@@ -44,33 +44,33 @@
 // -----------------------------------------------
 #ifdef 	LY25HZ
 #define IGridMeasureGain		0.0264f
-#define IInvHMeasureGain      0.0147f
-#define IInvLMeasureGain       0.0184f
+#define IInvHMeasureGain      	0.0147f
+#define IInvLMeasureGain       	0.0184f
 #define TempMeasureGain		1.0f
-#define InvHNoLoadCurrent	1.1f
-#define InvLNoLoadCurrent	0.6f
+#define InvHNoLoadCurrent		1.1f
+#define InvLNoLoadCurrent		0.6f
 
 #define VGridMeasureGain		0.235f
 #define VInvHMeasureGain		0.235f
 #define VInvLMeasureGain		0.117f
 #define VBusMeasureGain		0.143f
-#define RatedInvFrequency 	25
+#define RatedInvFrequency 		25
 #define InvCounter					PWM_FREQ/2/RatedInvFrequency
 #endif
 
 #ifdef 	LY50HZ
 #define IGridMeasureGain		0.04f
 #define IInvHMeasureGain      0.04f
-#define IInvLMeasureGain       0f
+#define IInvLMeasureGain       0.0f
 #define TempMeasureGain		0.07324187f
-#define InvHNoLoadCurrent	2.5f
-#define InvLNoLoadCurrent	0f
+#define InvHNoLoadCurrent	    2.5f
+#define InvLNoLoadCurrent	    0.0f
 
 #define VGridMeasureGain		0.235f
 #define VInvHMeasureGain		0.235f
-#define VInvLMeasureGain		0f
+#define VInvLMeasureGain		0.0f
 #define VBusMeasureGain		0.143f
-#define RatedInvFrequency 	50
+#define RatedInvFrequency 		50
 #define InvCounter					PWM_FREQ/2/RatedInvFrequency
 #endif
 
@@ -99,6 +99,12 @@
 #define DC_FAN1_FB_Level				GpioDataRegs.GPCDAT.bit.GPIO77
 #define DC_FAN2_FB_Level				GpioDataRegs.GPCDAT.bit.GPIO76
 
+// Single module indication pin
+#define Single_Module_Level			GpioDataRegs.GPBDAT.bit.GPIO43
+
+//Bypass indication pin
+#define Bypass_Module_Level			GpioDataRegs.GPBDAT.bit.GPIO42
+
 /*=================struct define====================*/
 
 struct	AD_Sample_Reg1 
@@ -109,13 +115,13 @@ struct	AD_Sample_Reg1
 	float32    	f32IOutH;				// AC Output Current 220V
 	float32		f32IOutL;				// AC Output Current 110V
 
-	float32 	f32VGrid;				// AC Input Voltage
+	float32 		f32VGrid;				// AC Input Voltage
 	float32		f32VInvH;				// Inv Output Voltage 220V
 	float32		f32VInvL;				// Inv Output Voltage 110V
-	float32 	f32VBusP;				// DC Bus High Voltage
+	float32 		f32VBusP;				// DC Bus High Voltage
 	float32		f32VBusN;			// DC Bus Low Voltage
 
-	float32 	f32VOutH;			// AC Output Voltage 220V
+	float32 		f32VOutH;			// AC Output Voltage 220V
 	float32		f32VOutL;			// AC Output Voltage 110V
 
     float32		f32TempInvH;
@@ -148,42 +154,42 @@ struct	AD_ACC_Reg1
 	float32		f32IOutH_rms;
 	float32		f32IOutL_rms;
 
-	float32 	f32VGrid_rms;
-	float32 	f32VGrid_rms_instant;
-	float32 	f32VInvH_rms;
-	float32 	f32VInvL_rms;
+	float32 		f32VGrid_rms;
+	float32 		f32VGrid_rms_instant;
+	float32 		f32VInvH_rms;
+	float32 		f32VInvL_rms;
 	float32		f32VInvH_rms_instant;
 	float32		f32VInvL_rms_instant;
 
-	float32 	f32VOutH_rms;
-	float32 	f32VOutL_rms;
+	float32 		f32VOutH_rms;
+	float32 		f32VOutL_rms;
 
 	float32		f32VBusP;
 	float32		f32VBusN;
-	float32 	f32VBus;
+	float32 		f32VBus;
 
 	float32		f32Coff_Dforward;
 
 	float32		f32TempInvH;
 	float32		f32TempInvL;
     float32		f32TempPFC;
-    float32 	f32TempInvMax;
+    float32 		f32TempInvMax;
 
 	float32		f32GridFreq;
 	float32		f32VOutFreq;
-	float32 	f32VOutHFreq;
-	float32 	f32VOutLFreq;
+	float32 		f32VOutHFreq;
+	float32 		f32VOutLFreq;
 
-	float32 	f32Phase_Diff_ave;
+	float32 		f32Phase_Diff_ave;
 };
-/*=================gloable varibles declaration====================*/
+/*=================Global variables declaration====================*/
 extern	struct	AD_Sample_Reg1	GeneralADbuffer,  GetRealValue,  ADGain,  ADChannelOffset,  ADCalibration;
 extern	struct	AD_ACC_Reg1		AD_Acc, 	AD_Sum, 	Calc_Result;
 extern	float32	f32SumCounterReci, 	f32SumCounterInv;
 extern	int16 	i16Cnt_SysParaTemp;
-/*=================end of gloable varibles declaration====================*/
+/*=================end of global variables declaration====================*/
 
-/*=================gloable function declaration====================*/
+/*=================Global function declaration====================*/
 extern void Get_ADC_Result1(void);		// functions called in ADC.c
 extern void Get_ADC_Result2(void);		// functions called in ADC.c
 extern void ADAccGridCalc(void);
@@ -201,7 +207,7 @@ extern void HwInvLOCPDetection(void);
 extern void HwInvLOVPDetection(void);
 
 extern void FanCntl(void);
-/*=================end of gloable function declaration====================*/
+/*=================end of global function declaration====================*/
 #endif
 //--- end of file -----------------------------------------------------
 

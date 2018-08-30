@@ -1,22 +1,14 @@
 /*=============================================================================*
- *         Copyright(c) 2009-2011, ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 50KW_Safety_EEprom.c 
+ *  FILENAME : 3KW_Safety_EEprom.c
  *
- *  PURPOSE  :  
+ *  PURPOSE  :
  *  
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *    
- *
- *----------------------------------------------------------------------------
- *  GLOBAL VARIABLES
- *    NAME                                    DESCRIPTION
- *      
- *----------------------------------------------------------------------------
- *  GLOBAL FUNCTIONS
- *    NAME                                    DESCRIPTION
- *   
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
  *============================================================================*/
 
 
@@ -123,7 +115,7 @@ void Times_ReadFromEEPROM()
 	Uint16 Check = 0;
 	RunningTime.Second = AT24c512_ReadByte(0x0000);
 	RunningTime.Minute = AT24c512_ReadByte(0x0002);
-	AT24c512_ReadSeriseWord(0x0004, &RunningTime.Hour_L , 2);
+	AT24c512_ReadSeriesWord(0x0004, &RunningTime.Hour_L , 2);
 	RunningTime.OverFlow = AT24c512_ReadByte(0x0008);
 	RunningTime.TimeCheck = AT24c512_ReadWord(0x000A);
 	Check ^= RunningTime.Second;
@@ -143,28 +135,6 @@ void Times_ReadFromEEPROM()
 	HWI_enable();
 }
 
-/*=============================================================================*
- * FUNCTION: 	SaveSafetyInEEPROM()
- *
- * PURPOSE : 
- *
- * INPUT: 		Uint16 u16StartAddr----EEPROM address to be written in,
- *				SAFETY_PARAMETER_REG safety-------Safety instance to be written in
- *
- * RETURN: 		Uint16 type value:
- *				I2C_W_R_OK
- *				I2C_W_R_EXCEED_LIMIT
- *				I2C_W_R_DATA_AMOUNT_IS_ZERO
- *				I2C_R_FAILED
- *
- * CALLS: 		I2C_Write_InWord()
- *
- * CALLED BY:   
- *
- * MORE INFO:
- *============================================================================*/
-
-
 void Times_WriteToEEPROM()
 {
 	HWI_disable();
@@ -176,7 +146,7 @@ void Times_WriteToEEPROM()
 	RunningTime.TimeCheck ^= RunningTime.OverFlow;
 	AT24c512_WriteWord(0x0000, RunningTime.Second);
 	AT24c512_WriteWord(0x0002, RunningTime.Minute);
-	AT24c512_WriteSeriseWord(0x0004, &RunningTime.Hour_L, 2);
+	AT24c512_WriteSeriesWord(0x0004, &RunningTime.Hour_L, 2);
 	AT24c512_WriteWord(0x0008, RunningTime.OverFlow);
 	AT24c512_WriteWord(0x000A, RunningTime.TimeCheck);
 	HWI_enable();
@@ -229,66 +199,74 @@ void VoltsRef_WriteToEEPROM()
 void Sample_ReadFromEEPROM()
 {
 	HWI_disable();
-	Uint16 Read_Sample_Check1 = 0;
-	Uint16 Sample_Correct_VInvH1= 0;
-	Uint16 Sample_Correct_VInvL1= 0;
-	Uint16 Sample_Correct_IOutH1= 0;
-	Uint16 Sample_Correct_IOutL1= 0;
-	Uint16 Sample_Correct_VGrid1= 0;
-	Uint16 Sample_Correct_IGrid1= 0;
-	Uint16 Sample_Correct_VBusP1= 0;
-	Uint16 Sample_Correct_VBusN1= 0;
-	Uint16 Sample_Correct_VOutH1= 0;
-	Uint16 Sample_Correct_VOutL1= 0;
-	Uint16 Sample_Correct_TempPFC1= 0;
-	Uint16 Sample_Correct_TempInvH1= 0;
-	Uint16 Sample_Correct_TempInvL1= 0;
-	Uint16  Sample_Check1 = 0;
+	Uint16 u16Read_Sample_Check1 = 0;
+	Uint16 u16Sample_Correct_VInvH1= 0;
+	Uint16 u16Sample_Correct_VInvL1= 0;
+	Uint16 u16Sample_Correct_IOutH1= 0;
+	Uint16 u16Sample_Correct_IOutL1= 0;
+	Uint16 u16Sample_Correct_VGrid1= 0;
+	Uint16 u16Sample_Correct_IGrid1= 0;
+	Uint16 u16Sample_Correct_VBusP1= 0;
+	Uint16 u16Sample_Correct_VBusN1= 0;
+	Uint16 u16Sample_Correct_VOutH1= 0;
+	Uint16 u16Sample_Correct_VOutL1= 0;
+	Uint16 u16Sample_Correct_TempPFC1= 0;
+	Uint16 u16Sample_Correct_TempInvH1= 0;
+	Uint16 u16Sample_Correct_TempInvL1= 0;
+	Uint16 u16Sample_InvH_Comp_Coeff1= 0;
+	Uint16 u16Sample_InvL_Comp_Coeff1= 0;
+	Uint16  u16Sample_Check1 = 0;
 
-	Sample_Correct_VInvH1 = AT24c512_ReadWord(0x0020);
-	Sample_Correct_VInvL1 = AT24c512_ReadWord(0x0022);
-	Sample_Correct_IOutH1 = AT24c512_ReadWord(0x0024);
-	Sample_Correct_IOutL1 = AT24c512_ReadWord(0x0026);
-	Sample_Correct_VGrid1 = AT24c512_ReadWord(0x0028);
-	Sample_Correct_IGrid1 = AT24c512_ReadWord(0x002A);
-	Sample_Correct_VBusP1 = AT24c512_ReadWord(0x002C);
-	Sample_Correct_VBusN1 = AT24c512_ReadWord(0x002E);
-	Sample_Correct_VOutH1= AT24c512_ReadWord(0x0030) ;
-	Sample_Correct_VOutL1= AT24c512_ReadWord(0x0032);
-	Sample_Correct_TempPFC1= AT24c512_ReadWord(0x0034);
-	Sample_Correct_TempInvH1= AT24c512_ReadWord(0x0036);
-	Sample_Correct_TempInvL1= AT24c512_ReadWord(0x0038);
-	Read_Sample_Check1 = AT24c512_ReadWord(0x003A);   //**********×¢ÒâµØÖ·**************
+	u16Sample_Correct_VInvH1 = AT24c512_ReadWord(0x0020);
+	u16Sample_Correct_VInvL1 = AT24c512_ReadWord(0x0022);
+	u16Sample_Correct_IOutH1 = AT24c512_ReadWord(0x0024);
+	u16Sample_Correct_IOutL1 = AT24c512_ReadWord(0x0026);
+	u16Sample_Correct_VGrid1 = AT24c512_ReadWord(0x0028);
+	u16Sample_Correct_IGrid1 = AT24c512_ReadWord(0x002A);
+	u16Sample_Correct_VBusP1 = AT24c512_ReadWord(0x002C);
+	u16Sample_Correct_VBusN1 = AT24c512_ReadWord(0x002E);
+	u16Sample_Correct_VOutH1= AT24c512_ReadWord(0x0030) ;
+	u16Sample_Correct_VOutL1= AT24c512_ReadWord(0x0032);
+	u16Sample_Correct_TempPFC1= AT24c512_ReadWord(0x0034);
+	u16Sample_Correct_TempInvH1= AT24c512_ReadWord(0x0036);
+	u16Sample_Correct_TempInvL1= AT24c512_ReadWord(0x0038);
+	u16Sample_InvH_Comp_Coeff1 = AT24c512_ReadWord(0x003A);
+	u16Sample_InvL_Comp_Coeff1 = AT24c512_ReadWord(0x003C);
+	u16Read_Sample_Check1 = AT24c512_ReadWord(0x003E);
 
-	Sample_Check1 ^= Sample_Correct_VInvH1;
-	Sample_Check1 ^= Sample_Correct_VInvL1;
-	Sample_Check1 ^= Sample_Correct_IOutH1;
-	Sample_Check1 ^= Sample_Correct_IOutL1;
-	Sample_Check1 ^= Sample_Correct_VGrid1;
-	Sample_Check1 ^= Sample_Correct_IGrid1;
-	Sample_Check1 ^= Sample_Correct_VBusP1;
-	Sample_Check1 ^= Sample_Correct_VBusN1;
-	Sample_Check1 ^= Sample_Correct_VOutH1;
-	Sample_Check1 ^= Sample_Correct_VOutL1;
-	Sample_Check1 ^= Sample_Correct_TempPFC1;
-	Sample_Check1 ^= Sample_Correct_TempInvH1;
-	Sample_Check1 ^= Sample_Correct_TempInvL1;
+	u16Sample_Check1 ^= u16Sample_Correct_VInvH1;
+	u16Sample_Check1 ^= u16Sample_Correct_VInvL1;
+	u16Sample_Check1 ^= u16Sample_Correct_IOutH1;
+	u16Sample_Check1 ^= u16Sample_Correct_IOutL1;
+	u16Sample_Check1 ^= u16Sample_Correct_VGrid1;
+	u16Sample_Check1 ^= u16Sample_Correct_IGrid1;
+	u16Sample_Check1 ^= u16Sample_Correct_VBusP1;
+	u16Sample_Check1 ^= u16Sample_Correct_VBusN1;
+	u16Sample_Check1 ^= u16Sample_Correct_VOutH1;
+	u16Sample_Check1 ^= u16Sample_Correct_VOutL1;
+	u16Sample_Check1 ^= u16Sample_Correct_TempPFC1;
+	u16Sample_Check1 ^= u16Sample_Correct_TempInvH1;
+	u16Sample_Check1 ^= u16Sample_Correct_TempInvL1;
+	u16Sample_Check1 ^= u16Sample_InvH_Comp_Coeff1;
+	u16Sample_Check1 ^= u16Sample_InvL_Comp_Coeff1;
 
-	if (Sample_Check1 == Read_Sample_Check1 && Sample_Correct_VInvH1 != 65535)
+	if (u16Sample_Check1 == u16Read_Sample_Check1 && u16Sample_Correct_VInvH1 != 65535)
 	{
-		ADCalibration.f32VInvH = Sample_Correct_VInvH1 * 0.001f;
-		ADCalibration.f32VInvL = Sample_Correct_VInvL1 * 0.001f;
-		ADCalibration.f32IOutH = Sample_Correct_IOutH1 * 0.001f;
-		ADCalibration.f32IOutL = Sample_Correct_IOutL1 * 0.001f;
-		ADCalibration.f32VGrid = Sample_Correct_VGrid1 * 0.001f;
-		ADCalibration.f32IGrid = Sample_Correct_IGrid1 * 0.001f;
-		ADCalibration.f32VBusP = Sample_Correct_VBusP1 * 0.001f;
-		ADCalibration.f32VBusN = Sample_Correct_VBusN1 * 0.001f;
-		ADCalibration.f32VOutH = Sample_Correct_VOutH1 * 0.001f;
-		ADCalibration.f32VOutL = Sample_Correct_VOutL1 * 0.001f;
-		ADCalibration.f32TempPFC = Sample_Correct_TempPFC1 * 0.001f;
-		ADCalibration.f32TempInvH = Sample_Correct_TempInvH1 * 0.001f;
-		ADCalibration.f32TempInvL = Sample_Correct_TempInvL1 * 0.001f;
+		ADCalibration.f32VInvH = u16Sample_Correct_VInvH1 * 0.001f;
+		ADCalibration.f32VInvL = u16Sample_Correct_VInvL1 * 0.001f;
+		ADCalibration.f32IOutH = u16Sample_Correct_IOutH1 * 0.001f;
+		ADCalibration.f32IOutL = u16Sample_Correct_IOutL1 * 0.001f;
+		ADCalibration.f32VGrid = u16Sample_Correct_VGrid1 * 0.001f;
+		ADCalibration.f32IGrid = u16Sample_Correct_IGrid1 * 0.001f;
+		ADCalibration.f32VBusP = u16Sample_Correct_VBusP1 * 0.001f;
+		ADCalibration.f32VBusN = u16Sample_Correct_VBusN1 * 0.001f;
+		ADCalibration.f32VOutH = u16Sample_Correct_VOutH1 * 0.001f;
+		ADCalibration.f32VOutL = u16Sample_Correct_VOutL1 * 0.001f;
+		ADCalibration.f32TempPFC = u16Sample_Correct_TempPFC1 * 0.001f;
+		ADCalibration.f32TempInvH = u16Sample_Correct_TempInvH1 * 0.001f;
+		ADCalibration.f32TempInvL = u16Sample_Correct_TempInvL1 * 0.001f;
+		Parallel_Reg.f32VInvH_Comp_Coeff = u16Sample_InvH_Comp_Coeff1 * 0.0001f;
+		Parallel_Reg.f32VInvL_Comp_Coeff = u16Sample_InvL_Comp_Coeff1 * 0.0001f;
 	}
 	else
 	{
@@ -305,6 +283,8 @@ void Sample_ReadFromEEPROM()
 		ADCalibration.f32TempPFC = 1.0f;
 		ADCalibration.f32TempInvH = 1.0f;
 		ADCalibration.f32TempInvL = 1.0f;
+		Parallel_Reg.f32VInvH_Comp_Coeff = 1.0f;
+		Parallel_Reg.f32VInvL_Comp_Coeff = 1.0f;
 		Sample_WriteToEEPROM();
 	}
 	HWI_enable();
@@ -313,62 +293,70 @@ void Sample_ReadFromEEPROM()
 void Sample_WriteToEEPROM()
 {
 	HWI_disable();
-	Uint16 Sample_Correct_VInvH2= 0;
-	Uint16 Sample_Correct_VInvL2= 0;
-	Uint16 Sample_Correct_IOutH2= 0;
-	Uint16 Sample_Correct_IOutL2= 0;
-	Uint16 Sample_Correct_VGrid2= 0;
-	Uint16 Sample_Correct_IGrid2= 0;
-	Uint16 Sample_Correct_VBusP2= 0;
-	Uint16 Sample_Correct_VBusN2= 0;
-	Uint16 Sample_Correct_VOutH2= 0;
-	Uint16 Sample_Correct_VOutL2= 0;
-	Uint16 Sample_Correct_TempPFC2= 0;
-	Uint16 Sample_Correct_TempInvH2= 0;
-	Uint16 Sample_Correct_TempInvL2= 0;
-	Uint16  Sample_Check2 = 0;
+	Uint16 u16Sample_Correct_VInvH2 = 0;
+	Uint16 u16Sample_Correct_VInvL2 = 0;
+	Uint16 u16Sample_Correct_IOutH2 = 0;
+	Uint16 u16Sample_Correct_IOutL2 = 0;
+	Uint16 u16Sample_Correct_VGrid2 = 0;
+	Uint16 u16Sample_Correct_IGrid2 = 0;
+	Uint16 u16Sample_Correct_VBusP2 = 0;
+	Uint16 u16Sample_Correct_VBusN2 = 0;
+	Uint16 u16Sample_Correct_VOutH2 = 0;
+	Uint16 u16Sample_Correct_VOutL2 = 0;
+	Uint16 u16Sample_Correct_TempPFC2 = 0;
+	Uint16 u16Sample_Correct_TempInvH2 = 0;
+	Uint16 u16Sample_Correct_TempInvL2 = 0;
+	Uint16 u16Sample_InvH_Comp_Coeff2 =0;
+	Uint16 u16Sample_InvL_Comp_Coeff2 = 0;
+	Uint16  u16Sample_Check2 = 0;
 
-	Sample_Correct_VInvH2 = (Uint16)(ADCalibration.f32VInvH * 1000);
-	Sample_Correct_VInvL2 = (Uint16)(ADCalibration.f32VInvL * 1000);
-	Sample_Correct_IOutH2 = (Uint16)(ADCalibration.f32IOutH * 1000);
-	Sample_Correct_IOutL2 = (Uint16)(ADCalibration.f32IOutL * 1000);
-	Sample_Correct_VGrid2 = (Uint16)(ADCalibration.f32VGrid* 1000);
-	Sample_Correct_IGrid2 = (Uint16)(ADCalibration.f32IGrid * 1000);
-	Sample_Correct_VBusP2 = (Uint16)(ADCalibration.f32VBusP * 1000);
-	Sample_Correct_VBusN2= (Uint16)(ADCalibration.f32VBusN * 1000 );
-	Sample_Correct_VOutH2= (Uint16)(ADCalibration.f32VOutH * 1000);
-	Sample_Correct_VOutL2= (Uint16)(ADCalibration.f32VOutL * 1000);
-	Sample_Correct_TempPFC2= (Uint16)(ADCalibration.f32TempPFC * 1000);
-	Sample_Correct_TempInvH2= (Uint16)(ADCalibration.f32TempInvH * 1000);
-	Sample_Correct_TempInvL2= (Uint16)(ADCalibration.f32TempInvL * 1000);
+	u16Sample_Correct_VInvH2 = (Uint16)(ADCalibration.f32VInvH * 1000);
+	u16Sample_Correct_VInvL2 = (Uint16)(ADCalibration.f32VInvL * 1000);
+	u16Sample_Correct_IOutH2 = (Uint16)(ADCalibration.f32IOutH * 1000);
+	u16Sample_Correct_IOutL2 = (Uint16)(ADCalibration.f32IOutL * 1000);
+	u16Sample_Correct_VGrid2 = (Uint16)(ADCalibration.f32VGrid* 1000);
+	u16Sample_Correct_IGrid2 = (Uint16)(ADCalibration.f32IGrid * 1000);
+	u16Sample_Correct_VBusP2 = (Uint16)(ADCalibration.f32VBusP * 1000);
+	u16Sample_Correct_VBusN2= (Uint16)(ADCalibration.f32VBusN * 1000 );
+	u16Sample_Correct_VOutH2= (Uint16)(ADCalibration.f32VOutH * 1000);
+	u16Sample_Correct_VOutL2= (Uint16)(ADCalibration.f32VOutL * 1000);
+	u16Sample_Correct_TempPFC2= (Uint16)(ADCalibration.f32TempPFC * 1000);
+	u16Sample_Correct_TempInvH2= (Uint16)(ADCalibration.f32TempInvH * 1000);
+	u16Sample_Correct_TempInvL2= (Uint16)(ADCalibration.f32TempInvL * 1000);
+	u16Sample_InvH_Comp_Coeff2= (Uint16)(Parallel_Reg.f32VInvH_Comp_Coeff * 10000);
+	u16Sample_InvL_Comp_Coeff2= (Uint16)(Parallel_Reg.f32VInvL_Comp_Coeff * 10000);
 
-	Sample_Check2 ^= Sample_Correct_VInvH2;
-	Sample_Check2 ^= Sample_Correct_VInvL2;
-	Sample_Check2 ^= Sample_Correct_IOutH2;
-	Sample_Check2 ^= Sample_Correct_IOutL2;
-	Sample_Check2 ^= Sample_Correct_VGrid2;
-	Sample_Check2 ^= Sample_Correct_IGrid2;
-	Sample_Check2 ^= Sample_Correct_VBusP2;
-	Sample_Check2 ^= Sample_Correct_VBusN2;
-	Sample_Check2 ^= Sample_Correct_VOutH2;
-	Sample_Check2 ^= Sample_Correct_VOutL2;
-	Sample_Check2 ^= Sample_Correct_TempPFC2;
-	Sample_Check2 ^= Sample_Correct_TempInvH2;
-	Sample_Check2 ^= Sample_Correct_TempInvL2;
+	u16Sample_Check2 ^= u16Sample_Correct_VInvH2;
+	u16Sample_Check2 ^= u16Sample_Correct_VInvL2;
+	u16Sample_Check2 ^= u16Sample_Correct_IOutH2;
+	u16Sample_Check2 ^= u16Sample_Correct_IOutL2;
+	u16Sample_Check2 ^= u16Sample_Correct_VGrid2;
+	u16Sample_Check2 ^= u16Sample_Correct_IGrid2;
+	u16Sample_Check2 ^= u16Sample_Correct_VBusP2;
+	u16Sample_Check2 ^= u16Sample_Correct_VBusN2;
+	u16Sample_Check2 ^= u16Sample_Correct_VOutH2;
+	u16Sample_Check2 ^= u16Sample_Correct_VOutL2;
+	u16Sample_Check2 ^= u16Sample_Correct_TempPFC2;
+	u16Sample_Check2 ^= u16Sample_Correct_TempInvH2;
+	u16Sample_Check2 ^= u16Sample_Correct_TempInvL2;
+	u16Sample_Check2 ^= u16Sample_InvH_Comp_Coeff2;
+	u16Sample_Check2 ^= u16Sample_InvL_Comp_Coeff2;
 
-	AT24c512_WriteWord(0x0020, Sample_Correct_VInvH2);
-	AT24c512_WriteWord(0x0022, Sample_Correct_VInvL2);
-	AT24c512_WriteWord(0x0024, Sample_Correct_IOutH2);
-	AT24c512_WriteWord(0x0026, Sample_Correct_IOutL2);
-	AT24c512_WriteWord(0x0028, Sample_Correct_VGrid2);
-	AT24c512_WriteWord(0x002A, Sample_Correct_IGrid2);
-	AT24c512_WriteWord(0x002C, Sample_Correct_VBusP2);
-	AT24c512_WriteWord(0x002E, Sample_Correct_VBusN2);
-	AT24c512_WriteWord(0x030, Sample_Correct_VOutH2);
-	AT24c512_WriteWord(0x0032, Sample_Correct_VOutL2);
-	AT24c512_WriteWord(0x0034, Sample_Correct_TempPFC2);
-	AT24c512_WriteWord(0x0036, Sample_Correct_TempInvH2);
-	AT24c512_WriteWord(0x0038, Sample_Correct_TempInvL2);
-	AT24c512_WriteWord(0x003A, Sample_Check2);
+	AT24c512_WriteWord(0x0020, u16Sample_Correct_VInvH2);
+	AT24c512_WriteWord(0x0022, u16Sample_Correct_VInvL2);
+	AT24c512_WriteWord(0x0024, u16Sample_Correct_IOutH2);
+	AT24c512_WriteWord(0x0026, u16Sample_Correct_IOutL2);
+	AT24c512_WriteWord(0x0028, u16Sample_Correct_VGrid2);
+	AT24c512_WriteWord(0x002A, u16Sample_Correct_IGrid2);
+	AT24c512_WriteWord(0x002C, u16Sample_Correct_VBusP2);
+	AT24c512_WriteWord(0x002E, u16Sample_Correct_VBusN2);
+	AT24c512_WriteWord(0x030, u16Sample_Correct_VOutH2);
+	AT24c512_WriteWord(0x0032, u16Sample_Correct_VOutL2);
+	AT24c512_WriteWord(0x0034, u16Sample_Correct_TempPFC2);
+	AT24c512_WriteWord(0x0036, u16Sample_Correct_TempInvH2);
+	AT24c512_WriteWord(0x0038, u16Sample_Correct_TempInvL2);
+	AT24c512_WriteWord(0x003A, u16Sample_InvH_Comp_Coeff2);
+	AT24c512_WriteWord(0x003C, u16Sample_InvL_Comp_Coeff2);
+	AT24c512_WriteWord(0x003E, u16Sample_Check2);
 	HWI_enable();
 }

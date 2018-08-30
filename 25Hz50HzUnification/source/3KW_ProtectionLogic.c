@@ -2,7 +2,7 @@
  * Copyright(c)
  * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 3KW_DataAcquisition.h
+ *  FILENAME :3KW_ProtectionLogic.c
  *
  *  PURPOSE  :
  *

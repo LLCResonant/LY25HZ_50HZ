@@ -2,7 +2,7 @@
  * Copyright(c)
  * 						ALL RIGHTS RESERVED
  *
- *  FILENAME : 3KW_DataAcquisition.h
+ *  FILENAME : 3KW_ECan_Basic.h
  *
  *  PURPOSE  :
  *
@@ -18,7 +18,7 @@
 #define 	ECAN_QUE_BUF_EMPTY			2
 
 #define	ECAN_TX_RDY						0
-#define	ECAN_TX_BUSY					1
+#define	ECAN_TX_BUSY						1
 
 #define	ECAN_RX_RDY						0
 #define	ECAN_RX_EMPTY					1
@@ -30,7 +30,7 @@
 #define 	ECAN_COMMUNICATION_BAUDRATE			100000
 
 #define 	ECAN_MAX_COMMAND_LENGTH 				50
-#define 	ECAN_CHAR_ENTER 									13
+#define 	ECAN_CHAR_ENTER 										13
 
 /************************************************************************************
 *MAIL structure																	*
@@ -49,9 +49,9 @@ typedef union
 		Uint32 source_address:6;				//3~8 bit: the source address
 		Uint32 source_type:7;					//9~15 bit: the source type
 		Uint32 target_address:6;				//16~21 bit: the target address
-		Uint32 target_type:7;					//22~28 bit: the target type
+		Uint32 target_type:7;						//22~28 bit: the target type
 		Uint32 rsv3:2;								//29~30 bit: reserved bits and default 0
-		Uint32 IDE:1;								//31bit: reserved bit and default 0
+		Uint32 IDE:1;									//31bit: reserved bit and default 0
 	}bit;
 }MAILBOX_ID;
 
@@ -106,7 +106,7 @@ typedef struct{
 
 /*********************************************************************************************
 *ECAN structure																		*
-*Including transmiting and receiving queue structure and Tx, Rx threshold control variables
+*Including transmitting and receiving queue structure and Tx, Rx threshold control variables
 **********************************************************************************************/
 typedef struct{
 	Uint8	u8TxStatus;
@@ -116,7 +116,7 @@ typedef struct{
 
 /***********************************************************************************************
 *P2PMAIL structure																		*
-*Including  transmiting and receiving queue structure and Tx, Rx threshold control variables*
+*Including  transmitting and receiving queue structure and Tx, Rx threshold control variables*
 ************************************************************************************************/
 /*========================Definition of Enhanced CAN ID (communicate with other modules)============================*/
 /*
@@ -129,13 +129,13 @@ typedef union
 	struct
 	{
 		Uint32 rsv2:2;								//0~1 bit£¬all set mean broadcast
-		Uint32 bus:1;								//2 bit£¬bus bit£¬set means no host£¬clear means existing host
+		Uint32 bus:1;									//2 bit£¬bus bit£¬set means no host£¬clear means existing host
 		Uint32 source_address:6;				//3~8 bit: the source address
 		Uint32 source_type:7;					//9~15 bit: the source type
 		Uint32 target_address:6;				//16~21 bit: the target address
-		Uint32 target_type:7;					//22~28 bit: the target type
+		Uint32 target_type:7;						//22~28 bit: the target type
 		Uint32 rsv3:2;								//29~30 bit: reserved bits and default 0
-		Uint32 IDE:1;								//31 bit: reserved bit and default 0
+		Uint32 IDE:1;									//31 bit: reserved bit and default 0
 	}bit;
 }P2AMAIL_ID;
 /*--------------------------------The definition of ECAN 8 bytes data frames------------------------------------*/

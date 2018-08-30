@@ -31,7 +31,7 @@ extern "C" {
 // Non-Peripheral Interrupts:
 interrupt void INT13_ISR(void);     // XINT13 or CPU-Timer 1
 interrupt void INT14_ISR(void);     // CPU-Timer2
-interrupt void DATALOG_ISR(void);   // Datalogging interrupt
+interrupt void DATALOG_ISR(void);   // Data logging interrupt
 interrupt void RTOSINT_ISR(void);   // RTOS interrupt
 interrupt void EMUINT_ISR(void);    // Emulation interrupt
 interrupt void NMI_ISR(void);       // Non-maskable interrupt

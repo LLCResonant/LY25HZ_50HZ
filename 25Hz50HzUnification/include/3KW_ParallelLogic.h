@@ -1,15 +1,15 @@
 /*=============================================================================*
- *         Copyright(c) 2010-2011, ALL RIGHTS RESERVED
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
  *
  *  FILENAME : 3KW_ParallelLogic.h
- *  PURPOSE  : header files 50KW_Regulator.c 
- *			       define constant, struct declaration, extern varibles 
+ *
+ *  PURPOSE  :
  *
  *  HISTORY  :
- *    DATE            VERSION        AUTHOR            NOTE
- *    
- *
- ******************************************************************************/
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
+ *============================================================================*/
 
 #ifndef PARALLEL_LOGIC_H
 #define PARALLEL_LOGIC_H
@@ -20,12 +20,12 @@
 #define INVL_RELY_OFF				GpioDataRegs.GPACLEAR.bit.GPIO13 = 1;
 
 // 110V Output SCR Control
-#define INVL_SCR_ON					GpioDataRegs.GPACLEAR.bit.GPIO14 = 1;//2017.6.29 GX inverter test
-#define INVL_SCR_OFF				GpioDataRegs.GPASET.bit.GPIO14 = 1;//2017.6.29 GX inverter test
+#define INVL_SCR_ON					GpioDataRegs.GPACLEAR.bit.GPIO14 = 1;
+#define INVL_SCR_OFF				GpioDataRegs.GPASET.bit.GPIO14 = 1;
 
 // 220V Output SCR Control
-#define INVH_SCR_ON					GpioDataRegs.GPACLEAR.bit.GPIO15 = 1;//2017.6.29 GX inverter test
-#define INVH_SCR_OFF				GpioDataRegs.GPASET.bit.GPIO15 = 1;//2017.6.29 GX inverter test
+#define INVH_SCR_ON					GpioDataRegs.GPACLEAR.bit.GPIO15 = 1;
+#define INVH_SCR_OFF				GpioDataRegs.GPASET.bit.GPIO15 = 1;
 
 // 220V Output Relay Control
 #define INVH_RELY_ON				GpioDataRegs.GPASET.bit.GPIO16 = 1;
@@ -64,8 +64,8 @@ struct PARALLEL_REG
 	Uint16 	u16Cnt_COM1_Receive;
 	Uint16  u16Cnt_SCR_ON;
 
-	float32	f32VInvH_Comp_Coeff;				// Inv Output Voltage 220V compensate coefficient
-	float32	f32VInvL_Comp_Coeff;				// Inv Output Voltage 110V compensate coefficient
+	float32	f32VInvH_Comp_Coeff;				// Inverter Output Voltage 220V compensate coefficient
+	float32	f32VInvL_Comp_Coeff;				// Inverter Output Voltage 110V compensate coefficient
 
 	float32	f32IInvH_para_ave;
 	float32	f32IInvL_para_ave;
@@ -90,7 +90,7 @@ union  PARALLEL_STATE
         Uint16  B4:1;    // B4
         Uint16  B5:1;    // B5
         Uint16  B6:1;    // B6
-        Uint16  B7:1;    // B7     0: hardware  interrupt   1:softwar force  interrupt
+        Uint16  B7:1;    // B7
 
         Uint16  SelfPhaseOut_EN:1;    // B0
         Uint16  SyncProblem_Flag:1;      //B1  some problem in COM1
@@ -103,9 +103,6 @@ union  PARALLEL_STATE
     }bit;
 };
 extern union PARALLEL_STATE  g_ParaLogic_State;
-
-
-
 /*=============================================================================*
  * 	Extern functions declaration
  *============================================================================*/

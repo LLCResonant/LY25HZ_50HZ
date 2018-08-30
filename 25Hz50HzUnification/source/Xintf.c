@@ -1,14 +1,15 @@
-/**********************************************************************
-* File: Xintf.c
-* Devices: TMS320F2833x
-* Author: David M. Alter, Texas Instruments Inc.
-* Description: This function initializes the External Memory Interface.
-*   This function cannot execute from external memory.  A CODE_SECTION
-*   pragma is used for this function to remind the user not to link
-*   to external RAM.
-* History:
-*   12/18/07 - original (D. Alter)
-**********************************************************************/
+/*=============================================================================*
+ * Copyright(c)
+ * 						ALL RIGHTS RESERVED
+ *
+ *  FILENAME : Xintf.c
+ *
+ *  PURPOSE  :
+ *
+ *  HISTORY  :
+ *    DATE            VERSION         AUTHOR            NOTE
+ *    2018.6.2		001					NUAA XING
+ *============================================================================*/
 #include "DSP2833x_Device.h"			// Peripheral address definitions
 #include "3KW_MAINHEADER.h"				// Main include file
 
