@@ -97,11 +97,8 @@ void InitECan(void)
 
 // TAn, RMPn, GIFn bits are all zero upon reset and are cleared again
 //  as a matter of precaution.
-// 清除所有的TA位
 	ECanaRegs.CANTA.all = 0xFFFFFFFF;   /* Clear all TAn bits */
-	// 清除所有的RMP位
 	ECanaRegs.CANRMP.all = 0xFFFFFFFF;  /* Clear all RMPn bits */
-	// 清除所有中断标志位
 	ECanaRegs.CANGIF0.all = 0xFFFFFFFF; /* Clear all interrupt flag bits */
 	ECanaRegs.CANGIF1.all = 0xFFFFFFFF;
 
@@ -209,7 +206,7 @@ void InitECanaGpio(void)
 // End of file.
 //===========================================================================
 
-//修改波特率, BRP = 19 for 250kbps; BRP = 99 for 50kbps
+// BRP = 19 for 250kbps; BRP = 99 for 50kbps
 void BaudRate(Uint16 BRP)
 {
 	struct ECAN_REGS ECanaShadow;

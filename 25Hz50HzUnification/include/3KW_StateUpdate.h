@@ -15,9 +15,9 @@
 #define STATE_UPDATE
 
 #define FAN_CHECK
-#define LY25HZ	0x05
-//#define LY50HZ	0x07
-#define Module_Type     LY25HZ
+//#define LY25HZ	0x05
+#define LY50HZ	0x07
+#define Module_Type     LY50HZ
 
 /*
  * PFC PWM test
@@ -55,9 +55,6 @@
 
 #define NORMAL_EEPROM
 //#define RESET_EEPROM
-
-#define SECOND_EDITION
-//#define THIRD_EDITION
 
 //================ Global variables =====================================
 //System Status definition for StateMachine

@@ -191,8 +191,8 @@ void SysParamDefault(void)
 
 	AD_Acc.f32Phase_Diff_ave = 0;
 
-	AD_Sum.i16GridCounter = GridCounter;
-	AD_Sum.i16InvCounter = InvCounter;
+	AD_Sum.i16GridCounter = 0;
+	AD_Sum.i16InvCounter = 0;
 
 	AD_Sum.f32VBusP = 0;
 	AD_Sum.f32VBusN = 0;
@@ -341,6 +341,7 @@ void SysParamDefault(void)
 	SafetyReg.f32IGrid_HiLimit = OverRated_InputCurrentPeak;
 	SafetyReg.f32InvTemp_HiLimit = ShutInvTemperatureLimit;
 	SafetyReg.u16Short_Restart_times = 0;
+	SafetyReg.u16Short_Detect_times = ShortDetectTimes;
 
 	SafetyReg.f32FreVOut_LowLimit = InvFreq_Low_Limit;
 	SafetyReg.f32FreVOut_HiLimit = InvFreq_High_Limit;

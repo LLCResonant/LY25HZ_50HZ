@@ -37,6 +37,7 @@
 #define 	VGridDipBusVoltLimit 			680
 #define	InvHParaCurDeviationLimit  	2.7
 #define	InvLParaCurDeviationLimit  	3.6
+#define	ShortDetectTimes					250
 #endif
 
 #ifdef		LY50HZ
@@ -62,6 +63,7 @@
 #define 	VGridDipBusVoltLimit 				660
 #define	InvHParaCurDeviationLimit  		6.5
 #define	InvLParaCurDeviationLimit  		0
+#define	ShortDetectTimes						500
 #endif
 
 //-------------------------------------------------------------------------------
@@ -126,19 +128,9 @@
 #define GRID_RELY_ON		 	    GpioDataRegs.GPASET.bit.GPIO21 = 1;
 #define GRID_RELY_OFF				GpioDataRegs.GPACLEAR.bit.GPIO21 = 1;
 
-// DC Fan Control
-#ifdef 	SECOND_EDITION
-#define DC_Fan_Enable				GpioDataRegs.GPASET.bit.GPIO17 = 1;
-#define DC_Fan_State					GpioDataRegs.GPADAT.bit.GPIO17
-#define DC_Fan_Disable				GpioDataRegs.GPACLEAR.bit.GPIO17 = 1;
-#endif
-
-#ifdef 	THIRD_EDITION
 #define DC_Fan_Enable				GpioDataRegs.GPASET.bit.GPIO12 = 1;
 #define DC_Fan_State					GpioDataRegs.GPADAT.bit.GPIO12
 #define DC_Fan_Disable				GpioDataRegs.GPACLEAR.bit.GPIO12 = 1;
-#endif
-
 
 //DryCrtl
 #define DryCrtl_ON						GpioDataRegs.GPASET.bit.GPIO20 = 1;
@@ -218,6 +210,7 @@ typedef struct
 	float32	f32InvLParaCurDeviationLimit;
 	Uint16 	u16Para_Ave_ProtectionTime;
 	Uint16 	u16Short_Restart_times;
+	Uint16  u16Short_Detect_times;
 
 }SAFETY_PARAMETER_REG;
 extern SAFETY_PARAMETER_REG	SafetyReg;

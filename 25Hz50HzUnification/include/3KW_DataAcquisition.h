@@ -38,7 +38,7 @@
 
 #define CoffStepToFre				PWM_FREQ/Value_2Pi/2
 #define Default_Calibra_Coeff	1.0f
-#define Default_Offset			1.0f
+#define Default_Offset			0.0f
 // -----------------------------------------------
 // define measure gain, the calculated values are ten times of real values
 // -----------------------------------------------

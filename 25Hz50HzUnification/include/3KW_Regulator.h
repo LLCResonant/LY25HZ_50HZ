@@ -38,26 +38,26 @@
 #define PLL_Grid_Ki		2.5e-8f
 #define DELTA_ANGLE_GRID  2*Value_Pi *55/(PWM_FREQ/2)
 
-#define BusBal_Kp  0.03f;
-#define BusBal_Ki   0.00002f;
-#define BusVoltRef   850;
+#define BusBal_Kp  0.03f
+#define BusBal_Ki   0.00002f
+#define BusVoltRef   850
 
-#define VoltRefDelta   0.6;
+#define VoltRefDelta   0.6
 
 #ifdef 	LY25HZ
 //PFC
 #define	CurrCon_Kp1	10.0f
-#define	CurrCon_Kp2  	15.0f;
-#define	CurrCon_Kp3  	30.0f;
-#define	CurrCon_Kp4  	25.0f;
-#define	CurrCon_Kp5	20.0f;
+#define	CurrCon_Kp2  	15.0f
+#define	CurrCon_Kp3  	30.0f
+#define	CurrCon_Kp4  	25.0f
+#define	CurrCon_Kp5	20.0f
 #define	CurrCon_Ki	 	3.0f
 
 #define BusCon_Kp	0.2f
 #define BusCon_Ki	0.001f
-#define IGrid_RefAmp_Limit1 28
-#define IGrid_RefAmp_Limit2 26
-#define IGrid_RefAmp_Limit3 22
+#define IGrid_RefAmp_Limit1  28
+#define IGrid_RefAmp_Limit2  26
+#define IGrid_RefAmp_Limit3  22
 
 //Inv
 /*
@@ -80,6 +80,7 @@
 
 #define Inv_Volt_Coff_a2			0.00006168503f  // (w0 * Ts) * (w0 * Ts), where w0 is 2 * pi * 25Hz; Ts is the sample period 1 / 20000Hz
 #define Inv_Volt_Coff_a3			0.2499961f   		// 1 / (4 + w0 * w0 * Ts * Ts)
+
 #define LPF_B0_INV	0.00003913f
 #define LPF_B1_INV	0.00007826f
 #define LPF_B2_INV	0.00003913f
@@ -94,10 +95,10 @@
 #ifdef 	LY50HZ
 //PFC
 #define	CurrCon_Kp1	10.0f
-#define	CurrCon_Kp2  	30.0f;
-#define	CurrCon_Kp3  	25.0f;
-#define	CurrCon_Kp4  	20.0f;
-#define	CurrCon_Kp5	20.0f;
+#define	CurrCon_Kp2  	30.0f
+#define	CurrCon_Kp3  	25.0f
+#define	CurrCon_Kp4  	20.0f
+#define	CurrCon_Kp5	20.0f
 #define	CurrCon_Ki	 	3.0f
 
 #define BusCon_Kp	0.3f

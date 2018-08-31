@@ -116,16 +116,16 @@ void ADC_INT_PFC_Control(void)
  *============================================================================*/
 void VGrid_Dip_Reset (void)
 {
-	static Uint8 u8PFCPWM = 0;
+	static Uint8 s_u8PFCPWM = 0;
 
-	if(Calc_Result.f32VGrid_rms_instant <= 100)
+	if(Calc_Result.f32VGrid_rms_instant <= SafetyReg.f32VGridDipLimit)
 	{
 		PfcPWMOutputsDisable();
 		CurrConReg.u8Drive_Open = 0;
-		u8PFCPWM = 1;
+		s_u8PFCPWM = 1;
 		g_StateCheck.bit.VGridDip_Disable_GridOCP = 1;
 	}
-	else if(Calc_Result.f32VGrid_rms_instant > 100 && u8PFCPWM == 1)
+	else if(Calc_Result.f32VGrid_rms_instant > SafetyReg.f32VGridDipLimit && s_u8PFCPWM == 1)
 	{
 		BusCon_Reg.f32BusVoltDiffErr_New = 0;
 		BusCon_Reg.f32BusVoltDiffErr_Old = 0;
@@ -136,7 +136,7 @@ void VGrid_Dip_Reset (void)
 		CurrConReg.f32PfcDuty_Con = 0;
 
 		CurrConReg.u8Drive_Open = 1;
-		u8PFCPWM = 0;
+		s_u8PFCPWM = 0;
 	}
 	else
 		;
@@ -152,7 +152,7 @@ void VGrid_Dip_Reset (void)
 void GridCurrentController(void)
 {
 	// start of CurrentPIDcontroller
-	static Uint8  u8BusOVP = 0;
+	static Uint8  s_u8BusOVP = 0;
 	/*
 	 * 'BusCon_Reg.f32IGridAmp_Ref * GridPLLConReg.Sin_Theta' is the original current reference
 	 * 'BusCon_Reg.f32BusVoltDiff_Out' is the Neutral Point Balance superposition
@@ -213,13 +213,13 @@ void GridCurrentController(void)
 		 * When Bus voltage increase unusually, the drive should be closed.
 		 * When the voltage is back to normal, the drive should be opened and some variables should be clear.
 		 */
-		if((GetRealValue.f32VBusP+GetRealValue.f32VBusN) >= 900 && u8BusOVP == 0)
+		if((GetRealValue.f32VBusP+GetRealValue.f32VBusN) >= 900 && s_u8BusOVP == 0)
 		{
 			PfcPWMOutputsDisable();
-			u8BusOVP = 1;
+			s_u8BusOVP = 1;
 			g_StateCheck.bit.PwmForceOffFlag = 1;
 		}
-		else if((GetRealValue.f32VBusP+GetRealValue.f32VBusN) <= 870 && u8BusOVP == 1)
+		else if((GetRealValue.f32VBusP+GetRealValue.f32VBusN) <= 870 && s_u8BusOVP == 1)
 		{
 			CurrConReg.f32PfcDuty_Con=0;
 	        CurrConReg.f32IGridErr_New=0;
@@ -228,7 +228,7 @@ void GridCurrentController(void)
 	        BusCon_Reg.f32BusVoltDiffErr_Old = 0;
 	        BusCon_Reg.f32BusVoltDiff_Out = 0;
 	        CurrConReg.u8Drive_Open = 1;
-	        u8BusOVP = 0;
+	        s_u8BusOVP = 0;
 		}
 	}
 } // end of CurrentPIDcontroller
@@ -355,14 +355,14 @@ void Calc_IGrid_reference(void)
  void GridPLLcontroller(void)
 { 
 	 // start of  Phase Lock Loop controller
-	 static Uint8 	u8cnt = 0;
-	 static Uint16 	u16Phase_Check_signal = 0;
+	 static Uint8 	s_u8cnt = 0;
+	 static Uint16 	s_u16Phase_Check_signal = 0;
 
 	 GridPLLConReg.f32Valpha = GetRealValue.f32VGrid;
-	 u8cnt ++;
+	 s_u8cnt ++;
 
 	 //The following is the different equation of a second order low pass filter
-	 if (4 == u8cnt )
+	 if (4 == s_u8cnt )
 	 {
 	 	GridPLLConReg.f32Input[2] = GridPLLConReg.f32Input[1];																	// x(k-2) = x(k-1)
 	 	GridPLLConReg.f32Input[1] = GridPLLConReg.f32Input[0];																	// x(k-1) = x(k)
@@ -379,17 +379,21 @@ void Calc_IGrid_reference(void)
 	 	GridPLLConReg.f32MAC -= LPF_A2_GRID * GridPLLConReg.f32Output[2];													// - a2 * y(k-2)
 
 	 	GridPLLConReg.f32Output[0] = GridPLLConReg.f32MAC;
-	 	u8cnt  = 0;
+	 	s_u8cnt  = 0;
 
 	 	/*
 	 	 * If  'GridPLLConReg.f32Output[0]' can be small enough, the phase is successful locked
 	 	 */
-	 	if ( GridPLLConReg.f32Output[0] < 40 && GridPLLConReg.f32Output[0] > -40 && g_StateCheck.bit.Grid_PhaseLock == 0)  //2017.8.14 GX
-	 		u16Phase_Check_signal ++;
+	 	if ( GridPLLConReg.f32Output[0] < 40 && GridPLLConReg.f32Output[0] > -40 && g_StateCheck.bit.Grid_PhaseLock == 0)
+	 		s_u16Phase_Check_signal ++;
 	 	else
-	 		u16Phase_Check_signal = 0;
-	 	if ( u16Phase_Check_signal >200 )
+	 		s_u16Phase_Check_signal = 0;
+	 	if ( s_u16Phase_Check_signal >200 )
+	 	{
 	 		g_StateCheck.bit.Grid_PhaseLock = 1;
+	 		s_u16Phase_Check_signal = 0;
+	 	}
+
 	 }
 
 	 // The PI regulator

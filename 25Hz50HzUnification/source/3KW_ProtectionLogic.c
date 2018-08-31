@@ -73,7 +73,7 @@ void GridVoltCheck(void)
             }
         }
 		//   for  short voltage dip
-		else if(Calc_Result.f32VGrid_rms < SafetyReg.f32VGridDipLimit&& \
+		else if(Calc_Result.f32VGrid_rms < SafetyReg.f32VGridDipLimit && \
 				((Calc_Result.f32VBus) < SafetyReg.f32VGridDip_BusVoltLimit))
 		{
 			s_u16Cnt_GridVolt_Low_Fault1++;
@@ -457,7 +457,7 @@ void InvHCurrentCheck(void)
 	}
 	else
     {
-    	if(Calc_Result.f32IOutH_rms < ( SafetyReg.f32IInvH_Hi1Limit - 2))//5.5*1.2A - 2
+    	if(Calc_Result.f32IOutH_rms < SafetyReg.f32IInvH_Hi1LimitBack)//5.5*1.2A - 2
     	{
 			s_u16Cnt_InvHCurrent_High_Fault_Back++;
 			if(s_u16Cnt_InvHCurrent_High_Fault_Back >=  SafetyReg.u16IInvH_HiLimitBackTime ) //1500 * 40ms = 60s
@@ -542,7 +542,7 @@ void InvLCurrentCheck(void)
 	}
 	else
 	{
-		if(Calc_Result.f32IOutL_rms < ( SafetyReg.f32IInvL_Hi1Limit - 2))// 7.3*1.2A -2
+		if(Calc_Result.f32IOutL_rms < SafetyReg.f32IInvL_Hi1LimitBack)// 7.3*1.2A -2
 		{
 			s_u16Cnt_InvLCurrent_High_Fault_Back++;
 			if(s_u16Cnt_InvLCurrent_High_Fault_Back >= SafetyReg.u16IInvL_HiLimitBackTime ) //1min
@@ -803,34 +803,34 @@ void  InvLVoltCheck(void)
 ***********************************************************************************/
 void InvSyncCheck(void)
 {
-	static Uint8 u8temp1 = 0;
-	static Uint8 u8temp2 = 0;
-	static float32 f32phase_diff = 0.014 * 6.283185307;
+	static Uint8 s_u8temp1 = 0;
+	static Uint8 s_u8temp2 = 0;
+	static float32 s_f32phase_diff = 0.014 * 6.283185307;
 
 	if  ( 1 == g_StateCheck.bit.Inv_SoftStart && Calc_Result.f32VOutH_rms>= 190 )
 	{
 		 // when relay picks up, there will be several period for PLL function to lock right phase of load voltage
-		if (u8temp1 >= 20)  //20 * 40ms = 800ms
+		if (s_u8temp1 >= 20)  //20 * 40ms = 800ms
 		{
-			if(fabs(OutPLLConReg.f32Theta - VOutHPLLConReg.f32Theta) >=  f32phase_diff && \
+			if(fabs(OutPLLConReg.f32Theta - VOutHPLLConReg.f32Theta) >=  s_f32phase_diff && \
 					g_ParaLogic_State.bit.SyncPhase_Flag == 1)
-				u8temp2 ++;
+				s_u8temp2 ++;
 			else
-				u8temp2 = 0;
-			if(u8temp2 >= 3)
+				s_u8temp2 = 0;
+			if(s_u8temp2 >= 3)
 			{
 				g_SysFaultMessage.bit.unrecoverHW_SynLine_cut = 1;
 				g_StateCheck.bit.Sync_Fault2 = 1;
-				u8temp2 = 0;
+				s_u8temp2 = 0;
 			}
 		}
 		else
-			u8temp1 ++;
+			s_u8temp1 ++;
 	}
 	else
 	{
-		u8temp1 = 0;
-		u8temp2 = 0;
+		s_u8temp1 = 0;
+		s_u8temp2 = 0;
 	}
 }
 /**********************************************************************

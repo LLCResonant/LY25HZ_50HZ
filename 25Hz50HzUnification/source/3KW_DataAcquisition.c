@@ -430,7 +430,7 @@ void TSK_InvVoltPeriod(void)
 
 
 				/*Controller related function*/
-         		if ( g_Sys_Structure_State == Single_noBypass || g_Sys_Structure_State == Single_Bypass )
+         		if ( g_Sys_Structure_State == Single_noBypass )
          		{
          			InvVoltPRConfig();
          		}
@@ -469,25 +469,25 @@ void GridCurrentsRMSCalc(void)
 void GridCurrentsRMSAveCalc(void)
 {
 	float32				f32temp1 = 0;
-	static float32	f32temp2[100];
-	static Uint8		u8_count = 0,	u8_count2 = 0;
+	static float32	s_f32temp2[100];
+	static Uint8		s_u8_count = 0,	 s_u8_count2 = 0;
 	Uint8				u8temp1 = 0;
 
-	if (u8_count2 == 0)
+	if (s_u8_count2 == 0)
 	{
-		for (u8_count2 = 0; u8_count2 < 100; u8_count2++)
-			f32temp2[u8_count2] = 0;
-		u8_count2 = 1;
+		for (s_u8_count2 = 0; s_u8_count2 < 100; s_u8_count2++)
+			s_f32temp2[s_u8_count2] = 0;
+		s_u8_count2 = 1;
 	}
 	else
 	{
-		if (u8_count >= 100)
-			u8_count = 0;
+		if (s_u8_count >= 100)
+			s_u8_count = 0;
 
-		f32temp2[u8_count] = Calc_Result.f32IGrid_rms;
+		s_f32temp2[s_u8_count] = Calc_Result.f32IGrid_rms;
 		for (u8temp1 = 0; u8temp1 < 100; u8temp1++)
-			f32temp1 += f32temp2[u8temp1];
-		u8_count++;
+			f32temp1 += s_f32temp2[u8temp1];
+		s_u8_count++;
 	}
 
 	Calc_Result.f32IGrid_rms_ave = f32temp1 * 0.01;
@@ -503,21 +503,21 @@ void GridCurrentsRMSAveCalc(void)
 void GridVoltsRMSCalc(void)
 {
 	float32 f32temp1;
-	static float32 f32temp2 = 0;
+	static float32 s_f32temp2 = 0;
 	Calc_Result.f32VGrid_rms_instant = sqrt(AD_Sum.f32VGrid_rms * f32SumCounterReci);
 	f32temp1 = Calc_Result.f32VGrid_rms_instant;
-	f32temp1 = (f32temp2 * 0.4f) + (f32temp1 * 0.6f);
-	f32temp2 = f32temp1;
+	f32temp1 = (s_f32temp2 * 0.4f) + (f32temp1 * 0.6f);
+	s_f32temp2 = f32temp1;
 
 	/*
 	 * Make the Grid voltage protection more difficult to protect. Enhance robustness.
 	 */
-	if (f32temp2 <= 170)
-		Calc_Result.f32VGrid_rms = f32temp2 + 2;
-	else if(f32temp2 >= 280)
-		Calc_Result.f32VGrid_rms = f32temp2 - 2;
+	if (s_f32temp2 <= 170)
+		Calc_Result.f32VGrid_rms = s_f32temp2 + 2;
+	else if(s_f32temp2 >= 280)
+		Calc_Result.f32VGrid_rms = s_f32temp2 - 2;
 	else
-		Calc_Result.f32VGrid_rms = f32temp2;
+		Calc_Result.f32VGrid_rms = s_f32temp2;
 }
 
 /*=============================================================================*
@@ -1108,17 +1108,17 @@ void OutFrequencyCalc(void)
 void OutPhaseDiffCalc(void)
 {
     float32	f32temp1;
-    static float32 f32temp2 = 0;
+    static float32 s_f32temp2 = 0;
 
 	f32temp1 = (AD_Sum.f32Phase_Diff_ave  * f32SumCounterInv );
-	f32temp1 = f32temp2 * 0.6f + f32temp1 * 0.4f;
-	f32temp2 = f32temp1;
+	f32temp1 = s_f32temp2 * 0.6f + f32temp1 * 0.4f;
+	s_f32temp2 = f32temp1;
 
 	/*
 	 * 'Calc_Result.f32Phase_Diff_ave'  is send to LCD to show the phase different
 	 */
 	if (g_Sys_Current_State == NormalState)
-		Calc_Result.f32Phase_Diff_ave = f32temp2;
+		Calc_Result.f32Phase_Diff_ave = s_f32temp2;
 	else
 		Calc_Result.f32Phase_Diff_ave = 0;
 }
@@ -1436,30 +1436,30 @@ void HwGridOCPDetection (void)
  *============================================================================*/
 void FanCntl(void)
 {
-	static Uint8 u8Fan_Temp_Limit = 50;
-	static Uint8 u8Fan_Temp_Limit_Step = 5;
-	static Uint8 u8Fan_Cnt_Period = 0;
-	static Uint8 u8Fan_Cnt_OnTime = 5;
+	static Uint8 s_u8Fan_Temp_Limit = 50;
+	static Uint8 s_u8Fan_Temp_Limit_Step = 5;
+	static Uint8 s_u8Fan_Cnt_Period = 0;
+	static Uint8 s_u8Fan_Cnt_OnTime = 5;
 
-	if(u8Fan_Cnt_Period<=9)
-		u8Fan_Cnt_Period++;
+	if(s_u8Fan_Cnt_Period<=9)
+		s_u8Fan_Cnt_Period++;
    else
-	   u8Fan_Cnt_Period=1;
+	   s_u8Fan_Cnt_Period=1;
 
-	if (Calc_Result.f32TempPFC > u8Fan_Temp_Limit) //50
-		u8Fan_Cnt_OnTime=10;
-	else if(Calc_Result.f32TempPFC > (u8Fan_Temp_Limit - u8Fan_Temp_Limit_Step))//45
-		u8Fan_Cnt_OnTime=9;
-	else if(Calc_Result.f32TempPFC > (u8Fan_Temp_Limit - 2 * u8Fan_Temp_Limit_Step))//40
-		u8Fan_Cnt_OnTime=8;
-	else if(Calc_Result.f32TempPFC > (u8Fan_Temp_Limit - 3 * u8Fan_Temp_Limit_Step))//35
-		u8Fan_Cnt_OnTime=7;
-	else if(Calc_Result.f32TempPFC > (u8Fan_Temp_Limit - 4 * u8Fan_Temp_Limit_Step))//30
-		u8Fan_Cnt_OnTime=6;
+	if (Calc_Result.f32TempPFC > s_u8Fan_Temp_Limit) //50
+		s_u8Fan_Cnt_OnTime=10;
+	else if(Calc_Result.f32TempPFC > (s_u8Fan_Temp_Limit - s_u8Fan_Temp_Limit_Step))//45
+		s_u8Fan_Cnt_OnTime=9;
+	else if(Calc_Result.f32TempPFC > (s_u8Fan_Temp_Limit - 2 * s_u8Fan_Temp_Limit_Step))//40
+		s_u8Fan_Cnt_OnTime=8;
+	else if(Calc_Result.f32TempPFC > (s_u8Fan_Temp_Limit - 3 * s_u8Fan_Temp_Limit_Step))//35
+		s_u8Fan_Cnt_OnTime=7;
+	else if(Calc_Result.f32TempPFC > (s_u8Fan_Temp_Limit - 4 * s_u8Fan_Temp_Limit_Step))//30
+		s_u8Fan_Cnt_OnTime=6;
 	else
-		u8Fan_Cnt_OnTime=5;
+		s_u8Fan_Cnt_OnTime=5;
 
-	if(u8Fan_Cnt_OnTime>=u8Fan_Cnt_Period)
+	if(s_u8Fan_Cnt_OnTime>=s_u8Fan_Cnt_Period)
 	{
 		DC_Fan_Enable;
 		DcFanSpeedSense();

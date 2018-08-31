@@ -35,8 +35,8 @@ struct  INVVOLTCONTREG  					InvHVoltConReg, InvLVoltConReg;
  *============================================================================*/
 /* Phase Lock Loop controller */
 void OutPLLcontroller(void);
-void VoutLPhaseCalc(void);
-void VoutHPhaseCalc(void);
+void VOutLPLLcontoller(void);
+void VOutHPLLcontoller(void);
 
 /* PID controller for 220V-Inverter control */
 void InvH_VoltControl(void);
@@ -68,8 +68,8 @@ void ADC_INT_INV_Control(void)
 
   	Get_ADC_Result2();
   	OutPLLcontroller();
-  	VoutHPhaseCalc();
-  	VoutLPhaseCalc();
+  	VOutHPLLcontoller();
+  	VOutLPLLcontoller();
 
 	#ifdef INV_CLOSE_LOOP
   	if((NormalState==g_Sys_Current_State) && (1 == g_ParaLogic_State.bit.InvSoftStart_EN))
@@ -284,21 +284,21 @@ void OutPLLcontroller(void)
 } // end of OutPLLcontroller()
 
  /*=============================================================================*
-  * FUNCTION:	void VoutLPhaseCalc(void)
+  * FUNCTION:	void VOutLPLLcontoller(void)
   *
   * PURPOSE:		Load voltage(110V) phase lock controller
   *
   * CALLED BY:	void ADC_INT_INV_Control(void)
   *============================================================================*/
-void VoutLPhaseCalc(void)
+void VOutLPLLcontoller(void)
 {
-	static Uint8 u8cntL = 0;
+	static Uint8 s_u8cntL = 0;
 
 	VOutLPLLConReg.f32Valpha = GetRealValue.f32VOutL;
-	u8cntL++;
+	s_u8cntL++;
 
 	//The following is the different equation of a second order low pass filter
-	if (4 == u8cntL)
+	if (4 == s_u8cntL)
 	{
 		VOutLPLLConReg.f32Input[2] = VOutLPLLConReg.f32Input[1];																		// x(k-2) = x(k-1)
 		VOutLPLLConReg.f32Input[1] = VOutLPLLConReg.f32Input[0];																		// x(k-1) = x(k)
@@ -315,7 +315,7 @@ void VoutLPhaseCalc(void)
 	 	VOutLPLLConReg.f32MAC -= LPF_A2_INV * VOutLPLLConReg.f32Output[2];														// - a2 * y(k-2)
 
 	 	VOutLPLLConReg.f32Output[0] = VOutLPLLConReg.f32MAC;
-	 	u8cntL = 0;
+	 	s_u8cntL = 0;
 	 }
 
 	 //PI regulator can achieve zero static error of phase
@@ -347,21 +347,21 @@ void VoutLPhaseCalc(void)
 }
 
 /*=============================================================================*
-  * FUNCTION:	void VoutHPhaseCalc(void)
+  * FUNCTION:	void VOutHPLLcontoller(void)
   *
   * PURPOSE:		Load voltage(220V) phase lock controller
   *
   * CALLED BY:	void ADC_INT_INV_Control(void)
   *============================================================================*/
-void VoutHPhaseCalc(void)
+void VOutHPLLcontoller(void)
 {
-	static Uint8 u8cntH = 0;
+	static Uint8 s_u8cntH = 0;
 
 	 VOutHPLLConReg.f32Valpha = GetRealValue.f32VOutH;
-	 u8cntH++;
+	 s_u8cntH++;
 
 	 //The following is the different equation of a second order low pass filter
-	 if (4 == u8cntH)
+	 if (4 == s_u8cntH)
 	 {
 	 	VOutHPLLConReg.f32Input[2] = VOutHPLLConReg.f32Input[1];																		// x(k-2) = x(k-1)
 	 	VOutHPLLConReg.f32Input[1] = VOutHPLLConReg.f32Input[0];																		// x(k-1) = x(k)
@@ -378,7 +378,7 @@ void VoutHPhaseCalc(void)
  		VOutHPLLConReg.f32MAC -= LPF_A2_INV * VOutHPLLConReg.f32Output[2];													// - a2 * y(k-2)
 
  		VOutHPLLConReg.f32Output[0] = VOutHPLLConReg.f32MAC;
- 		u8cntH = 0;
+ 		s_u8cntH = 0;
  	}
 
 	//PI regulator can achieve zero static error of phase
@@ -525,17 +525,17 @@ void InverterStage_Init(void)
   *============================================================================*/
 void InvRestartCheck(void)
 {
-	static Uint16 u16temp1 = 0;
+	static Uint16 s_u16temp1 = 0;
 
 	if((g_StateCheck.bit.Inv_SoftStart == 1) && (NormalState==g_Sys_Current_State))
 	{
 		if(SafetyReg.u16Short_Restart_times >=1)
 		{
-			if(u16temp1 <250)	//250 * 40ms = 10s
-				u16temp1++;
+			if(s_u16temp1 < SafetyReg.u16Short_Detect_times)	//50Hz250  25Hz500
+				s_u16temp1++;
 			else
 			{
-				u16temp1=0;
+				s_u16temp1=0;
 				SafetyReg.u16Short_Restart_times = 0;
 				g_Sys_Current_State = FaultState;
 				SafetyReg.f32InvH_VoltRms_Ref = InvH_RatedVolt_Ref;
@@ -544,7 +544,7 @@ void InvRestartCheck(void)
 		}
 	}
 	else
-		u16temp1 = 0;
+		s_u16temp1 = 0;
  }
 
 //--- end of file -----------------------------------------------------

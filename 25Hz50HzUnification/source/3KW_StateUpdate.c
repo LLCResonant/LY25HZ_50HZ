@@ -176,8 +176,8 @@ void ProcessChecking(void)
 				HWI_disable();
 				RectifierStage_Init();
 				InverterStage_Init();
-				g_Sys_Current_State = NormalState;
 				HWI_enable();
+				g_Sys_Current_State = NormalState;
 			}
 			else
 			{
