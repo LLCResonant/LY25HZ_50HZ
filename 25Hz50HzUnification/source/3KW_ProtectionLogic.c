@@ -860,8 +860,10 @@ void OutputCurrentLimit(void)
 {
 	float32	f32CurrLimitTemp1;
 	float32 f32CurrLimitTemp2;
-	float32 f32CurrLimitTemp3;
-	float32 f32CurrLimitTemp4;
+	float32 f32CurrLimitTemp11;
+	float32 f32CurrLimitTemp12;
+	float32 f32CurrLimitTemp13;
+	float32 f32CurrLimitTemp14;
 
 	if(1 == g_StateCheck.bit.DcFanFault)
 	{
@@ -877,19 +879,28 @@ void OutputCurrentLimit(void)
 
 		if(f32CurrLimitTemp1 <= f32CurrLimitTemp2)
 		{
-			f32CurrLimitTemp3 = f32CurrLimitTemp1 * 0.013f;
-			f32CurrLimitTemp4 = f32CurrLimitTemp1 * 0.012f;
+			f32CurrLimitTemp11 = f32CurrLimitTemp1 * 0.012f;
+			f32CurrLimitTemp12 = f32CurrLimitTemp1 * 0.013f;
+			f32CurrLimitTemp13 = f32CurrLimitTemp1 * 0.015f;
+			f32CurrLimitTemp14 = f32CurrLimitTemp1 * 0.02f;
 		}
 		else
 		{
-			f32CurrLimitTemp3 = f32CurrLimitTemp2 * 0.013f;
-			f32CurrLimitTemp4 = f32CurrLimitTemp2 * 0.012f;
+			f32CurrLimitTemp11 = f32CurrLimitTemp2 * 0.012f;
+			f32CurrLimitTemp12 = f32CurrLimitTemp2 * 0.013f;
+			f32CurrLimitTemp13 = f32CurrLimitTemp2 * 0.015f;
+			f32CurrLimitTemp14 = f32CurrLimitTemp2 * 0.02f;
 		}
 
-		SafetyReg.f32IInvH_Hi2Limit = Rated_InvH_OutputCurrentRms * f32CurrLimitTemp3;
-		SafetyReg.f32IInvH_Hi1Limit = Rated_InvH_OutputCurrentRms * f32CurrLimitTemp4;
-		SafetyReg.f32IInvL_Hi2Limit = Rated_InvL_OutputCurrentRms * f32CurrLimitTemp3;
-		SafetyReg.f32IInvL_Hi1Limit = Rated_InvL_OutputCurrentRms * f32CurrLimitTemp4;
+		SafetyReg.f32IInvH_Hi1Limit = Rated_InvH_OutputCurrentRms * f32CurrLimitTemp11;
+		SafetyReg.f32IInvH_Hi2Limit = Rated_InvH_OutputCurrentRms * f32CurrLimitTemp12;
+		SafetyReg.f32IInvH_Hi3Limit = Rated_InvH_OutputCurrentRms * f32CurrLimitTemp13;
+		SafetyReg.f32IInvH_Hi4Limit = Rated_InvH_OutputCurrentRms * f32CurrLimitTemp14;
+
+		SafetyReg.f32IInvL_Hi1Limit = Rated_InvL_OutputCurrentRms * f32CurrLimitTemp11;
+		SafetyReg.f32IInvL_Hi2Limit = Rated_InvL_OutputCurrentRms * f32CurrLimitTemp12;
+		SafetyReg.f32IInvL_Hi3Limit = Rated_InvL_OutputCurrentRms * f32CurrLimitTemp13;
+		SafetyReg.f32IInvL_Hi4Limit = Rated_InvL_OutputCurrentRms * f32CurrLimitTemp14;
 	}
 }
 
