@@ -103,6 +103,7 @@ void TSK_Time_Record(void)
 
 void Times_ReadFromEEPROM()
 {
+	HWI_disable();
 	Uint16 Check = 0;
 	RunningTime.Second = AT24c512_ReadByte(0x0000);
 	RunningTime.Minute = AT24c512_ReadByte(0x0001);
@@ -123,6 +124,7 @@ void Times_ReadFromEEPROM()
 		RunningTime.OverFlow = 0;
 		Times_WriteToEEPROM();
 	}
+	HWI_enable();
 }
 
 
@@ -150,6 +152,7 @@ void Times_ReadFromEEPROM()
 
 void Times_WriteToEEPROM()
 {
+	HWI_disable();
 	RunningTime.TimeCheck = 0;
 	RunningTime.TimeCheck ^= RunningTime.Second;
 	RunningTime.TimeCheck ^= RunningTime.Minute;
@@ -161,10 +164,12 @@ void Times_WriteToEEPROM()
 	AT24c512_WriteSeriseWord(0x0002, &RunningTime.Hour_L, 2);
 	AT24c512_WriteByte(0x0006, RunningTime.OverFlow);
 	AT24c512_WriteWord(0x0007, RunningTime.TimeCheck);
+	HWI_enable();
 }
 
 void Ref_ReadFromEEPROM()
 {
+	HWI_disable();
 	Uint16 	read_ref_check1 = 0;
 	Uint16 	ref_check1 = 0;
 	Uint16 	inv_ref1= 0;
@@ -179,10 +184,12 @@ void Ref_ReadFromEEPROM()
 		SafetyReg.f32Inv_VoltRms_Ref_LCD = 220;
 		Ref_WriteToEEPROM();
 	}
+	HWI_enable();
 }
 
 void Ref_WriteToEEPROM()
 {
+	HWI_disable();
 	Uint16 ref_check2= 0;
 	Uint16 	inv_ref2= 0;
 
@@ -190,10 +197,12 @@ void Ref_WriteToEEPROM()
 	ref_check2 ^= inv_ref2;
 	AT24c512_WriteWord(0x0009, inv_ref2);
 	AT24c512_WriteWord(0x000B, ref_check2);
+	HWI_enable();
 }
 
 void Sample_ReadFromEEPROM()
 {
+	HWI_disable();
 	Uint16 Read_Sample_Check1 = 0;
 	Uint16 Sample_Correct_VInv1= 0;
 	Uint16 Sample_Correct_IOut1= 0;
@@ -204,6 +213,7 @@ void Sample_ReadFromEEPROM()
 	Uint16 Sample_Correct_VOut1= 0;
 	Uint16 Sample_Correct_TempPFC1= 0;
 	Uint16 Sample_Correct_TempInv1= 0;
+	Uint16 Sample_Cur_Coeff1= 0;
 	Uint16  Sample_Check1 = 0;
 
 	Sample_Correct_VInv1 = AT24c512_ReadWord(0x0010);
@@ -215,7 +225,8 @@ void Sample_ReadFromEEPROM()
 	Sample_Correct_VOut1= AT24c512_ReadWord(0x001C) ;
 	Sample_Correct_TempPFC1= AT24c512_ReadWord(0x001E);
 	Sample_Correct_TempInv1= AT24c512_ReadWord(0x0020);
-	Read_Sample_Check1 = AT24c512_ReadWord(0x0022);
+	Sample_Cur_Coeff1 = AT24c512_ReadWord(0x0022);
+	Read_Sample_Check1 = AT24c512_ReadWord(0x0024);
 	//**********×¢ÒâµØÖ·**************
 
 	Sample_Check1 ^= Sample_Correct_VInv1;
@@ -227,6 +238,7 @@ void Sample_ReadFromEEPROM()
 	Sample_Check1 ^= Sample_Correct_VOut1;
 	Sample_Check1 ^= Sample_Correct_TempPFC1;
 	Sample_Check1 ^= Sample_Correct_TempInv1;
+	Sample_Check1 ^= Sample_Cur_Coeff1;
 
 	if (Sample_Check1 == Read_Sample_Check1 && Sample_Correct_VInv1 != 65535)
 	{
@@ -239,6 +251,7 @@ void Sample_ReadFromEEPROM()
 		ADCorrection.f32VOut = Sample_Correct_VOut1 * 0.001f;
 		ADCorrection.f32TempPFC = Sample_Correct_TempPFC1 * 0.001f;
 		ADCorrection.f32TempInv = Sample_Correct_TempInv1 * 0.001f;
+		InvVoltConReg.f32Drop_Coeff = Sample_Cur_Coeff1 * 0.0001f;
 	}
 	else
 	{
@@ -251,12 +264,15 @@ void Sample_ReadFromEEPROM()
 		ADCorrection.f32VOut = 1.0f;
 		ADCorrection.f32TempPFC = 1.0f;
 		ADCorrection.f32TempInv = 1.0f;
+		InvVoltConReg.f32Drop_Coeff = 1.0f;
 		Sample_WriteToEEPROM();
 	}
+	HWI_enable();
 }
 
 void Sample_WriteToEEPROM()
 {
+	HWI_disable();
 	Uint16 Sample_Correct_VInv2= 0;
 	Uint16 Sample_Correct_IOut2= 0;
 	Uint16 Sample_Correct_VGrid2= 0;
@@ -266,6 +282,7 @@ void Sample_WriteToEEPROM()
 	Uint16 Sample_Correct_VOut2= 0;
 	Uint16 Sample_Correct_TempPFC2= 0;
 	Uint16 Sample_Correct_TempInv2= 0;
+	Uint16 Sample_Cur_Coeff2 = 0;
 	Uint16  Sample_Check2 = 0;
 
 	Sample_Correct_VInv2 = (Uint16)(ADCorrection.f32VInv * 1000);
@@ -277,6 +294,7 @@ void Sample_WriteToEEPROM()
 	Sample_Correct_VOut2= (Uint16)(ADCorrection.f32VOut * 1000);
 	Sample_Correct_TempPFC2= (Uint16)(ADCorrection.f32TempPFC * 1000);
 	Sample_Correct_TempInv2= (Uint16)(ADCorrection.f32TempInv * 1000);
+	Sample_Cur_Coeff2 = (Uint16)(InvVoltConReg.f32Drop_Coeff * 10000);
 
 	Sample_Check2 ^= Sample_Correct_VInv2;
 	Sample_Check2 ^= Sample_Correct_IOut2;
@@ -287,6 +305,7 @@ void Sample_WriteToEEPROM()
 	Sample_Check2 ^= Sample_Correct_VOut2;
 	Sample_Check2 ^= Sample_Correct_TempPFC2;
 	Sample_Check2 ^= Sample_Correct_TempInv2;
+	Sample_Check2 ^= Sample_Cur_Coeff2;
 
 	AT24c512_WriteWord(0x0010, Sample_Correct_VInv2);
 	AT24c512_WriteWord(0x0012, Sample_Correct_IOut2);
@@ -297,5 +316,7 @@ void Sample_WriteToEEPROM()
 	AT24c512_WriteWord(0x001C, Sample_Correct_VOut2);
 	AT24c512_WriteWord(0x001E, Sample_Correct_TempPFC2);
 	AT24c512_WriteWord(0x0020, Sample_Correct_TempInv2);
-	AT24c512_WriteWord(0x0022, Sample_Check2);
+	AT24c512_WriteWord(0x0022, Sample_Cur_Coeff2);
+	AT24c512_WriteWord(0x0024, Sample_Check2);
+	HWI_enable();
 }

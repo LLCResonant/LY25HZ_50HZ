@@ -200,12 +200,16 @@ void Inv_VoltControl(void)
 	* If synchronization is completed, the native phase signal need to be send to sync-bus
 	* through the following code.
 	*/
-	if(1 == g_ParaLogic_State.bit.SelfPhaseOut_EN)
+	if(1 == g_ParaLogic_State.bit.SelfPhaseOut_EN && g_Sys_Current_State != PermanentState && g_Sys_Current_State != FaultState)
 	{
 		if(OutPLLConReg.f32Theta >= Value_Pi)
 			SYNC_COM1_ON;
 		if(OutPLLConReg.f32Theta > Value_2Pi)
 			SYNC_COM1_OFF;
+	}
+	else
+	{
+		SYNC_COM1_ON;
 	}
 
 	if ( OutPLLConReg.f32Theta > Value_2Pi )

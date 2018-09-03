@@ -65,8 +65,12 @@ void ECAP1_INT_SyncPhase_Control(void)
 	Parallel_Reg.u16Cnt_COM1_Receive = 0;
 	g_ParaLogic_State.bit.InvSoftStart_EN = 1;
 
-	if(1==SYNC_COM2_LEVEL)//COM2 low voltage (hardware-related)
-	   SYNC_COM2_OFF;
+	if (g_Sys_Current_State != PermanentState && g_Sys_Current_State != FaultState)
+	{
+		if(1==SYNC_COM2_LEVEL)//COM2 low voltage (hardware-related)
+		   SYNC_COM2_OFF;
+	}
+
 
 	/*
 	 * the function will be executed when synchronizing signal reaches pi
@@ -141,18 +145,32 @@ void SyncLogic_Control(void)
 
 	if((Parallel_Reg.u16Cnt_COM1_Receive >= 5))// 100ms
 	{
-		//if there are already output voltages or the module is slave one, the sync line may be broken
-		if ( ( Calc_Result.f32VOut_rms >= 200 ) && g_Sys_Current_State != FaultState  && g_Sys_Current_State != PermanentState)
-		{
-			g_StateCheck.bit.Sync_Fault1 = 1;
-			g_SysFaultMessage.bit.unrecoverHW_SynLine_cut = 1;
-		}
-		else
+		if(0 == g_ParaLogic_State.bit.SelfPhaseOut_EN)
 		{
 			// The module is the first one in bus, so it can send the native phase signal out
 			g_ParaLogic_State.bit.SelfPhaseOut_EN = 1;
 			SYNC_COM2_OFF;
+			Parallel_Reg.u16Cnt_COM1_Receive = 0;
 		}
+		else
+		{
+			//if there are already output voltages or the module is slave one, the sync line may be broken
+			if ( ( Calc_Result.f32VOut_rms >= 200 ) && g_Sys_Current_State != FaultState  && g_Sys_Current_State != PermanentState)
+			{
+				g_StateCheck.bit.Sync_Fault1 = 1;
+				g_SysFaultMessage.bit.unrecoverHW_SynLine_cut = 1;
+				Parallel_Reg.u16Cnt_COM1_Receive = 0;
+			}
+			else
+			{
+				g_ParaLogic_State.bit. SyncProblem_Flag= 1;
+				g_ParaLogic_State.bit.SelfPhaseOut_EN = 0;
+				Parallel_Reg.u16Cnt_COM1_Receive = 0;
+				OutPLLConReg.f32Theta = 0;
+				SYNC_COM1_ON;
+			}
+		}
+
 	}
 } // end of InvH_VrmsControl
 

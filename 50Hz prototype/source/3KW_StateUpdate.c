@@ -266,6 +266,7 @@ void ProcessFault(void)
     		Times_WriteToEEPROM();
     		Ref_WriteToEEPROM();
     		temp2 =1;
+    		SYNC_COM2_ON;
     		//g_StateCheck.bit.fflag = 1;
     	}
 
@@ -282,11 +283,12 @@ void ProcessFault(void)
 				ADChannelOffset.f32VOut = 0;
 				ADChannelOffset.f32VBusP = 0;
 				ADChannelOffset.f32VBusN = 0;
-            	g_Sys_Current_State = WaitState;
+				SYNC_COM2_OFF;
 				i16Cnt_backChangeTemp = 0;
 				temp2 = 0;
-				SYNC_COM2_OFF;
 				DryCrtl_ON;
+
+				g_Sys_Current_State = WaitState;
 			}
         }
     }		 

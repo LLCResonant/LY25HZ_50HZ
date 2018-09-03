@@ -83,7 +83,7 @@ union  PARALLEL_STATE
         Uint16  B7:1;    // B7     0: hardware  interrupt   1:softwar force  interrupt
 
         Uint16  SelfPhaseOut_EN:1;    // B0
-        Uint16  :1;      //B1
+        Uint16  SyncProblem_Flag:1;      //B1
         Uint16  :1; //B2
         Uint16  B11:1;     //B3
         Uint16  B12:1;     //B4

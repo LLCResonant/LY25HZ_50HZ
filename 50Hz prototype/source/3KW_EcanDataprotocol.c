@@ -68,7 +68,6 @@ void Broadcast(void);
 Uint8 ErrorCheck(MAIL temp);
 void Arbitrate(P2AMAIL);
 void Output_Revise (void);
-void Sample_WriteToEEPROM();
 void Coeff_Feedback();
 
 void ECAN_COMM_TEST( void )
@@ -743,7 +742,6 @@ void Para_Revise_Oper(Uint8 temp)
 	default:
 		break;
 	}
-	Sample_WriteToEEPROM();
 }
 
 /*=============================================================================*
