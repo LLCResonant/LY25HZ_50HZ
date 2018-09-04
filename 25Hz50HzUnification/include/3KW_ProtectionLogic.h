@@ -38,6 +38,10 @@
 #define	InvHParaCurDeviationLimit  	2.7
 #define	InvLParaCurDeviationLimit  	3.6
 #define	ShortDetectTimes					250
+
+#define	InvHShortCurrentLimit  					20
+#define	InvLShortCurrentLimit					25
+
 #endif
 
 #ifdef		LY50HZ
@@ -64,6 +68,9 @@
 #define	InvHParaCurDeviationLimit  		6.5
 #define	InvLParaCurDeviationLimit  		0
 #define	ShortDetectTimes						500
+
+#define	InvHShortCurrentLimit  					30
+#define	InvLShortCurrentLimit					30
 #endif
 
 //-------------------------------------------------------------------------------
@@ -211,6 +218,10 @@ typedef struct
 	Uint16 	u16Para_Ave_ProtectionTime;
 	Uint16 	u16Short_Restart_times;
 	Uint16  u16Short_Detect_times;
+
+	float32	f32InvHShortCurLimit;
+	float32	f32InvLShortCurLimit;
+
 
 }SAFETY_PARAMETER_REG;
 extern SAFETY_PARAMETER_REG	SafetyReg;

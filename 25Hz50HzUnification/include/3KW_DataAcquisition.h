@@ -46,32 +46,32 @@
 #define IGridMeasureGain		0.0264f
 #define IInvHMeasureGain      	0.0147f
 #define IInvLMeasureGain       	0.0184f
-#define TempMeasureGain		1.0f
+#define TempMeasureGain			1.0f
 #define InvHNoLoadCurrent		1.1f
 #define InvLNoLoadCurrent		0.6f
 
 #define VGridMeasureGain		0.235f
 #define VInvHMeasureGain		0.235f
 #define VInvLMeasureGain		0.117f
-#define VBusMeasureGain		0.143f
+#define VBusMeasureGain			0.143f
 #define RatedInvFrequency 		25
-#define InvCounter					PWM_FREQ/2/RatedInvFrequency
+#define InvCounter				PWM_FREQ/2/RatedInvFrequency
 #endif
 
 #ifdef 	LY50HZ
 #define IGridMeasureGain		0.04f
-#define IInvHMeasureGain      0.04f
-#define IInvLMeasureGain       0.0f
-#define TempMeasureGain		0.07324187f
-#define InvHNoLoadCurrent	    2.5f
+#define IInvLMeasureGain     	0.0f
+#define IInvHMeasureGain      	0.038f
+#define TempMeasureGain			0.07324187f
 #define InvLNoLoadCurrent	    0.0f
+#define InvHNoLoadCurrent	    2.5f
 
 #define VGridMeasureGain		0.235f
-#define VInvHMeasureGain		0.235f
 #define VInvLMeasureGain		0.0f
-#define VBusMeasureGain		0.143f
+#define VInvHMeasureGain		0.235f
+#define VBusMeasureGain			0.143f
 #define RatedInvFrequency 		50
-#define InvCounter					PWM_FREQ/2/RatedInvFrequency
+#define InvCounter				PWM_FREQ/2/RatedInvFrequency
 #endif
 
 // define AD samples AC components' DC offset
