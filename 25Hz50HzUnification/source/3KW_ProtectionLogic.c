@@ -205,7 +205,7 @@ void InvHFreqCheck(void)
 
     if ((0 == g_SysFaultMessage.bit.FreInvOverRating) && (0 == g_SysFaultMessage.bit.FreInvUnderRating) )
     {
-		if(Calc_Result.f32VOutHFreq > SafetyReg.f32FreVOut_HiLimit)//25.4Hz
+		if(Calc_Result.f32VOutHFreq > SafetyReg.f32FreVOut_HiLimit)
         {
             s_u16Cnt_InvHFreq_High_Fault ++;
             if(s_u16Cnt_InvHFreq_High_Fault  >= 10) //10*40ms
@@ -215,7 +215,7 @@ void InvHFreqCheck(void)
                 s_u16Cnt_InvHFreq_High_Fault = 0;
             }
         }
-        else if(Calc_Result.f32VOutHFreq < SafetyReg.f32FreVOut_LowLimit) //24.6Hz
+        else if(Calc_Result.f32VOutHFreq < SafetyReg.f32FreVOut_LowLimit)
         {
         	s_u16Cnt_InvHFreq_Low_Fault++;
             if (s_u16Cnt_InvHFreq_Low_Fault >= 10) //10*40ms
@@ -1134,7 +1134,7 @@ void InvHCurrentProtectionIdentify(void)
 
 	if (g_Sys_Current_State == NormalState)
 	{
-		if(Calc_Result.f32IInvH_rms_instant>= 20)
+		if(Calc_Result.f32IInvH_rms_instant>= SafetyReg.f32InvHShortCurLimit)
 		{
 			//If voltage is very low while the current is very large and the voltage is not very low , it will be treated as over current
 			if (Calc_Result.f32VInvH_rms_instant > 30)
@@ -1173,7 +1173,7 @@ void InvLCurrentProtectionIdentify(void)
 
 	if (g_Sys_Current_State == NormalState)
 	{
-		if(Calc_Result.f32IInvL_rms_instant >= 25)
+		if(Calc_Result.f32IInvL_rms_instant >= SafetyReg.f32InvLShortCurLimit)
 		{
 			//If voltage is very low while the current is very large and the voltage is not very low , it will be treated as over current
 			if (Calc_Result.f32VInvL_rms_instant > 20)

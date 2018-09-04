@@ -94,11 +94,11 @@
 
 #ifdef 	LY50HZ
 //PFC
-#define	CurrCon_Kp1	10.0f
+#define	CurrCon_Kp1		10.0f
 #define	CurrCon_Kp2  	30.0f
 #define	CurrCon_Kp3  	25.0f
 #define	CurrCon_Kp4  	20.0f
-#define	CurrCon_Kp5	20.0f
+#define	CurrCon_Kp5		20.0f
 #define	CurrCon_Ki	 	3.0f
 
 #define BusCon_Kp	0.3f
@@ -110,8 +110,8 @@
 #define InvH_Volt_Kp1				0.01f
 #define InvH_Volt_Kr1				800 * 0.00005f
 
-#define InvH_Volt_Kp2				0
-#define InvH_Volt_Kr2				0
+#define InvH_Volt_Kp2				0.01f
+#define InvH_Volt_Kr2				800 * 0.00005f
 
 #define InvL_Volt_Kp1				1.5f
 #define InvL_Volt_Kr1				350* 0.00005f

@@ -88,8 +88,15 @@ void Get_ADC_Result1(void)
 	GeneralADbuffer.f32VBusN = (float32)AdcMirror.ADCRESULT4;	 // A2 result
 	GetRealValue.f32VBusN = GeneralADbuffer.f32VBusN * ADGain.f32VBusN * ADCalibration.f32VBusN - ADChannelOffset.f32VBusN;
 
+#ifdef LY25HZ
 	GeneralADbuffer.f32TempPFC = (float32)AdcMirror.ADCRESULT11;		// B5 result
 	GetRealValue.f32TempPFC = GeneralADbuffer.f32TempPFC * ADCalibration.f32TempPFC *ADGain.f32TempPFC;
+#endif
+
+#ifdef LY50HZ
+	GeneralADbuffer.f32TempPFC = (float32)AdcMirror.ADCRESULT9;		// B5 result
+	GetRealValue.f32TempPFC = GeneralADbuffer.f32TempPFC * ADCalibration.f32TempPFC *ADGain.f32TempPFC;
+#endif
 
 } // end of  Get_ADC_Result1
 
@@ -103,7 +110,7 @@ void Get_ADC_Result1(void)
 void Get_ADC_Result2(void)//ZJX changed
 {
 	// start of function
-
+#ifdef LY25HZ
 	GeneralADbuffer.f32IInvH = (float32)AdcMirror.ADCRESULT6 - ADDefaultACOffset;	// A3 result
 	GetRealValue.f32IInvH = GeneralADbuffer.f32IInvH * ADGain.f32IInvH * ADCalibration.f32IInvH - ADChannelOffset.f32IInvH;
 	GeneralADbuffer.f32VInvH = (float32)AdcMirror.ADCRESULT10 - ADDefaultACOffset;	 // A5 result
@@ -122,6 +129,29 @@ void Get_ADC_Result2(void)//ZJX changed
 	GetRealValue.f32TempInvH = GeneralADbuffer.f32TempInvH * ADCalibration.f32TempInvH * ADGain.f32TempInvH;
 	GeneralADbuffer.f32TempInvL = (float32)AdcMirror.ADCRESULT13;	// B6 result
 	GetRealValue.f32TempInvL = GeneralADbuffer.f32TempInvL * ADCalibration.f32TempInvL * ADGain.f32TempInvL;
+
+#endif
+
+#ifdef LY50HZ
+	GeneralADbuffer.f32IInvH = (float32)AdcMirror.ADCRESULT6 - ADDefaultACOffset;	// A3 result
+	GetRealValue.f32IInvH = GeneralADbuffer.f32IInvH * ADGain.f32IInvH * ADCalibration.f32IInvH - ADChannelOffset.f32IInvH;
+	GeneralADbuffer.f32VInvH = (float32)AdcMirror.ADCRESULT10 - ADDefaultACOffset;	 // A5 result
+	GetRealValue.f32VInvH = GeneralADbuffer.f32VInvH * ADGain.f32VInvH * ADCalibration.f32VInvH * Parallel_Reg.f32VInvH_Comp_Coeff - ADChannelOffset.f32VInvH;
+	GeneralADbuffer.f32VOutH = (float32)AdcMirror.ADCRESULT8 - ADDefaultACOffset;	// A4 result
+	GetRealValue.f32VOutH = GeneralADbuffer.f32VOutH * ADGain.f32VOutH * ADCalibration.f32VOutH - ADChannelOffset.f32VOutH;
+
+	GeneralADbuffer.f32IInvL = (float32)AdcMirror.ADCRESULT3 - ADDefaultACOffset;	// B1 result
+	GetRealValue.f32IInvL = GeneralADbuffer.f32IInvL * ADGain.f32IInvL * ADCalibration.f32IInvL - ADChannelOffset.f32IInvL;
+	GeneralADbuffer.f32VInvL = (float32)AdcMirror.ADCRESULT7 - ADDefaultACOffset;	// B3 result
+	GetRealValue.f32VInvL = GeneralADbuffer.f32VInvL * ADGain.f32VInvL * ADCalibration.f32VInvL * Parallel_Reg.f32VInvL_Comp_Coeff - ADChannelOffset.f32VInvL;
+	GeneralADbuffer.f32VOutL = (float32)AdcMirror.ADCRESULT5 - ADDefaultACOffset;	// B2 result
+	GetRealValue.f32VOutL = GeneralADbuffer.f32VOutL * ADGain.f32VOutL * ADCalibration.f32VOutL - ADChannelOffset.f32VOutL;
+
+	GeneralADbuffer.f32TempInvL = (float32)AdcMirror.ADCRESULT11;	// B6 result
+	GetRealValue.f32TempInvL = GeneralADbuffer.f32TempInvL * ADCalibration.f32TempInvL * ADGain.f32TempInvL;
+
+#endif
+
 
 } // end of  Get_ADC_Result2
 

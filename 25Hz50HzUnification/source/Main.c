@@ -350,6 +350,9 @@ void SysParamDefault(void)
 	SafetyReg.f32InvHParaCurDeviationLimit = InvHParaCurDeviationLimit;
 	SafetyReg.f32InvLParaCurDeviationLimit = InvLParaCurDeviationLimit;
 
+	SafetyReg.f32InvHShortCurLimit = InvHShortCurrentLimit;
+	SafetyReg.f32InvLShortCurLimit = InvLShortCurrentLimit;
+
 	Output_VoltRe_Reg.u8InvH_Heavy_Flag = 0;
 	Output_VoltRe_Reg.u8InvH_Light_Flag = 0;
 	Output_VoltRe_Reg.u8InvH_Middle_Flag = 0;
