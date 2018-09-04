@@ -27,3 +27,8 @@ The Folder 'Configuration and protocol files' is the ECAN protocol and hardware 
 2018.9.3
 25Hz50HzUnification is revised
 50Hz prototype is revised
+2018.9.4
+25Hz50HzUnification is revised
+make the program suite the old 50Hz power board
+1, DataAqcquiation revised
+2, InvH and InvL Measure gain revised
