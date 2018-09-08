@@ -504,7 +504,7 @@ Uint32 Get_ID (Uint8 DataLength, Uint8 SAddress)
 	Uint32 u32_ComType = 0;
 
 	u32_Add = SAddress;
-	u32_ModuleType = Module_Type;
+	u32_ModuleType = 0x05;//Module_Type;
 	u32_ComAdd = Computer_Address;
 	u32_ComType = Computer_Type;
 

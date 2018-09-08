@@ -147,10 +147,10 @@ void InvH_VoltControl(void)
   	 InvHVoltConReg.f32InvDuty = 0.76f * PWM_HALF_PERIOD * OutPLLConReg.f32Sin_Theta;
 	 #endif
 
-  	 EPwm5Regs.CMPA.half.CMPA = (Uint16)(-InvHVoltConReg.f32InvDuty);
-  	 EPwm5Regs.CMPB = (Uint16)(-InvHVoltConReg.f32InvDuty);
-  	 EPwm6Regs.CMPA.half.CMPA = (Uint16)(InvHVoltConReg.f32InvDuty);
-  	 EPwm6Regs.CMPB = (Uint16)(InvHVoltConReg.f32InvDuty);
+  	 EPwm3Regs.CMPA.half.CMPA = (Uint16)(-InvHVoltConReg.f32InvDuty);
+  	 EPwm3Regs.CMPB = (Uint16)(-InvHVoltConReg.f32InvDuty);
+  	 EPwm4Regs.CMPA.half.CMPA = (Uint16)(InvHVoltConReg.f32InvDuty);
+  	 EPwm4Regs.CMPB = (Uint16)(InvHVoltConReg.f32InvDuty);
 
  } // end of InvH_VoltControl
 
@@ -229,10 +229,10 @@ void InvL_VoltControl(void)
 	InvLVoltConReg.f32InvDuty = 0.38f * PWM_HALF_PERIOD * OutPLLConReg.f32Cos_Theta;
 	#endif
 
-    EPwm3Regs.CMPA.half.CMPA = (Uint16)(-InvLVoltConReg.f32InvDuty);
-    EPwm3Regs.CMPB = (Uint16)(-InvLVoltConReg.f32InvDuty);
-    EPwm4Regs.CMPA.half.CMPA = (Uint16)(InvLVoltConReg.f32InvDuty);
-    EPwm4Regs.CMPB = (Uint16)(InvLVoltConReg.f32InvDuty);
+    EPwm5Regs.CMPA.half.CMPA = (Uint16)(-InvLVoltConReg.f32InvDuty);
+    EPwm5Regs.CMPB = (Uint16)(-InvLVoltConReg.f32InvDuty);
+    EPwm6Regs.CMPA.half.CMPA = (Uint16)(InvLVoltConReg.f32InvDuty);
+    EPwm6Regs.CMPB = (Uint16)(InvLVoltConReg.f32InvDuty);
 
 } // end of InvL_VoltControl
 

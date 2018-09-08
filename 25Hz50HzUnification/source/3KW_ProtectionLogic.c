@@ -203,17 +203,18 @@ void InvHFreqCheck(void)
     static Uint16 s_u16Cnt_InvHFreq_High_Fault = 0;
     static Uint16 s_u16Cnt_InvHFreq_Low_Fault = 0;
 
-    if ((0 == g_SysFaultMessage.bit.FreInvOverRating) && (0 == g_SysFaultMessage.bit.FreInvUnderRating) )
+    if ((0 == g_SysFaultMessage.bit.FreInvOverRating) && (0 == g_SysFaultMessage.bit.FreInvUnderRating)&&\
+    (1 == g_StateCheck.bit.Inv_SoftStart) &&(g_Sys_Current_State == NormalState))
     {
-		if(Calc_Result.f32VOutHFreq > SafetyReg.f32FreVOut_HiLimit)
+    	if(Calc_Result.f32VOutHFreq > SafetyReg.f32FreVOut_HiLimit)
+    	{
+    		s_u16Cnt_InvHFreq_High_Fault ++;
+    	}
+    	if(s_u16Cnt_InvHFreq_High_Fault  >= 10) //10*40ms
         {
-            s_u16Cnt_InvHFreq_High_Fault ++;
-            if(s_u16Cnt_InvHFreq_High_Fault  >= 10) //10*40ms
-            {
-                g_SysFaultMessage.bit.FreInvOverRating = 1;
-                g_StateCheck.bit.FreVOutH_Fault = 1;
-                s_u16Cnt_InvHFreq_High_Fault = 0;
-            }
+    		g_SysFaultMessage.bit.FreInvOverRating = 1;
+            g_StateCheck.bit.FreVOutH_Fault = 1;
+            s_u16Cnt_InvHFreq_High_Fault = 0;
         }
         else if(Calc_Result.f32VOutHFreq < SafetyReg.f32FreVOut_LowLimit)
         {

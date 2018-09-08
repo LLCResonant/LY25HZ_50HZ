@@ -127,7 +127,7 @@ void Get_ADC_Result2(void)//ZJX changed
 
 	GeneralADbuffer.f32TempInvH = (float32)AdcMirror.ADCRESULT9;	// B4 result
 	GetRealValue.f32TempInvH = GeneralADbuffer.f32TempInvH * ADCalibration.f32TempInvH * ADGain.f32TempInvH;
-	GeneralADbuffer.f32TempInvL = (float32)AdcMirror.ADCRESULT13;	// B6 result
+	GeneralADbuffer.f32TempInvL = (float32)AdcMirror.ADCRESULT9;	// B6 result
 	GetRealValue.f32TempInvL = GeneralADbuffer.f32TempInvL * ADCalibration.f32TempInvL * ADGain.f32TempInvL;
 
 #endif
@@ -138,7 +138,7 @@ void Get_ADC_Result2(void)//ZJX changed
 	GeneralADbuffer.f32VInvH = (float32)AdcMirror.ADCRESULT10 - ADDefaultACOffset;	 // A5 result
 	GetRealValue.f32VInvH = GeneralADbuffer.f32VInvH * ADGain.f32VInvH * ADCalibration.f32VInvH * Parallel_Reg.f32VInvH_Comp_Coeff - ADChannelOffset.f32VInvH;
 	GeneralADbuffer.f32VOutH = (float32)AdcMirror.ADCRESULT8 - ADDefaultACOffset;	// A4 result
-	GetRealValue.f32VOutH = GeneralADbuffer.f32VOutH * ADGain.f32VOutH * ADCalibration.f32VOutH - ADChannelOffset.f32VOutH;
+	GetRealValue.f32VOutH = -(GeneralADbuffer.f32VOutH * ADGain.f32VOutH * ADCalibration.f32VOutH - ADChannelOffset.f32VOutH) ;
 
 	GeneralADbuffer.f32IInvL = (float32)AdcMirror.ADCRESULT3 - ADDefaultACOffset;	// B1 result
 	GetRealValue.f32IInvL = GeneralADbuffer.f32IInvL * ADGain.f32IInvL * ADCalibration.f32IInvL - ADChannelOffset.f32IInvL;
@@ -147,8 +147,8 @@ void Get_ADC_Result2(void)//ZJX changed
 	GeneralADbuffer.f32VOutL = (float32)AdcMirror.ADCRESULT5 - ADDefaultACOffset;	// B2 result
 	GetRealValue.f32VOutL = GeneralADbuffer.f32VOutL * ADGain.f32VOutL * ADCalibration.f32VOutL - ADChannelOffset.f32VOutL;
 
-	GeneralADbuffer.f32TempInvL = (float32)AdcMirror.ADCRESULT11;	// B6 result
-	GetRealValue.f32TempInvL = GeneralADbuffer.f32TempInvL * ADCalibration.f32TempInvL * ADGain.f32TempInvL;
+	GeneralADbuffer.f32TempInvH = (float32)AdcMirror.ADCRESULT11;	// B6 result
+	GetRealValue.f32TempInvH = GeneralADbuffer.f32TempInvH * ADCalibration.f32TempInvH * ADGain.f32TempInvH;
 
 #endif
 
@@ -462,7 +462,7 @@ void TSK_InvVoltPeriod(void)
 				/*Controller related function*/
          		if ( g_Sys_Structure_State == Single_noBypass )
          		{
-         			InvVoltPRConfig();
+         			;//InvVoltPRConfig();
          		}
 				SyncLogic_Control();
 				InvVoltSlowup();

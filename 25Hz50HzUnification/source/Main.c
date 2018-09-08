@@ -730,8 +730,8 @@ void TimeBase20msPRD(void)
 	}
 	if (s_u8temp == 100)
 	{
-		if (ModuleAdd == 0x00)
-			g_SysFaultMessage.bit.ECAN_Fault = 1;
+		if (ModuleAdd == 0x00);
+			//g_SysFaultMessage.bit.ECAN_Fault = 1;
 	}
 	else
 		s_u8temp++;

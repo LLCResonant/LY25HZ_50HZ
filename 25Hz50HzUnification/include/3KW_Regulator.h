@@ -89,7 +89,7 @@
 
 #define PLL_Inv_Kp	1e-5f
 #define PLL_Inv_Ki	5e-9f
-#define DELTA_ANGLE_INV 2*Value_Pi * 24/(PWM_FREQ/2)
+#define DELTA_ANGLE_INV 2 * Value_Pi * 25 / ( PWM_FREQ / 2 )
 #endif
 
 #ifdef 	LY50HZ
@@ -130,7 +130,7 @@
 
 #define PLL_Inv_Kp	5e-5f
 #define PLL_Inv_Ki	2.5e-8f
-#define DELTA_ANGLE_INV 2*Value_Pi * 50/(PWM_FREQ/2)
+#define DELTA_ANGLE_INV 2 * Value_Pi * 50 / ( PWM_FREQ / 2 )
 #endif
 
 /* General Purpose PID Controller, Data type */

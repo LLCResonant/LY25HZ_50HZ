@@ -356,12 +356,12 @@ void Scib_Q1Command(void)
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(Calc_Result.f32VInvL_rms, 0, pDataBuf);    //9
+	bStrLen1 = sbNumToAscii(Calc_Result.f32VInvH_rms, 0, pDataBuf);    //9
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32; 	
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(Calc_Result.f32IInvL_rms * 100, 0, pDataBuf);    //10
+	bStrLen1 = sbNumToAscii(Calc_Result.f32IInvH_rms * 100, 0, pDataBuf);    //10
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 	
@@ -371,13 +371,13 @@ void Scib_Q1Command(void)
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(Calc_Result.f32VOutHFreq * 100, 0, pDataBuf);//2017.6.7 ZR
+	bStrLen1 = sbNumToAscii(Calc_Result.f32VOutH_rms, 0, pDataBuf);//2017.6.7 ZR
 	//bStrLen1 = sbNumToAscii(Calc_Result.f32TempInvL, 0, pDataBuf);//12
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(Calc_Result.f32TempInvL, 0, pDataBuf);//13Calc_Result.f32TempPFCSYNC_COM2_LEVEL
+	bStrLen1 = sbNumToAscii(Calc_Result.f32IOutH_rms * 100, 0, pDataBuf);//13
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 	
@@ -387,7 +387,7 @@ void Scib_Q1Command(void)
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 	
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(Calc_Result.f32VOutLFreq * 100, 0, pDataBuf);//15
+	bStrLen1 = sbNumToAscii(Calc_Result.f32TempInvH, 0, pDataBuf);//15
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
@@ -482,17 +482,17 @@ void Scib_Q1Command(void)
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(g_Mod_Status, 0, pDataBuf);//33 s_u16Cnt_DcFan2_Low_Levelg_StateCheck.Word.byte4 g_Mod_Statusg_StateCheck.Word.byte5
+	bStrLen1 = sbNumToAscii(fabs(OutPLLConReg.f32Theta - VOutHPLLConReg.f32Theta) * 1000, 0, pDataBuf);//33 s_u16Cnt_DcFan2_Low_Levelg_StateCheck.Word.byte4 g_Mod_Statusg_StateCheck.Word.byte5
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(ModuleAdd, 0, pDataBuf);//34 s_u16Cnt_FanCtrl_Hi_Level g_StateCheck.Word.byte5
+	bStrLen1 = sbNumToAscii(OutPLLConReg.f32Theta * 1000, 0, pDataBuf);//34 s_u16Cnt_FanCtrl_Hi_Level g_StateCheck.Word.byte5
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(g_InvH_Load, 0, pDataBuf);//35 s_u16Cnt_FanCtrl_Hi_Level g_StateCheck.Word.byte5
+	bStrLen1 = sbNumToAscii(VOutHPLLConReg.f32Theta * 1000, 0, pDataBuf);//35 s_u16Cnt_FanCtrl_Hi_Level g_StateCheck.Word.byte5
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
@@ -839,15 +839,15 @@ int16 swGetFaultUnrecover2(void)
 }
 int16 swGetRLineVolt(void)
 {
-	return(ADChannelOffset.f32VGrid);//9
+	return(OutPLLConReg.f32Sin_Theta * 1000);//9
 }
 int16 swGetSLineVolt(void)
 {
-	return(Calc_Result.f32VGrid_ave*10);//10GetRealValue.f32VGrid_RT
+	return(VOutHPLLConReg.f32Sin_Theta * 1000);//10GetRealValue.f32VGrid_RT
 }
 int16 swGetTLineVolt(void)
 {
-	return( Ecan_SysParaCalibration.u16VInvH_rms);//11
+	return(Ecan_SysParaCalibration.u16VInvL_rms);//11
 }
 int16 swGetRCurr(void)
 {

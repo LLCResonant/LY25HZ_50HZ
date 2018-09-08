@@ -352,7 +352,7 @@ Uint8 ECANErrorCheck()
 		u8EACNCommFaultCnt++;
 		if(u8EACNCommFaultCnt>30)
 		{
-			g_StateCheck.bit.ECAN_Fault = 1;
+		//	g_StateCheck.bit.ECAN_Fault = 1;
 			u8EACNCommFaultCnt=0;
 		}
 		return 1;

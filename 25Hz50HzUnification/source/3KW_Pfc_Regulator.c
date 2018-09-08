@@ -188,7 +188,7 @@ void GridCurrentController(void)
 
 	// open loop just for test
 	#ifdef PFC_OPEN_LOOP
-	CurrConReg.f32PfcDuty = 0.8 * PWM_HALF_PERIOD * GridPLLConReg.Sin_Theta;
+	CurrConReg.f32PfcDuty = 0.8 * PWM_HALF_PERIOD * GridPLLConReg.f32Sin_Theta;
 	#endif
 
 	if(CurrConReg.f32PfcDuty <= 0)
