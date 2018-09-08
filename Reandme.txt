@@ -32,3 +32,6 @@ The Folder 'Configuration and protocol files' is the ECAN protocol and hardware 
 make the program suite the old 50Hz power board
 1, DataAqcquiation revised
 2, InvH and InvL Measure gain revised
+2018.9.8
+25Hz50HzUnification is revised
+50Hz bypass is revised
