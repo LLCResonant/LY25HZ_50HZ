@@ -29,6 +29,8 @@ void InitECan(void)
 
 	struct ECAN_REGS ECanaShadow;
 
+	InitECanGpio();                     // Initialize the ECan GPIO.
+
 	    EALLOW;     // EALLOW enables access to protected bits
 
 	/* Configure eCAN RX and TX pins for CAN operation using eCAN regs*/

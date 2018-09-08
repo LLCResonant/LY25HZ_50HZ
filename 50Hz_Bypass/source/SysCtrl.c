@@ -179,7 +179,7 @@ void InitPll(Uint16 val, Uint16 divsel)
 //---------------------------------------------------------------------------
 // This function initializes the clocks to the peripheral modules.
 // First the high and low clock prescalers are set
-// Second the clocks are enabled to each peripheral.
+// u16Second the clocks are enabled to each peripheral.
 // To reduce power, leave clocks to unused peripherals disabled
 //
 // Note: If a peripherals clock is not enabled then you cannot
@@ -227,8 +227,8 @@ void InitPeripheralClocks(void)
    SysCtrlRegs.PCLKCR0.bit.SCIAENCLK = 1;     // SCI-A
    SysCtrlRegs.PCLKCR0.bit.SPIAENCLK = 0;     // SPI-A
    SysCtrlRegs.PCLKCR0.bit.SPIBENCLK = 0;     // SPI-B
-   SysCtrlRegs.PCLKCR2.bit.HRCAP1ENCLK = 1;
-   SysCtrlRegs.PCLKCR2.bit.HRCAP2ENCLK = 1;
+   SysCtrlRegs.PCLKCR2.bit.HRCAP1ENCLK = 0;
+   SysCtrlRegs.PCLKCR2.bit.HRCAP2ENCLK = 0;
 
 
    EDIS;

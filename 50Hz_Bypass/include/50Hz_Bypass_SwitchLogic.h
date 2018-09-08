@@ -42,22 +42,20 @@
 
 struct PLL
 {
-	_iq20	i32Input[3];   		// LPF
-	_iq20	i32Output[3];   		// LPF
-	_iq20	i32MAC;
+	_iq20	iq20Input[3];   		// LPF
+	_iq20	iq20Output[3];   		// LPF
+	_iq20	iq20MAC;
 
-	_iq20	i32Refer;
-	_iq20	i32PIDErr_Old;
-	_iq20	i32PIDErr_New;
-	_iq20	i32PID_Output;
+	_iq20	iq20Refer;
+	_iq20	iq20PIDErr_Old;
+	_iq20	iq20PIDErr_New;
+	_iq20	iq20PID_Output;
 
-	_iq20	i32Delta_Theta;   		// Output: PID output
-	_iq20	i32Frequency;
-	_iq20	i32Theta;
-	_iq20	i32Theta_Step;
-	_iq20	i32Valpha;
-	_iq20	i32Sin_Theta;
-	_iq20	i32Cos_Theta;
+	_iq20	iq20Delta_Theta;   		// Output: PID output
+	_iq20	iq20Theta;
+	_iq20	iq20Valpha;
+	_iq20	iq20Sin_Theta;
+	_iq20	iq20Cos_Theta;
 };
 extern	struct	PLL	GridPLLReg;
 

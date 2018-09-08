@@ -43,23 +43,21 @@
 //******************************************************************************
 typedef struct
 {
-	_iq20	i32VGrid_HiLimit;
-	_iq20	i32VGrid_LowLimit;
-  	_iq20   i32VGrid_HiLimitBack;
-	_iq20   i32VGrid_LowLimitBack;
-	Uint16	i16VGrid_ProtectionTime;
+	_iq20		iq20VGrid_HiLimit;
+	_iq20		iq20VGrid_LowLimit;
+  	_iq20   	iq20VGrid_HiLimitBack;
+	_iq20   	iq20VGrid_LowLimitBack;
+	Uint16	u16VGrid_ProtectionTime;
 
-	_iq10	i32FreGrid_HiLimit;
-	_iq10	i32FreGrid_LowLimit;
-	Uint16	i32FreGrid_ProtectionTime;
+	_iq10		i32FreGrid_HiLimit;
+	_iq10		i32FreGrid_LowLimit;
+	Uint16	u16FreGrid_ProtectionTime;
 
-	int32	i32TempAmb_HiLimit;
-	Uint16	i32TempAmb_ProtectionTime;
+	Uint16	u16TempAmb_HiLimit;
+	Uint16	u16TempAmb_ProtectionTime;
 
 }SAFETY_PARAMETER_REG;
-
 extern SAFETY_PARAMETER_REG	SafetyReg;
-
 
 //===================== Global functions==================================
 
@@ -68,6 +66,7 @@ extern void GridFreqCheck(void);
 extern void TemperatureCheck(void);
 extern void DCFanCheck(void);
 extern void ADOffsetCheck(void);
+extern void SCRCheck(void);
 //------------------
 #endif
 

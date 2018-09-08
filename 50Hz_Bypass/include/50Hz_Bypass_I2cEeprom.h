@@ -31,17 +31,6 @@
 #define SCL_1   GpioDataRegs.GPBSET.bit.GPIO33=1;   //SCL 输出1
 #define DELAY_UNIT	10								//宏定义延时时间常数
 
-struct Time
-{
-	Uint8 Second;
-	Uint8 Minute;
-	Uint16 Hour_L;
-	Uint16 Hour_H;
-	Uint8 OverFlow;
-	Uint16 TimeCheck;
-};
-extern  struct Time  RunningTime;
-
 /******************************函数声明****************************/
 void writebyte(Uint16 addr,Uint16 data);
 Uint16 readbyte(Uint16 addr);

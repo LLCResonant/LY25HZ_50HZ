@@ -8,10 +8,6 @@
 #include "F28035_example.h"				// Main include file
 
 //--- Global Variables
-//Uint16 AdcBuf[ADC_BUF_LEN];				// ADC data buffer allocation
-Uint16 g_u16DelayTimeSys = 0;
-
-
 
 //--- Global functions
 void SysParamDefault(); 
@@ -65,11 +61,9 @@ void main(void)
 	InitAdc();							// Initialize the ADC
 	InitEPwm();							// Initialize the PWM
 	InitECap();							// Initialize the Capture units
-	Eeprom_Gpio_Init();
-	InitHRCap();
-	InitECanGpio();                     // Initialize the ECan GPIO.
 	InitECan();							// Initialize the ECan.
 	InitECana();						// Initialize the ECana.
+	EEPROMParamDefault();
     SysParamDefault(); 
 	
 //	ReadEnergyOutput_PowerUp();
@@ -114,78 +108,78 @@ void SysParamDefault(void)
  	SCR_Bypass_Disable();
  	SCR_INV_Disable();
 
-	ADGain.i32VGrid = VGridMeasureGain;
-	ADGain.i32TempAmb = TempAmbMeasureGain;
+	ADGain.iq20VGrid = VGridMeasureGain;
+	ADGain.iq20TempAmb = TempAmbMeasureGain;
 
 	SafetyReg.i32FreGrid_HiLimit = FreGridHiLimit;
 	SafetyReg.i32FreGrid_LowLimit = FreGridLowLimit;
-	SafetyReg.i32FreGrid_ProtectionTime = FreGridProtectionTime;
+	SafetyReg.u16FreGrid_ProtectionTime = FreGridProtectionTime;
 
 	u8temp = ProtectionSet0 + ProtectionSet1 * 2;
 	if (u8temp == 0x00)
 	{
-		SafetyReg.i32VGrid_HiLimit = VGridHi1Limit;
-		SafetyReg.i32VGrid_LowLimit = VGridLow1Limit;
+		SafetyReg.iq20VGrid_HiLimit = VGridHi1Limit;
+		SafetyReg.iq20VGrid_LowLimit = VGridLow1Limit;
 	}
 	else if (u8temp == 0x01)
 	{
-		SafetyReg.i32VGrid_HiLimit = VGridHi2Limit;
-		SafetyReg.i32VGrid_LowLimit = VGridLow2Limit;
+		SafetyReg.iq20VGrid_HiLimit = VGridHi2Limit;
+		SafetyReg.iq20VGrid_LowLimit = VGridLow2Limit;
 	}
 	else
 	{
-		SafetyReg.i32VGrid_HiLimit = VGridHi2Limit;
-		SafetyReg.i32VGrid_LowLimit = VGridLow2Limit;
+		SafetyReg.iq20VGrid_HiLimit = VGridHi2Limit;
+		SafetyReg.iq20VGrid_LowLimit = VGridLow2Limit;
 	}
 
-	SafetyReg.i32VGrid_HiLimitBack = SafetyReg.i32VGrid_HiLimit - _IQ(5);
-	SafetyReg.i32VGrid_LowLimitBack = SafetyReg.i32VGrid_LowLimit + _IQ(5);
+	SafetyReg.iq20VGrid_HiLimitBack = SafetyReg.iq20VGrid_HiLimit - _IQ(5);
+	SafetyReg.iq20VGrid_LowLimitBack = SafetyReg.iq20VGrid_LowLimit + _IQ(5);
 	
-	SafetyReg.i16VGrid_ProtectionTime = VGridProtectionTime;
-	SafetyReg.i32TempAmb_HiLimit = TempAmbHiLimit;
-	SafetyReg.i32TempAmb_ProtectionTime = TempProtecitonTime;
+	SafetyReg.u16VGrid_ProtectionTime = VGridProtectionTime;
+	SafetyReg.u16TempAmb_HiLimit = TempAmbHiLimit;
+	SafetyReg.u16TempAmb_ProtectionTime = TempProtecitonTime;
 
-	ADChannelOffset.i32VGrid = 0;
-	ADChannelOffset.i32VOut = 0;
-	ADChannelOffset.i32IGrid = 0;
-	ADChannelOffset.i32TempAmb = 0;
+	ADChannelOffset.iq20VGrid = 0;
+	ADChannelOffset.iq20VOut = 0;
+	ADChannelOffset.iq20IGrid = 0;
+	ADChannelOffset.iq20TempAmb = 0;
 
-	ADGain.i32VGrid = VGridMeasureGain;
-	ADGain.i32VOut = VOutMeasureGain;
-	ADGain.i32IGrid = IGridMeasureGain;
-	ADGain.i32TempAmb = TempAmbMeasureGain;
+	ADGain.iq20VGrid = VGridMeasureGain;
+	ADGain.iq20VOut = VOutMeasureGain;
+	ADGain.iq20IGrid = IGridMeasureGain;
+	ADGain.iq20TempAmb = TempAmbMeasureGain;
 
-	ADCorrection.i32VGrid = 1;
-	ADCorrection.i32VOut = 1;
-	ADCorrection.i32IGrid = 1;
-	ADCorrection.i32TempAmb = 1;
+	ADCalibration.iq20VGrid = 1;
+	ADCalibration.iq20VOut = 1;
+	ADCalibration.iq20IGrid = 1;
+	ADCalibration.iq20TempAmb = 1;
 
-	AD_Acc.i32TempAmb = 0;
-	AD_Acc.i32VGrid_RMS = 0;
-	AD_Acc.i32GridFreq = 0;
+	AD_Acc.iq10TempAmb = 0;
+	AD_Acc.iq2VGrid_RMS = 0;
+	AD_Acc.iq10GridFreq = 0;
 	AD_Acc.i16Counter = 0;
-	AD_Acc.i32IGrid_RMS = 0;
-	AD_Acc.i32VOut_RMS = 0;
-	AD_Acc.i32VGrid_ave = 0;
-	AD_Acc.i32VOut_ave = 0;
+	AD_Acc.iq10IGrid_RMS = 0;
+	AD_Acc.iq2VOut_RMS = 0;
+	AD_Acc.iq20VGrid_ave = 0;
+	AD_Acc.iq20VOut_ave = 0;
 
-	AD_Sum.i32TempAmb = 0;
-	AD_Sum.i32VGrid_RMS = 0;
-	AD_Sum.i32GridFreq = 0;
+	AD_Sum.iq10TempAmb = 0;
+	AD_Sum.iq2VGrid_RMS = 0;
+	AD_Sum.iq10GridFreq = 0;
 	AD_Sum.i16Counter = 0;
-	AD_Sum.i32IGrid_RMS = 0;
-	AD_Sum.i32VOut_RMS = 0;
-	AD_Sum.i32VGrid_ave = 0;
-	AD_Sum.i32VOut_ave = 0;
+	AD_Sum.iq10IGrid_RMS = 0;
+	AD_Sum.iq2VOut_RMS = 0;
+	AD_Sum.iq20VGrid_ave = 0;
+	AD_Sum.iq20VOut_ave = 0;
 
-	Calc_Result.i32TempAmb = 0;
-	Calc_Result.i32VGrid_RMS = 0;
-	Calc_Result.i32GridFreq = 0;
+	Calc_Result.iq20TempAmb = 0;
+	Calc_Result.iq20VGrid_RMS = 0;
+	Calc_Result.iq20GridFreq = 0;
 	Calc_Result.i16Counter = 0;
-	Calc_Result.i32IGrid_RMS = 0;
-	Calc_Result.i32VGrid_ave = 0;
-	Calc_Result.i32VOut_RMS = 0;
-	Calc_Result.i32VOut_ave = 0;
+	Calc_Result.iq20IGrid_RMS = 0;
+	Calc_Result.iq20VGrid_ave = 0;
+	Calc_Result.iq20VOut_RMS = 0;
+	Calc_Result.iq20VOut_ave = 0;
 
 	g_SysFaultMessage.Word.byte0 = 0;
 	g_SysFaultMessage.Word.byte1 = 0;
@@ -198,66 +192,31 @@ void SysParamDefault(void)
 	g_SysWarningMessage.Word.byte1 = 0;
 
 	//ECan
-	Ecan_ModuleData.BusN_Volt = 0;
-	Ecan_ModuleData.BusP_Volt = 0;
 	Ecan_ModuleData.Check = 0;
 
-	Ecan_ModuleData.Error.Byte.Alert = 0;
-	Ecan_ModuleData.Error.Byte.Fault1 = 0;
-	Ecan_ModuleData.Error.Byte.Fault2 = 0;
+	Ecan_ModuleData.Alert.Byte.Alert= 0;
+	Ecan_ModuleData.Fault.Byte.Fault1 = 0;
+	Ecan_ModuleData.Fault.Byte.Fault2 = 0;
 
-	Ecan_ModuleData.Error.Byte.Fault3 = 0;
-	Ecan_ModuleData.Input_Curr_Rms = 0;
-	Ecan_ModuleData.Input_Volt_Rms = 0;
+	Ecan_ModuleData.u16IGrid_rms = 0;
+	Ecan_ModuleData.u16VGrid_rms = 0;
 
-	Ecan_ModuleData.InvH_Cur_Rms = 0;
-	Ecan_ModuleData.InvH_Freq = 0;
-	Ecan_ModuleData.InvH_Temp = 0;
+	Ecan_ModuleData.u16VGrid_Freq = 0;
+	Ecan_ModuleData.u16Temperature = 0;
+	Ecan_ModuleData.u16VOut_rms = 0;
 
-	Ecan_ModuleData.InvH_Volt_Rms = 0;
-	Ecan_ModuleData.InvL_Cur_Rms = 0;
-	Ecan_ModuleData.InvL_Freq = 0;
+	Ecan_ModuleData.u16RunTimeu16Hour_H = 0;
+	Ecan_ModuleData.u16RunTimeu16Hour_L = 0;
 
-	Ecan_ModuleData.InvL_Temp = 0;
-	Ecan_ModuleData.InvL_Volt_Rms = 0;
-	Ecan_ModuleData.OutH_Volt_Rms = 0;
-
-	Ecan_ModuleData.OutL_Volt_Rms = 0;
-	Ecan_ModuleData.PFC_Temp = 0;
-	Ecan_ModuleData.Phase_Lead = 0;
-
-	Ecan_ModuleData.RunTimeHour_H = 0;
-	Ecan_ModuleData.RunTimeHour_L = 0;
-
-	 Ecan_SytemREVISED.Input_Volt_Rms = 0;
-	 Ecan_SytemREVISED.Bus_P = 0;
-	 Ecan_SytemREVISED.Bus_N = 0;
-
-	 Ecan_SytemREVISED.InvH_Volt_Rms = 0;
-	 Ecan_SytemREVISED.InvL_Volt_Rms = 0;
-	 Ecan_SytemREVISED.InvH_Cur_Rms = 0;
-
-	 Ecan_SytemREVISED.InvL_Cur_Rms = 0;
-	 Ecan_SytemREVISED.InvH_OutV_Rms = 0;
-	 Ecan_SytemREVISED.InvL_OutV_Rms = 0;
-
-	 Ecan_SytemREVISED.PFC_Temp = 0;
-	 Ecan_SytemREVISED.InvH_Temp = 0;
-	 Ecan_SytemREVISED.InvL_Temp = 0;
-
-	 Ecan_SytemREVISED.Input_Cur_Rms = 0;
-	 Ecan_SytemREVISED.Aver_Curr_InvH = 0;
-	 Ecan_SytemREVISED.Aver_Curr_InvL = 0;
-
-	 Ecan_SytemREVISED.RestartOverTimes = 0;
-	 Ecan_SytemREVISED.INVH_Volt_Ref = 0;
-	 Ecan_SytemREVISED.INVL_Volt_Ref = 0;
-
+	 Ecan_SytemREVISED.u16VGrid_rms = 0;
+	 Ecan_SytemREVISED.u16IGrid_rms = 0;
+	 Ecan_SytemREVISED.u16Temperature = 0;
+	 Ecan_SytemREVISED.u16VOut_rms = 0;
 	 //ECan upper computer order
-	 Ecan_SytemOrder.rsvr0 = 0;
-	 Ecan_SytemOrder.Defaluts = 0xFFFF;
-	 Ecan_SytemOrder.Output_Enable = 0;
-	 Ecan_SytemOrder.rsvr1 = 0;
+	 Ecan_SysParaCalibration.rsvr0 = 0;
+	 Ecan_SysParaCalibration.Defaluts = 0xFFFF;
+	 Ecan_SysParaCalibration.Output_Enable = 0;
+	 Ecan_SysParaCalibration.rsvr1 = 0;
 
 	 EcanP2A_Tx.P2AMail_id.all = 0xC0000007;
 	 EcanP2A_Tx.P2AMail_data.DWord.CANH_Bytes = 0x00000000;
@@ -266,12 +225,12 @@ void SysParamDefault(void)
 	 Ecan_Error.u8Upload_Trans_Error = 0;
 	 Ecan_Error.u8Broadcast_Trans_Error = 0;
 
-	 RunningTime.Hour_H = 0;
-	 RunningTime.Hour_L = 0;
-	 RunningTime.Minute = 0;
-	 RunningTime.Second = 0;
-	 RunningTime.OverFlow = 0;
-	 RunningTime.TimeCheck = 0;
+	 RunningTime.u16Hour_H = 0;
+	 RunningTime.u16Hour_L = 0;
+	 RunningTime.u16Minute = 0;
+	 RunningTime.u16Second = 0;
+	 RunningTime.u16OverFlow = 0;
+	 RunningTime.u16TimeCheck = 0;
 }    
 
 /**********************************************************************
@@ -292,9 +251,6 @@ void TimeBase2msPRD(void)
    SEM_post(&TimeBase2msReady);
    FanCntl();
 }
-
-
-
 
 /**********************************************************************
 * FUNCION :  SEM post  when  periodic  timerBase of 10ms  is ready
@@ -330,24 +286,7 @@ void TimeBase500msPRD(void)
 **********************************************************************/
 void TimeBase20msPRD(void)
 {
-	static Uint16 scia_cnt=0;
-
-	scia_cnt++;
-	if(2 == scia_cnt)
-	{
-		SEM_post(&SEM_SCIAComm);
-		scia_cnt = 0;
-		if(SciaRegs.SCICTL1.bit.SWRESET == 0)
-		{
-			SciaRegs.SCICTL1.bit.SWRESET = 1;
-			//scib_reset ++;
-		}
-		/*if(scib_reset >= 100)
-		{
-			scib_reset = 0;
-			g_SysWarningMessage.bit.LCD_Comm_Error = 1;
-		}*/
-	}
+	DitherEliminate();
 } // end of TimerBase20msPRD()
 
 //--- end of file -----------------------------------------------------

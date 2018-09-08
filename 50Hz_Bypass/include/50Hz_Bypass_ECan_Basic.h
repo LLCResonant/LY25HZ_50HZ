@@ -7,15 +7,8 @@
  */
 
 
-#ifndef Ecan_Basic_H
+#ifndef 	Ecan_Basic_H
 #define	Ecan_Basic_H
-
-//#define	OS_ENTER_CRITICAL()				asm("	SETC	INTM")
-//#define	OS_EXIT_CRITICAL()				asm("	CLRC	INTM")
-
-//#define GET_HBYTE_OF_WORD(WORD)			((Uint8)((WORD) >> 8))
-//#define GET_LBYTE_OF_WORD(WORD)			((Uint8)((WORD) & 0x00FF))
-
 
 #define ECAN_QUE_BUF_NORMAL				0
 #define ECAN_QUE_BUF_FULL				1
@@ -35,10 +28,6 @@
 
 #define ECAN_MAX_COMMAND_LENGTH 	50
 #define ECAN_CHAR_ENTER 			13
-
-//DryCrtl
-#define DryCrtl_ON				GpioDataRegs.GPASET.bit.GPIO20 = 1;  //2018.1.22 GX ECAN test
-#define DryCrtl_OFF				GpioDataRegs.GPACLEAR.bit.GPIO20 = 1;
 
 /************************************************************************************
 *MAIL structure																	*
@@ -110,7 +99,7 @@ typedef struct{
 
 /************************************************************************************
 *ECAN structure																		*
-*Including  tranmit and receive queue structure and Tx,Rx threshold control variabls*
+*Including  transmit and receive queue structure and Tx,Rx threshold control variables*
 *************************************************************************************/
 typedef struct{
 	Uint8	u8TxStatus;
@@ -120,7 +109,7 @@ typedef struct{
 
 /************************************************************************************
 *P2PMAIL structure																		*
-*Including  tranmit and receive queue structure and Tx,Rx threshold control variabls*
+*Including  transmit and receive queue structure and Tx,Rx threshold control variables*
 *************************************************************************************/
 /*========================增强型CAN通信点对点29位帧标识符定义============================*/
 typedef union
@@ -192,6 +181,5 @@ extern void InitECana(void);
 extern void SWI_ECANRXISR(void);
 extern void eCAN_Transmit(MAIL);
 extern void eCAN_Broadcast(P2AMAIL);
-
 
 #endif

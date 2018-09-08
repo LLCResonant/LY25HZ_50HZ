@@ -112,6 +112,8 @@ void StateSwitch(void)
 		{
 			LED_Fault_ON;
 			DryCntl_OFF;
+		 	Times_WriteToEEPROM();
+		 	Sample_WriteToEEPROM();
 		}
 		else
 		{
@@ -215,23 +217,18 @@ void ProcessLock(void) // start of ProcessRUNNING
 **********************************************************************/
 void ProcessFault(void)  // start of ProcessFAULT
 {
-	SCR_Bypass_Disable();
+	//SCR Fault and over temperature is overall fault
+	if (g_SysFaultMessage.Word.byte1 > 0)
+	{
+		SCR_Bypass_Disable();
+		SCR_INV_Disable();
+	}
+	else
+	{
+		//Volt, Frequency and AD Fault are just for Bypass
+		SCR_Bypass_Disable();
+	}
 } // end of ProcessFAULT
-
-/**********************************************************************
-* FUNCION :   Fault Check
-* PURPOSE :  check if  Fault is happend
-*                   
-* INPUT :
-*        void
-* RETURN :
-*        Uint16
-* CALLS:
-*        void
-*
-* CALLED BY: void ProcessRunning(void)       
-* 
-**********************************************************************/
 /**********************************************************************
 * FUNCION :  Fault Back Check
 * PURPOSE :  check if  generic Fault is happend
@@ -256,15 +253,15 @@ void FanCntl(void)
 	else
 		i8Cnt_Count=1;
 
-	if (Calc_Result.i32TempAmb > 50)
+	if (Calc_Result.iq20TempAmb > 50)
 		i8Cnt_Hilimit = 10;
-	else if(Calc_Result.i32TempAmb > 45)
+	else if(Calc_Result.iq20TempAmb > 45)
 		i8Cnt_Hilimit = 9;
-	else if(Calc_Result.i32TempAmb > 40)
+	else if(Calc_Result.iq20TempAmb > 40)
 		i8Cnt_Hilimit = 8;
-	else if(Calc_Result.i32TempAmb > 35)
+	else if(Calc_Result.iq20TempAmb > 35)
 		i8Cnt_Hilimit = 7;
-	else if(Calc_Result.i32TempAmb > 30)
+	else if(Calc_Result.iq20TempAmb > 30)
 		i8Cnt_Hilimit = 6;
 	else
 		i8Cnt_Hilimit = 5;

@@ -394,7 +394,7 @@ void ECAP1_INT_ISR(void)						// PIE4.1 @ 0x000D70  ECAP1_INT
 // INT 4.7---------------------------------------------------------------------
 void HRCAP1_INT_ISR(void)    // HRCAP-1
 {
-	EALLOW;
+	/*EALLOW;
 	if (HRCap1Regs.HCIFR.bit.RISEOVF == 1)
 		ESTOP0;                    // Another rising edge detected before ISR serviced.
 
@@ -405,13 +405,19 @@ void HRCAP1_INT_ISR(void)    // HRCAP-1
 
     HRCap1Regs.HCICLR.bit.INT=1;   // Clear HRCAP interrupt flag
 	PieCtrlRegs.PIEACK.bit.ACK4=1; // Acknowledge PIE Group 4 interrupts.
-    EDIS;
+	EDIS;*/
+	PieCtrlRegs.PIEACK.all = PIEACK_GROUP4;		// Must acknowledge the PIE group
+
+// Next two lines for debug only - remove after inserting your ISR
+	asm (" ESTOP0");							// Emulator Halt instruction
+	while(1);
+
 }
 //---------------------------------------------------------------------
 // INT 4.8---------------------------------------------------------------------
 void HRCAP2_INT_ISR(void)    // HRCAP-2
 {
-	EALLOW;
+	/*EALLOW;
 	if (HRCap2Regs.HCIFR.bit.RISEOVF == 1)
 		ESTOP0;                    // Another rising edge detected before ISR serviced.
 
@@ -424,7 +430,12 @@ void HRCAP2_INT_ISR(void)    // HRCAP-2
 
     HRCap2Regs.HCICLR.bit.INT=1;   // Clear HRCAP interrupt flag
 	PieCtrlRegs.PIEACK.bit.ACK4=1; // Acknowledge PIE Group 4 interrupts.
-    EDIS;
+	EDIS;*/
+	PieCtrlRegs.PIEACK.all = PIEACK_GROUP4;		// Must acknowledge the PIE group
+
+// Next two lines for debug only - remove after inserting your ISR
+	asm (" ESTOP0");							// Emulator Halt instruction
+	while(1);
 }
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------

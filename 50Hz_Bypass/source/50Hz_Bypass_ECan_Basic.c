@@ -85,6 +85,7 @@ void InitECana(void)
 
 		ECanaMboxes.MBOX0.MSGID.all=0x80000000;//发送邮箱不需要屏蔽位
 	//	ECanaMboxes.MBOX0.MSGID.all=0x//extension identifier mode,发送邮箱的地址
+		ModuleAdd = MODULEADDRESS;
 		u32_Add = ModuleAdd;
 		ECanaMboxes.MBOX1.MSGID.all=0xC1400000 | (u32_Add << 16);
 		ECanaMboxes.MBOX2.MSGID.all=0x80000000; //extension identifier mode,接收到的为广播命令

@@ -21,29 +21,21 @@
  *
  *   Scib_SnatchGraph(void);
  *============================================================================*/
+
 #include "DSP2803x_Device.h"	// Peripheral address definitions
 #include "F28035_example.h"		// Main include file
 
-//#pragma DATA_SECTION(u8ECAN_UserDataBuf0, "ConstantsInRAM")
-//#pragma DATA_SECTION(u8ECAN_RxBuffer0, "ConstantsInRAM")
-//#pragma DATA_SECTION(u16ECAN_TransmitDataBuff, "ConstantsInRAM")
-
 /******************************variable definition******************************/
-//#pragma DATA_SECTION(u8ECAN_UserDataBuf0,"SLOWDATA");
 MAIL  u8ECAN_UserDataBuf0[64];  						//64个待发送的缓冲数据
 MAIL  u8ECAN_CommandBuffer0;							//单个指令出队后的中转变量
 MAIL  *pECAN_CommandIn0;								//单个指令出队后中转变量的指针
 Uint16  u8ECAN_Temp = 0;								//用于检测指令队列中是否有 数据
-Uint8 g_InvH_Load = 0;
-Uint8 g_InvL_Load = 0;
-;
-Uint8 ModuleAdd = 0X00;
+
 Uint8 Error_Flag = 0;
 Uint32 IDTEST = 0;
-Uint8  u8_hostdrop = 0;
-Uint8 ECAN_timer1;
+Uint8 ModuleAdd = 0;
 
-ECAN_ORDER Ecan_SytemOrder;
+ECAN_ORDER Ecan_SysParaCalibration;
 ECAN_MODULE_DATA Ecan_ModuleData;
 ECAN_REVISED Ecan_SytemREVISED;
 P2AMAIL EcanP2A_Tx;
@@ -65,12 +57,9 @@ void TSK_ECAN(void);
 void Data_Format_Conver(void);
 void Sys_Set_Oper(void);
 void Para_Revise_Oper(Uint8);
-void Broadcast(void);
 Uint8 ErrorCheck(MAIL temp);
-void Arbitrate(P2AMAIL);
 void Output_Revise (void);
 void Sample_WriteToEEPROM();
-
 
 void ECAN_COMM_TEST( void )
 {
@@ -80,7 +69,6 @@ void ECAN_COMM_TEST( void )
 	test.Mailbox_data.DWord.CANH_Bytes=0x00000000;
 	eCAN_Transmit(test);
 }
-
 /*=============================================================================*
  * FUNCTION: TSK_ECAN(void)
  * PURPOSE :
@@ -100,7 +88,6 @@ void TSK_ECAN(void)
 			pECAN_CommandIn0 = &u8ECAN_CommandBuffer0;	        // eCAN buffer 的起始地址 。 只执行一次。修改到main函数中了
 			while(1)
 			{
-
 				u8ECAN_Temp = ECANRead(pECAN_CommandIn0); 		//读取指令,将指令调到u8ECAN_CommandBuffer0指令队列中
 				if(ECAN_RX_EMPTY == u8ECAN_Temp)
 				{
@@ -115,9 +102,6 @@ void TSK_ECAN(void)
 			b_count ++;
 			if (b_count >= 1)
 			{
-				/*旁路不需要广播信息*/
-				//if (ModuleAdd != 0X00)
-				//Broadcast();
 				if (b_count >= 2)
 				{
 					DataUpload();
@@ -133,110 +117,6 @@ void TSK_ECAN(void)
 		}
 	}
 }
-
-/*
- * 旁路不需要广播信息，不需要竞争主机
-void Broadcast(void)
-{
-	EcanP2A_Tx.P2AMail_id.all = 0XDFFF0007;
-	EcanP2A_Tx.P2AMail_id.bit.source_type = MODULE_TYPE;
-	EcanP2A_Tx.P2AMail_id.bit.source_address = ModuleAdd;
-	if (g_Mod_Status == Master)
-	{
-		EcanP2A_Tx.P2AMail_id.bit.bus = 0x0;
- 		if ( ShortCheck_Reg.Restart_times == 0 && NormalState == g_Sys_Current_State && 0 == SYNC_COM2_LEVEL)//  //2018.4.3 GX
- 		{
- 			Output_Revise(); //2018.4.3 GX
- 			EcanP2A_Tx.P2AMail_data.Word.Word1= (Uint16)(SafetyReg.f32InvL_VoltRms_Ref_LCD * 10);
- 			EcanP2A_Tx.P2AMail_data.Word.Word2 = (Uint16)(SafetyReg.f32InvH_VoltRms_Ref_LCD * 10);
- 			EcanP2A_Tx.P2AMail_data.Word.Word3 = (Uint16)(g_InvH_Load);
- 			EcanP2A_Tx.P2AMail_data.Word.Word4 = (Uint16)(g_InvL_Load);
-
- 			eCAN_Broadcast(EcanP2A_Tx);   //  回送命令
- 		}
- 		else
- 		{
- 			EcanP2A_Tx.P2AMail_data.DWord.CANL_Bytes = ModuleAdd;
- 			EcanP2A_Tx.P2AMail_data.DWord.CANH_Bytes = MODULE_TYPE;
- 			eCAN_Broadcast(EcanP2A_Tx);
- 		}
-	}
-	else if (g_Mod_Status == Slave)
-		EcanP2A_Tx.P2AMail_id.bit.bus = 0x1;
-	else
-	{
-		EcanP2A_Tx.P2AMail_id.bit.bus = 0x1;
-		EcanP2A_Tx.P2AMail_data.DWord.CANL_Bytes = ModuleAdd;
-		EcanP2A_Tx.P2AMail_data.DWord.CANH_Bytes = MODULE_TYPE;
-		//__asm ("ESTOP0");
-		eCAN_Broadcast(EcanP2A_Tx);   //  回送命令
-	}
-}
-*/
-
-/*
- * 旁路不需要竞争主机，也不需要调节参考，因此也不需要接受
-void Arbitrate(P2AMAIL P2A_RX)
-{
-	if (ModuleAdd != 0X00)  //	COM2 High Voltage
-	{
-		if (g_Mod_Status == idle)
-		{
-			if (P2A_RX.P2AMail_id.bit.bus == 0)
-				g_Mod_Status = Slave;
-			else if (ModuleAdd > P2A_RX.P2AMail_id.bit.source_address)
-				g_Mod_Status = Slave;
-			else
-				g_Mod_Status = idle;
-		}
-		else if (g_Mod_Status == Slave)
-		{
-			if ( (ShortCheck_Reg.Restart_times == 0 ) && 0 == SYNC_COM2_LEVEL&& (NormalState == g_Sys_Current_State )  &&  P2A_RX.P2AMail_id.bit.bus == 0  )//
-			{
-				if(P2A_RX.P2AMail_data.Word.Word1 > 1010 && P2A_RX.P2AMail_data.Word.Word1 < 1190 \
-					&& 	P2A_RX.P2AMail_data.Word.Word2> 2110 && P2A_RX.P2AMail_data.Word.Word2 < 2290)
-				{
-					SafetyReg.f32InvL_VoltRms_Ref_LCD = P2A_RX.P2AMail_data.Word.Word1 * 0.1;
-					SafetyReg.f32InvH_VoltRms_Ref_LCD = P2A_RX.P2AMail_data.Word.Word2 * 0.1;
-					g_InvH_Load = (Uint8)(P2A_RX.P2AMail_data.Word.Word3);
-					g_InvL_Load = (Uint8)(P2A_RX.P2AMail_data.Word.Word4);
-
-					if(g_InvH_Load == LightLoad)
-						SafetyReg.f32InvH_VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref_LCD * VInvLightRevise;
-					else if (g_InvH_Load == MiddleLoad)
-						SafetyReg.f32InvH_VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref_LCD * VInvMiddleRevise;
-					else if (g_InvH_Load == HeavyLoad)
-						SafetyReg.f32InvH_VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref_LCD * VInvHeavyRevise;
-					else
-						SafetyReg.f32InvH_VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref;
-
-					if(g_InvL_Load == LightLoad)
-						SafetyReg.f32InvL_VoltRms_Ref = SafetyReg.f32InvL_VoltRms_Ref_LCD * VInvLightRevise;
-					else if (g_InvL_Load == MiddleLoad)
-						SafetyReg.f32InvL_VoltRms_Ref = SafetyReg.f32InvL_VoltRms_Ref_LCD * VInvMiddleRevise;
-					else if (g_InvL_Load == HeavyLoad)
-						SafetyReg.f32InvL_VoltRms_Ref = SafetyReg.f32InvL_VoltRms_Ref_LCD * VInvHeavyRevise;
-					else
-						SafetyReg.f32InvL_VoltRms_Ref = SafetyReg.f32InvL_VoltRms_Ref;
-				}
-				else
-				{
-					SafetyReg.f32InvL_VoltRms_Ref_LCD = SafetyReg.f32InvL_VoltRms_Ref_LCD;
-					SafetyReg.f32InvH_VoltRms_Ref_LCD = SafetyReg.f32InvH_VoltRms_Ref_LCD;
-				}
-			}
-		}
-	}
-	else
-		g_Mod_Status = idle;
-
-	if (u8_hostdrop >= 100)
-		u8_hostdrop = 0;
-	else
-		u8_hostdrop++;
-}
-*/
-
 
 /*=============================================================================*
  * FUNCTION: ECAN_Parsing(MAIL mailp)
@@ -308,12 +188,12 @@ void DataUpload(MAIL mailp)
 	id = Get_ID(DataLength, ModuleAdd);
 	Temp.Mailbox_id.all = id;
 	Temp.Mailbox_data.Byte.Current_frame = 0x01;//第一帧
-	Temp.Mailbox_data.Byte.Frames_num = 0x07;//7帧
+	Temp.Mailbox_data.Byte.Frames_num = 0x07;//3帧
 	Temp.Mailbox_data.Byte.Code = 0x00;
 
-	Temp.Mailbox_data.Word.Data1 = Ecan_ModuleData.Input_Volt_Rms;
-	Temp.Mailbox_data.Word.Data2 = Ecan_ModuleData.Input_Curr_Rms;
-	Temp.Mailbox_data.Word.Data3 = Ecan_ModuleData.BusP_Volt;
+	Temp.Mailbox_data.Word.Data1 = Ecan_ModuleData.u16VGrid_rms;
+	Temp.Mailbox_data.Word.Data2 = Ecan_ModuleData.u16VGrid_Freq;
+	Temp.Mailbox_data.Word.Data3 = Ecan_ModuleData.u16IGrid_rms;
 	check = XOR(Temp);
 
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
@@ -321,49 +201,9 @@ void DataUpload(MAIL mailp)
 	/*--------------------------------------------------------------------------*/
 	Temp.Mailbox_data.Byte.Current_frame = 0x02;//第二帧
 
-	Temp.Mailbox_data.Word.Data1 = Ecan_ModuleData.BusN_Volt;
-	Temp.Mailbox_data.Word.Data2 = Ecan_ModuleData.OutH_Volt_Rms;
-	Temp.Mailbox_data.Word.Data3 = Ecan_ModuleData.OutL_Volt_Rms;
-	check ^= XOR(Temp);
-
-	u8ECAN_UserDataBuf0[bStrLen] = Temp;
-	bStrLen++;
-	/*--------------------------------------------------------------------------*/
-	Temp.Mailbox_data.Byte.Current_frame = 0x03;//第三帧
-
-	Temp.Mailbox_data.Word.Data1 = Ecan_ModuleData.InvH_Volt_Rms;
-	Temp.Mailbox_data.Word.Data2 = Ecan_ModuleData.InvL_Volt_Rms;
-	Temp.Mailbox_data.Word.Data3 = Ecan_ModuleData.InvH_Cur_Rms;
-	check ^= XOR(Temp);
-
-	u8ECAN_UserDataBuf0[bStrLen] = Temp;
-	bStrLen++;
-	/*--------------------------------------------------------------------------*/
-	Temp.Mailbox_data.Byte.Current_frame = 0x04;//第四帧
-
-	Temp.Mailbox_data.Word.Data1 = Ecan_ModuleData.InvL_Cur_Rms;
-	Temp.Mailbox_data.Word.Data2 = Ecan_ModuleData.PFC_Temp;
-	Temp.Mailbox_data.Word.Data3 = Ecan_ModuleData.InvH_Temp;
-	check ^= XOR(Temp);
-
-	u8ECAN_UserDataBuf0[bStrLen] = Temp;
-	bStrLen++;
-	/*--------------------------------------------------------------------------*/
-	Temp.Mailbox_data.Byte.Current_frame = 0x05;//第五帧
-
-	Temp.Mailbox_data.Word.Data1= Ecan_ModuleData.InvH_Temp;
-	Temp.Mailbox_data.Word.Data2= Ecan_ModuleData.InvH_Freq;
-	Temp.Mailbox_data.Word.Data3 = Ecan_ModuleData.InvL_Freq;
-	check ^= XOR(Temp);
-
-	u8ECAN_UserDataBuf0[bStrLen] = Temp;
-	bStrLen++;
-	/*--------------------------------------------------------------------------*/
-	Temp.Mailbox_data.Byte.Current_frame = 0x06;//the sixth frame
-
-	Temp.Mailbox_data.Word.Data1= Ecan_ModuleData.Phase_Lead;
-	Temp.Mailbox_data.Word.Data2= Ecan_ModuleData.RunTimeHour_L;
-	Temp.Mailbox_data.Word.Data3 = Ecan_ModuleData.RunTimeHour_H;
+	Temp.Mailbox_data.Word.Data1 = Ecan_ModuleData.u16VOut_rms;
+	Temp.Mailbox_data.Word.Data2 = Ecan_ModuleData.u16Temperature;
+	Temp.Mailbox_data.Word.Data3 = Ecan_ModuleData.u16RunTimeu16Hour_L;
 	check ^= XOR(Temp);
 
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
@@ -372,15 +212,14 @@ void DataUpload(MAIL mailp)
 	DataLength = 0x06;  //校验字节也是有效字节
 	id = Get_ID(DataLength, ModuleAdd);
 	Temp.Mailbox_id.all = id;
-	Temp.Mailbox_data.Byte.Current_frame = 0x07;//the seventh frame
-	Temp.Mailbox_data.Byte.byte3 = Ecan_ModuleData.Error.Byte.Alert;
-	Temp.Mailbox_data.Byte.byte4 = Ecan_ModuleData.Error.Byte.Fault1;
-	Temp.Mailbox_data.Byte.byte5 = Ecan_ModuleData.Error.Byte.Fault2;
-	Temp.Mailbox_data.Byte.byte6 = Ecan_ModuleData.Error.Byte.Fault3;
+	Temp.Mailbox_data.Byte.Current_frame = 0x03;//the third frame
+	Temp.Mailbox_data.Word.Data1 = Ecan_ModuleData.u16RunTimeu16Hour_H;
+	Temp.Mailbox_data.Byte.byte5 = Ecan_ModuleData.Alert.Byte.Alert;
+	Temp.Mailbox_data.Byte.byte6 = Ecan_ModuleData.Fault.Byte.Fault1;
+	Temp.Mailbox_data.Byte.byte7 = Ecan_ModuleData.Fault.Byte.Fault2;
 
 	check ^= XOR(Temp);
-	Temp.Mailbox_data.Byte.byte7 = check;
-	Temp.Mailbox_data.Byte.byte8 = 0x00;
+	Temp.Mailbox_data.Byte.byte8 = check;
 
 	u8ECAN_UserDataBuf0[bStrLen] = Temp;
 	bStrLen++;
@@ -404,36 +243,13 @@ void Para_Revised(MAIL mailp)
 	switch (Revised_Num)
 	{
 	case 1:
-		Ecan_SytemREVISED.Input_Volt_Rms = mailp.Mailbox_data.Word.Data1;
-		Ecan_SytemREVISED.Bus_P = mailp.Mailbox_data.Word.Data2;
-		Ecan_SytemREVISED.Bus_N = mailp.Mailbox_data.Word.Data3;
+		Ecan_SytemREVISED.u16VGrid_rms = mailp.Mailbox_data.Word.Data1;
+		Ecan_SytemREVISED.u16IGrid_rms = mailp.Mailbox_data.Word.Data2;
+		Ecan_SytemREVISED.u16VOut_rms = mailp.Mailbox_data.Word.Data3;
 		break;
 	case 2:
-		Ecan_SytemREVISED.InvH_Volt_Rms = mailp.Mailbox_data.Word.Data1;
-		Ecan_SytemREVISED.InvL_Volt_Rms = mailp.Mailbox_data.Word.Data2;
-		Ecan_SytemREVISED.InvH_Cur_Rms = mailp.Mailbox_data.Word.Data3;
+		Ecan_SytemREVISED.u16Temperature = mailp.Mailbox_data.Word.Data1;
 		break;
-	case 3:
-		Ecan_SytemREVISED.InvL_Cur_Rms = mailp.Mailbox_data.Word.Data1;
-		Ecan_SytemREVISED.InvH_OutV_Rms = mailp.Mailbox_data.Word.Data2;
-		Ecan_SytemREVISED.InvL_OutV_Rms = mailp.Mailbox_data.Word.Data3;
-		break;
-	case 4:
-		Ecan_SytemREVISED.PFC_Temp = mailp.Mailbox_data.Word.Data1;
-		Ecan_SytemREVISED.InvH_Temp = mailp.Mailbox_data.Word.Data2;
-		Ecan_SytemREVISED.InvL_Temp = mailp.Mailbox_data.Word.Data3;
-		break;
-	case 5:
-		Ecan_SytemREVISED.Input_Cur_Rms = mailp.Mailbox_data.Word.Data1;
-		Ecan_SytemREVISED.Aver_Curr_InvH = mailp.Mailbox_data.Word.Data2;
-		Ecan_SytemREVISED.Aver_Curr_InvL = mailp.Mailbox_data.Word.Data3;
-	case 6:
-		Ecan_SytemREVISED.RestartOverTimes = mailp.Mailbox_data.Word.Data1;
-		Ecan_SytemREVISED.INVH_Volt_Ref = mailp.Mailbox_data.Word.Data2;
-		Ecan_SytemREVISED.INVL_Volt_Ref = mailp.Mailbox_data.Word.Data3;
-	case 7:
-		Ecan_SytemREVISED.INVH_Drop_Coeff = mailp.Mailbox_data.Word.Data1;
-		Ecan_SytemREVISED.INVL_Drop_Coeff = mailp.Mailbox_data.Word.Data2;
 	default:
 		break;
 	}
@@ -457,12 +273,12 @@ void Sys_Set(MAIL mailp)
 	switch (SysSet_Num)
 	{
 	case 1:
-		Ecan_SytemOrder.Defaluts = mailp.Mailbox_data.Word.Data2;
-		Ecan_SytemOrder.Output_Enable = mailp.Mailbox_data.Word.Data3;
+		Ecan_SysParaCalibration.Defaluts = mailp.Mailbox_data.Word.Data2;
+		Ecan_SysParaCalibration.Output_Enable = mailp.Mailbox_data.Word.Data3;
 		break;
 	case 2:
-		Ecan_SytemOrder.Defaluts = mailp.Mailbox_data.Word.Data2;
-		Ecan_SytemOrder.Output_Enable = mailp.Mailbox_data.Word.Data3;
+		Ecan_SysParaCalibration.Defaluts = mailp.Mailbox_data.Word.Data2;
+		Ecan_SysParaCalibration.Output_Enable = mailp.Mailbox_data.Word.Data3;
 		break;
 	default:
 		break;
@@ -563,93 +379,42 @@ Uint8 XOR(MAIL temp)
 void Data_Format_Conver()
 {
 
-	Ecan_ModuleData.Input_Volt_Rms = _IQint(Calc_Result.i32VGrid_RMS * 100);
-	Ecan_ModuleData.Input_Curr_Rms = 0;
-	Ecan_ModuleData.BusP_Volt = 0;
+	Ecan_ModuleData.u16VGrid_rms = _IQint(Calc_Result.iq20VGrid_RMS * 100);
+	Ecan_ModuleData.u16VGrid_Freq = _IQint(Calc_Result.iq20GridFreq * 10);
+	Ecan_ModuleData.u16IGrid_rms = 0;
 
-	Ecan_ModuleData.BusN_Volt = 0;
-	Ecan_ModuleData.OutH_Volt_Rms = _IQint(Calc_Result.i32VOut_RMS * 100);
-	Ecan_ModuleData.OutL_Volt_Rms = 0;
+	Ecan_ModuleData.u16VOut_rms = _IQint(Calc_Result.iq20VOut_RMS * 100);
+    Ecan_ModuleData.u16Temperature = _IQint(Calc_Result.iq20TempAmb * 10);
+    Ecan_ModuleData.u16RunTimeu16Hour_L = RunningTime.u16Hour_L;
 
-	Ecan_ModuleData.InvH_Volt_Rms = 0;
-	Ecan_ModuleData.InvL_Volt_Rms = 0;
-	Ecan_ModuleData.InvH_Cur_Rms = 0;
-
-	Ecan_ModuleData.InvL_Cur_Rms = 0;
-    Ecan_ModuleData.PFC_Temp = _IQint(Calc_Result.i32TempAmb * 10);
-    Ecan_ModuleData.InvH_Temp = 0;
-
-    Ecan_ModuleData.InvL_Temp = 0;
-    Ecan_ModuleData.InvH_Freq = _IQint(Calc_Result.i32GridFreq * 10);
-    Ecan_ModuleData.InvL_Freq = 0;
-
-    Ecan_ModuleData.Phase_Lead = 0;
-    Ecan_ModuleData.RunTimeHour_L = RunningTime.Hour_L;
-    Ecan_ModuleData.RunTimeHour_H = RunningTime.Hour_H;
+    Ecan_ModuleData.u16RunTimeu16Hour_H = RunningTime.u16Hour_H;
     //故障
-    //输出欠压 A03
-    Ecan_ModuleData.Error.bit.VINVUderRating_A =0;
     //温度超限告警A04
-    Ecan_ModuleData.Error.bit.OverTemp_A = g_SysWarningMessage.bit.OverTemp;
+    Ecan_ModuleData.Alert.bit.OverTemp = g_SysWarningMessage.bit.OverTemp;
     //风扇1异常A05
-    Ecan_ModuleData.Error.bit.Fan1Block_A = g_SysWarningMessage.bit.Fan1Block;
+    Ecan_ModuleData.Alert.bit.Fan1Block = g_SysWarningMessage.bit.Fan1Block;
     //风扇2异常A06
-    Ecan_ModuleData.Error.bit.Fan2Block_A = g_SysWarningMessage.bit.Fan2Block;
-    //ECAN故障告警A10
-    Ecan_ModuleData.Error.bit.Ecan_A = g_StateCheck.bit.ECAN_Fault;
+    Ecan_ModuleData.Alert.bit.Fan2Block = g_SysWarningMessage.bit.Fan2Block;
 
-    //输入欠压输出降额保护A12
-    Ecan_ModuleData.Error.bit.ACPowerDerating_A = 0;
+    Ecan_ModuleData.Alert.bit.Fan_Fault = g_SysWarningMessage.bit.Fan_Fault;
 
-    //逆变器不同步A13
-    Ecan_ModuleData.Error.bit.UnAsyn_A = 0;
+
 
     //错误
     //输入欠压F01
-    Ecan_ModuleData.Error.bit.VGridUnderRating_F = g_SysFaultMessage.bit.VGridUnderRating;
+    Ecan_ModuleData.Fault.bit.VGridUnderRating = g_SysFaultMessage.bit.VGridUnderRating;
     //输入过压F02
-    Ecan_ModuleData.Error.bit.VGridOverRating_F = g_SysFaultMessage.bit.VGridOverRating;
-
-    //PFC可恢复故障F03
-    Ecan_ModuleData.Error.bit.PFC_Recover_Fault_F = 0;
-
-    //轨道输出过压F04-1
-    Ecan_ModuleData.Error.bit.InvH_OVP_F = 0;
-    //局部输出过压F04-2
-    Ecan_ModuleData.Error.bit.InvL_OVP_F = 0;
-
-    //过温关机F05
-    Ecan_ModuleData.Error.bit.OverTemp_F = g_SysFaultMessage.bit.OverTempFault;
-
-    //风扇故障（两风扇同时异常F06)
-    Ecan_ModuleData.Error.bit.Double_Fan_Fault_F = g_SysFaultMessage.bit.Fan_Fault;
+    Ecan_ModuleData.Fault.bit.VGridOverRating = g_SysFaultMessage.bit.VGridOverRating;
 
     //启动异常F07
-    Ecan_ModuleData.Error.bit.Launch_Fault_F = 0;
+	 Ecan_ModuleData.Fault.bit.Launch_Fault = g_SysFaultMessage.bit.HWADFault_VGrid | \
+			 	 	 	 	 	 	 	 	 g_SysFaultMessage.bit.HWADFault_VOut;
     //输入频率异常F11
-    Ecan_ModuleData.Error.bit.FreGridFault_F = g_SysFaultMessage.bit.FreGridOverRating | \
+    Ecan_ModuleData.Fault.bit.FreGridFault = g_SysFaultMessage.bit.FreGridOverRating | \
     										   g_SysFaultMessage.bit.FreGridUnderRating;
-    //轨道输出频率异常F12
-    Ecan_ModuleData.Error.bit.FreInv_Fault_F = 0;
+    //过温关机F05
+    Ecan_ModuleData.Fault.bit.OverTempFault = g_SysFaultMessage.bit.OverTempFault;
 
-    //轨道输出过载F13-1
-    Ecan_ModuleData.Error.bit.InvH_OverLoad_F = 0;
-    //局部输出过载F13-2
-    Ecan_ModuleData.Error.bit.InvL_OverLoad_F = 0;
-
-    //短路或并机极端异常F14
-    Ecan_ModuleData.Error.bit.Output_Shorted_F = 0;
-
-    //并机均流故障F15
-    Ecan_ModuleData.Error.bit.Curr_Shar_Fault_F = 0;
-
-    //PFC不可恢复故障F03
-    Ecan_ModuleData.Error.bit.PFC_Unrecover_Fault_F = 0;
-
-    //反复启动锁机保护F17
-	 Ecan_ModuleData.Error.bit.Repeatedly_Launch_F = 0;
-	 //并机线断F18
-	 Ecan_ModuleData.Error.bit.SynLine_broken = 0;
 }
 
 /*=============================================================================*
@@ -659,102 +424,41 @@ void Data_Format_Conver()
 void Para_Revise_Oper(Uint8 temp)
 {
 	Uint8 Revised_Num;
-
+	_iq20 iq20temp1 = 0;
 	Revised_Num = temp;
 
 	switch (Revised_Num)
 	{
 	case 1:
-		/*
-		if (Ecan_SytemREVISED.Input_Volt_Rms > 800 && Ecan_SytemREVISED.Input_Volt_Rms < 1200)
-			ADCorrection.f32VGrid = (float32)(Ecan_SytemREVISED.Input_Volt_Rms * 0.001);
+		if (Ecan_SytemREVISED.u16VGrid_rms > 800 && Ecan_SytemREVISED.u16VGrid_rms < 1200)
+		{
+			iq20temp1 = _IQmpy(ADCalibration.iq20VGrid, _IQ20mpyI32(_IQ(0.001f), Ecan_SytemREVISED.u16VGrid_rms));
+			if (iq20temp1 > _IQ(0.8f) && iq20temp1 < _IQ(0.8f))
+				ADCalibration.iq20VGrid = _IQ20mpyI32(_IQ(0.001f), Ecan_SytemREVISED.u16VGrid_rms);
+		}
 
-		if (Ecan_SytemREVISED.Bus_P > 900 && Ecan_SytemREVISED.Bus_P < 1100)
-			ADCorrection.f32VBusP  = (float32)(Ecan_SytemREVISED.Bus_P * 0.001);
+		if (Ecan_SytemREVISED.u16VOut_rms > 800 && Ecan_SytemREVISED.u16VOut_rms < 1200)
+		{
+			iq20temp1 = _IQmpy(ADCalibration.iq20VOut, _IQ20mpyI32(_IQ(0.001f), Ecan_SytemREVISED.u16VOut_rms));
+			if (iq20temp1 > _IQ(0.8f) && iq20temp1 < _IQ(0.8f))
+				ADCalibration.iq20VOut = _IQ20mpyI32(_IQ(0.001f), Ecan_SytemREVISED.u16VOut_rms);
+		}
 
-		if (Ecan_SytemREVISED.Bus_N > 900 && Ecan_SytemREVISED.Bus_N < 1100)
-			ADCorrection.f32VBusN = (float32)(Ecan_SytemREVISED.Bus_N * 0.001);
-		*/
-		;
+		if (Ecan_SytemREVISED.u16Temperature > 800 && Ecan_SytemREVISED.u16Temperature < 1200)
+		{
+			iq20temp1 = _IQmpy(ADCalibration.iq20TempAmb, _IQ20mpyI32(_IQ(0.001f), Ecan_SytemREVISED.u16Temperature));
+			if (iq20temp1 > _IQ(0.8f) && iq20temp1 < _IQ(0.8f))
+				ADCalibration.iq20TempAmb= _IQ20mpyI32(_IQ(0.001f), Ecan_SytemREVISED.u16Temperature);
+		}
+
 		break;
 	case 2:
-		/*
-		if (Ecan_SytemREVISED.InvH_Volt_Rms > 800 && Ecan_SytemREVISED.InvH_Volt_Rms < 1200)
-			ADCorrection.f32VInvH = (float32)(Ecan_SytemREVISED.InvH_Volt_Rms * 0.001);
-
-		if (Ecan_SytemREVISED.InvL_Volt_Rms > 800 && Ecan_SytemREVISED.InvL_Volt_Rms < 1200)
-			ADCorrection.f32VInvL = (float32)(Ecan_SytemREVISED.InvL_Volt_Rms * 0.001);
-
-		if (Ecan_SytemREVISED.InvH_Cur_Rms > 800 && Ecan_SytemREVISED.InvH_Cur_Rms < 1200)
-			ADCorrection.f32IOutH = (float32)(Ecan_SytemREVISED.InvH_Cur_Rms * 0.001);
-		 */
-		;
-		break;
-	case 3:
-		/*
-		if (Ecan_SytemREVISED.InvL_Cur_Rms > 800 && Ecan_SytemREVISED.InvL_Cur_Rms < 1200)
-			ADCorrection.f32IOutL= (float32)(Ecan_SytemREVISED.InvL_Cur_Rms * 0.001);
-
-		if (Ecan_SytemREVISED.InvH_OutV_Rms > 800 && Ecan_SytemREVISED.InvH_OutV_Rms < 1200)
-			ADCorrection.f32VOutH = (float32)(Ecan_SytemREVISED.InvH_OutV_Rms * 0.001);
-
-		if (Ecan_SytemREVISED.InvL_OutV_Rms > 800 && Ecan_SytemREVISED.InvL_OutV_Rms < 1200)
-			ADCorrection.f32VOutL = (float32)(Ecan_SytemREVISED.InvL_OutV_Rms * 0.001);
-		*/
-		;
-		break;
-	case 4:
-		/*
-		if (Ecan_SytemREVISED.PFC_Temp > 800 && Ecan_SytemREVISED.PFC_Temp < 1200)  //2017.11.21 GX
-			ADCorrection.f32TempPFC = (float32)(Ecan_SytemREVISED.PFC_Temp * 0.001);
-
-		if (Ecan_SytemREVISED.InvH_Temp > 800 && Ecan_SytemREVISED.InvH_Temp < 1200)  //2017.12.1 GX
-			ADCorrection.f32TempInvH = (float32)(Ecan_SytemREVISED.InvH_Temp * 0.001);
-
-		if (Ecan_SytemREVISED.InvL_Temp > 800 && Ecan_SytemREVISED.InvL_Temp < 1200)  //2017.12.1 GX
-			ADCorrection.f32TempInvL = (float32)(Ecan_SytemREVISED.InvL_Temp * 0.001);
-		*/
-		;
-		break;
-	case 5:
-		/*
-		if (Ecan_SytemREVISED.Input_Cur_Rms > 800 && Ecan_SytemREVISED.Input_Cur_Rms < 1200)
-			ADCorrection.f32IGrid = (float32)(Ecan_SytemREVISED.Input_Cur_Rms * 0.001);
-
-		if (Ecan_SytemREVISED.Aver_Curr_InvH >= 0.0f && Ecan_SytemREVISED.Aver_Curr_InvH < 800)  //2017.12.1 GX
+		if (Ecan_SytemREVISED.u16IGrid_rms > 800 && Ecan_SytemREVISED.u16IGrid_rms < 1200)
 		{
-			Calc_Result.f32IInvH_para_aver = (float32)(Ecan_SytemREVISED.Aver_Curr_InvH * 0.01);
-			if (Ecan_SytemREVISED.Aver_Curr_InvL >= 0.0f && Ecan_SytemREVISED.Aver_Curr_InvL < 1000)  //2017.12.1 GX
-			{
-				Calc_Result.f32IInvL_para_aver = (float32)(Ecan_SytemREVISED.Aver_Curr_InvL * 0.01);
-				InvParallelCurCheck();
-			}
+			iq20temp1 = _IQmpy(ADCalibration.iq20IGrid, _IQ20mpyI32(_IQ(0.001f), Ecan_SytemREVISED.u16IGrid_rms));
+			if (iq20temp1 > _IQ(0.8f) && iq20temp1 < _IQ(0.8f))
+				ADCalibration.iq20IGrid= _IQ20mpyI32(_IQ(0.001f), Ecan_SytemREVISED.u16IGrid_rms);
 		}
-		*/
-		;
-		break;
-	case 6:
-		/*
-		if (Ecan_SytemREVISED.RestartOverTimes == 0x88)  //2017.12.1 GX
-			g_SysFaultMessage.bit.unrecover_RestartNum = 1;
-
-		if (Ecan_SytemREVISED.INVH_Volt_Ref > 211 && Ecan_SytemREVISED.INVH_Volt_Ref < 229)  //2017.12.1 GX
-			SafetyReg.f32InvH_VoltRms_Ref_LCD = (float32)(Ecan_SytemREVISED.INVH_Volt_Ref);
-
-		if (Ecan_SytemREVISED.INVL_Volt_Ref > 105 && Ecan_SytemREVISED.INVL_Volt_Ref  < 115)  //2017.12.1 GX
-			SafetyReg.f32InvL_VoltRms_Ref_LCD = (float32)(Ecan_SytemREVISED.INVL_Volt_Ref);
-		 */
-		;
-		break;
-	case 7:
-		/*
-		if (Ecan_SytemREVISED.INVH_Drop_Coeff > 0 && Ecan_SytemREVISED.INVH_Drop_Coeff < 1000)  //2017.12.1 GX
-			InvHVoltConReg.f32Drop_Coeff = (float32)(Ecan_SytemREVISED.INVH_Drop_Coeff * 0.001);
-
-		if (Ecan_SytemREVISED.INVL_Drop_Coeff  > 0 && Ecan_SytemREVISED.INVL_Drop_Coeff  < 1000)  //2017.12.1 GX
-			InvLVoltConReg.f32Drop_Coeff = (float32)(Ecan_SytemREVISED.INVL_Drop_Coeff * 0.001);
-		 */
-		;
 		break;
 	default:
 		break;
@@ -768,29 +472,18 @@ void Para_Revise_Oper(Uint8 temp)
  *============================================================================*/
 void Sys_Set_Oper()
 {
-	if (0 == Ecan_SytemOrder.Defaluts)
+	if (0 == Ecan_SysParaCalibration.Defaluts)
 	{
-		/*ADCorrection.f32VGrid = 1;   //2017.8.16 GX
-
-		ADCorrection.f32IInvH = 1;
-		ADCorrection.f32VInvH = 1;
-
-		ADCorrection.f32IInvL = 1;
-		ADCorrection.f32VInvL = 1;
-
-		BusCon_Reg.f32BusVolt_Ref = 850;
-		SafetyReg.f32VBus_HiLimit = Bus_Over_Volt_Limit;
-		ADCorrection.f32TempPFC = 1.0f;
-		ADCorrection.f32TempInvH = 1.0f;
-		ADCorrection.f32TempInvL = 1.0f;*/
-		;
-
+		ADChannelOffset.iq20IGrid = 1.0f;
+		ADChannelOffset.iq20VGrid = 1.0f;
+		ADChannelOffset.iq20VOut = 1.0f;
+		ADChannelOffset.iq20TempAmb= 1.0f;
 	};
-	if (0x0055 == Ecan_SytemOrder.Output_Enable)
+	if (0x0055 == Ecan_SysParaCalibration.Output_Enable)
 	{
 		;
 	}
-	else if (0x00aa == Ecan_SytemOrder.Output_Enable)
+	else if (0x00aa == Ecan_SysParaCalibration.Output_Enable)
 	{
 		;
 	}
@@ -810,135 +503,4 @@ Uint8 ErrorCheck(MAIL temp)
 	else
 		return DATA_NORMAL;
 }
-
-
-/*
- * 旁路不需要调节参考
-void Output_Revise (void) //2018.4.3 GX
-{
-	static  Uint8  lightH_temp= 0;
-	static  Uint8  heavyH_temp = 0;
-	static  Uint8  MiddleH_temp = 0;
-	static  Uint8  lightL_temp= 0;
-	static  Uint8  heavyL_temp = 0;
-	static  Uint8 MiddleL_temp = 0;
-
-	if ( Calc_Result.f32IOutH_rms <= Rated_InvH_OutputCurrentRms * 0.25f &&  Output_VoltRe_Reg.InvH_Light_Flag == 0)
-	{
-		lightH_temp++;
-		if ( lightH_temp >= 1)
-		{
-			SafetyReg.f32InvH_VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref_LCD * VInvLightRevise;
-			g_InvH_Load = LightLoad;
-			Output_VoltRe_Reg.InvH_Light_Flag = 1;
-			Output_VoltRe_Reg.InvH_Middle_Flag = 0;
-			Output_VoltRe_Reg.InvH_Heavy_Flag = 0;
-			lightH_temp = 0;
-		}
-	}
-	else if ( Calc_Result.f32IOutH_rms >= Rated_InvH_OutputCurrentRms * 0.65f && Output_VoltRe_Reg.InvH_Heavy_Flag == 0 )
-	{
-			heavyH_temp ++;
-			if ( heavyH_temp >= 1)
-			{
-				SafetyReg.f32InvH_VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref_LCD * VInvHeavyRevise;
-				g_InvH_Load = HeavyLoad;
-				Output_VoltRe_Reg.InvH_Light_Flag = 0;
-				Output_VoltRe_Reg.InvH_Middle_Flag = 0;
-				Output_VoltRe_Reg.InvH_Heavy_Flag = 1;
-				heavyH_temp = 0;
-			}
-	}
-	else if ( (Calc_Result.f32IOutH_rms >= Rated_InvH_OutputCurrentRms * 0.3f && \
-			Calc_Result.f32IOutH_rms <= Rated_InvH_OutputCurrentRms * 0.6f ) && Output_VoltRe_Reg.InvH_Middle_Flag == 0 )
-	{
-			MiddleH_temp ++;
-			if ( MiddleH_temp >= 1)
-			{
-				SafetyReg.f32InvH_VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref_LCD * VInvMiddleRevise;
-				g_InvH_Load = MiddleLoad;
-				Output_VoltRe_Reg.InvH_Light_Flag = 0;
-				Output_VoltRe_Reg.InvH_Middle_Flag = 1;
-				Output_VoltRe_Reg.InvH_Heavy_Flag = 0;
-				MiddleH_temp = 0;
-			}
-	}
-	else
-	{
-		if ((Output_VoltRe_Reg.InvH_Light_Flag == 1 && Calc_Result.f32IOutH_rms >= Rated_InvH_OutputCurrentRms * 0.5f) || \
-				(Output_VoltRe_Reg.InvH_Heavy_Flag == 1 && Calc_Result.f32IOutH_rms <= Rated_InvH_OutputCurrentRms * 0.5f))
-		{
-			SafetyReg.f32InvH_VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref_LCD * VInvMiddleRevise;
-			g_InvH_Load = HeavyLoad;
-			Output_VoltRe_Reg.InvH_Light_Flag = 0;
-			Output_VoltRe_Reg.InvH_Middle_Flag = 1;
-			Output_VoltRe_Reg.InvH_Heavy_Flag = 0;
-		}
-		else
-			SafetyReg.f32InvH_VoltRms_Ref =SafetyReg.f32InvH_VoltRms_Ref;
-
-		MiddleH_temp = 0;
-		heavyH_temp = 0;
-		lightH_temp = 0;
-	}
-
-	if ( Calc_Result.f32IOutL_rms <= Rated_InvL_OutputCurrentRms * 0.25 &&  Output_VoltRe_Reg.InvL_Light_Flag == 0)
-	{
-		lightL_temp++;
-		if ( lightL_temp >= 1)
-		{
-			SafetyReg.f32InvL_VoltRms_Ref = SafetyReg.f32InvL_VoltRms_Ref_LCD * VInvLightRevise;
-			g_InvL_Load = LightLoad;
-			Output_VoltRe_Reg.InvL_Light_Flag = 1;
-			Output_VoltRe_Reg.InvL_Middle_Flag = 0;
-			Output_VoltRe_Reg.InvL_Heavy_Flag = 0;
-			lightL_temp = 0;
-		}
-	}
-	else if ( Calc_Result.f32IOutL_rms >= Rated_InvL_OutputCurrentRms * 0.65 && Output_VoltRe_Reg.InvL_Heavy_Flag == 0 )
-	{
-		heavyL_temp ++;
-		if ( heavyL_temp >= 1)
-		{
-			SafetyReg.f32InvL_VoltRms_Ref = SafetyReg.f32InvL_VoltRms_Ref_LCD * VInvHeavyRevise;
-			g_InvL_Load = HeavyLoad;
-			Output_VoltRe_Reg.InvL_Light_Flag = 0;
-			Output_VoltRe_Reg.InvL_Middle_Flag = 0;
-			Output_VoltRe_Reg.InvL_Heavy_Flag = 1;
-			heavyL_temp = 0;
-		}
-	}
-	else if ( (Calc_Result.f32IOutL_rms >= Rated_InvL_OutputCurrentRms * 0.3 && \
-			Calc_Result.f32IOutL_rms <= Rated_InvL_OutputCurrentRms * 0.6 ) && Output_VoltRe_Reg.InvL_Middle_Flag == 0 )
-	{
-		MiddleL_temp ++;
-		if ( MiddleL_temp >= 1)
-		{
-			SafetyReg.f32InvL_VoltRms_Ref = SafetyReg.f32InvL_VoltRms_Ref_LCD * VInvMiddleRevise;
-			g_InvL_Load = MiddleLoad;
-			Output_VoltRe_Reg.InvL_Light_Flag = 0;
-			Output_VoltRe_Reg.InvL_Middle_Flag = 1;
-			Output_VoltRe_Reg.InvL_Heavy_Flag = 0;
-			MiddleL_temp = 0;
-		}
-	}
-	else
-	{
-		if ((Output_VoltRe_Reg.InvL_Light_Flag == 1 && Calc_Result.f32IOutL_rms >= Rated_InvL_OutputCurrentRms * 0.5f) || \
-				(Output_VoltRe_Reg.InvL_Heavy_Flag == 1 && Calc_Result.f32IOutL_rms <= Rated_InvL_OutputCurrentRms * 0.5f))
-		{
-			SafetyReg.f32InvL_VoltRms_Ref = SafetyReg.f32InvL_VoltRms_Ref_LCD * VInvMiddleRevise;
-			g_InvL_Load = HeavyLoad;
-			Output_VoltRe_Reg.InvL_Light_Flag = 0;
-			Output_VoltRe_Reg.InvL_Middle_Flag = 1;
-			Output_VoltRe_Reg.InvL_Heavy_Flag = 0;
-		}
-		else
-			SafetyReg.f32InvL_VoltRms_Ref =SafetyReg.f32InvL_VoltRms_Ref;
-
-		MiddleL_temp = 0;
-		heavyL_temp = 0;
-		lightL_temp = 0;
-	}
-}
-*/
+/*--------end of the file----------------*/

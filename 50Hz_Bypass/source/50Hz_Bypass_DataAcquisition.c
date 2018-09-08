@@ -24,13 +24,12 @@
 #include "DSP2803x_Device.h"				// Peripheral address definitions
 #include "F28035_example.h"					// Main include file
 
-struct	AD_Sample_Reg1	GetRealValue, ADGain ,ADChannelOffset, ADCorrection;
+struct	AD_Sample_Reg1	GetRealValue, ADGain ,ADChannelOffset, ADCalibration;
 struct	AD_Sample_Reg0	GeneralADbuffer;
 
 struct	AD_ACC_Reg1	 Calc_Result;		  	// IQ20
 struct	AD_ACC_Reg2  AD_Acc, AD_Sum;     	// IQ10
 
-int32   	g_i32GridFrequencyPriodTemp;
 _iq20		i32SumCounterBypass;
 Uint16 	i16TempTab[];
 //#pragma CODE_SECTION(Get_ADC_Result, "ControlLoopInRAM")
@@ -47,6 +46,7 @@ void OutVoltsRMSCalc();
 void TempAmbCalc();
 void GridFrequencyCalc();
 void AveCalc();
+void DitherEliminate();
 
 void DcFanSpeedSense();
 /*=============================================================================*
@@ -74,9 +74,9 @@ void Get_ADC_Result (void)
 	GeneralADbuffer.i32VOut = (int32) AdcResult.ADCRESULT14;
 	GeneralADbuffer.i32TempAmb = (int32) AdcResult.ADCRESULT2;
 
-	GetRealValue.i32VGrid = _IQmpy(_IQ20mpyI32(ADGain.i32VGrid, GeneralADbuffer.i32VGrid), ADCorrection.i32VGrid) - ADChannelOffset.i32VGrid;
-	GetRealValue.i32VOut = _IQmpy(_IQ20mpyI32(ADGain.i32VOut, GeneralADbuffer.i32VOut), ADCorrection.i32VOut) - ADChannelOffset.i32VOut;
-	GetRealValue.i32TempAmb = _IQmpy(_IQ20mpyI32(ADGain.i32TempAmb, GeneralADbuffer.i32TempAmb), ADCorrection.i32TempAmb) - ADChannelOffset.i32TempAmb;
+	GetRealValue.iq20VGrid = _IQmpy(_IQ20mpyI32(ADGain.iq20VGrid, GeneralADbuffer.i32VGrid), ADCalibration.iq20VGrid) - ADChannelOffset.iq20VGrid;
+	GetRealValue.iq20VOut = _IQmpy(_IQ20mpyI32(ADGain.iq20VOut, GeneralADbuffer.i32VOut), ADCalibration.iq20VOut) - ADChannelOffset.iq20VOut;
+	GetRealValue.iq20TempAmb = _IQmpy(_IQ20mpyI32(ADGain.iq20TempAmb, GeneralADbuffer.i32TempAmb), ADCalibration.iq20TempAmb) - ADChannelOffset.iq20TempAmb;
 } // end
 /*=============================================================================================================
 
@@ -109,16 +109,16 @@ void ADAccCalc(void)
 	// --- Insulation voltage
 	// ------------------------------------------------
 
-	AD_Acc.i32VOut_RMS += _IQ2mpyIQX(GetRealValue.i32VOut,20, GetRealValue.i32VOut,20);
-	AD_Acc.i32TempAmb += _IQtoIQ10(GetRealValue.i32TempAmb);
+	AD_Acc.iq2VOut_RMS += _IQ2mpyIQX(GetRealValue.iq20VOut,20, GetRealValue.iq20VOut,20);
+	AD_Acc.iq10TempAmb += _IQtoIQ10(GetRealValue.iq20TempAmb);
 
-	AD_Acc.i32VGrid_RMS += _IQ2mpyIQX(GetRealValue.i32VGrid,20, GetRealValue.i32VGrid,20);
-	AD_Acc.i32GridFreq +=  _IQ10mpyIQX(CoffStepToFre, 15, GridPLLReg.i32Delta_Theta, 20);
+	AD_Acc.iq2VGrid_RMS += _IQ2mpyIQX(GetRealValue.iq20VGrid,20, GetRealValue.iq20VGrid,20);
+	AD_Acc.iq10GridFreq +=  _IQ10mpyIQX(CoffStepToFre, 15, GridPLLReg.iq20Delta_Theta, 20);
 
 	if (1 == g_StateCheck.bit.AD_initial)
 	{
-		AD_Acc.i32VGrid_ave += GetRealValue.i32VGrid;
-		AD_Acc.i32VOut_ave += GetRealValue.i32VOut;
+		AD_Acc.iq20VGrid_ave += GetRealValue.iq20VGrid;
+		AD_Acc.iq20VOut_ave += GetRealValue.iq20VOut;
 	}
 	// ------------------------------------------------
 	// ---  Accumulate of Input power calculation  
@@ -132,26 +132,26 @@ void ADAccCalc(void)
 
 		AD_Sum.i16Counter = AD_Acc.i16Counter;
 
-		AD_Sum.i32VOut_RMS = AD_Acc.i32VOut_RMS;
-		AD_Sum.i32TempAmb = AD_Acc.i32TempAmb;
+		AD_Sum.iq2VOut_RMS = AD_Acc.iq2VOut_RMS;
+		AD_Sum.iq10TempAmb = AD_Acc.iq10TempAmb;
 
-		AD_Sum.i32VGrid_RMS = AD_Acc.i32VGrid_RMS;
-		AD_Sum.i32GridFreq = AD_Acc.i32GridFreq;
+		AD_Sum.iq2VGrid_RMS = AD_Acc.iq2VGrid_RMS;
+		AD_Sum.iq10GridFreq = AD_Acc.iq10GridFreq;
 
 		if (1 == g_StateCheck.bit.AD_initial)
 		{
-			AD_Sum.i32VOut_ave = AD_Acc.i32VOut_ave;
-			AD_Sum.i32VGrid_ave = AD_Acc.i32VGrid_ave;
-			AD_Acc.i32VOut_ave = 0;
-			AD_Acc.i32VGrid_ave = 0;
+			AD_Sum.iq20VOut_ave = AD_Acc.iq20VOut_ave;
+			AD_Sum.iq20VGrid_ave = AD_Acc.iq20VGrid_ave;
+			AD_Acc.iq20VOut_ave = 0;
+			AD_Acc.iq20VGrid_ave = 0;
 		}
 
 		AD_Acc.i16Counter = 0;	
-		AD_Acc.i32TempAmb = 0;
+		AD_Acc.iq10TempAmb = 0;
 
-		AD_Acc.i32GridFreq = 0;
-		AD_Acc.i32VOut_RMS = 0;
-		AD_Acc.i32VGrid_RMS = 0;
+		AD_Acc.iq10GridFreq = 0;
+		AD_Acc.iq2VOut_RMS = 0;
+		AD_Acc.iq2VGrid_RMS = 0;
 
 		SEM_post(&SEM_GridPeriod);	//notify TASK EnergyCalcLowPrio to calc
 	}// end of if zero crossing flag
@@ -208,12 +208,12 @@ void TSK_GridPeriod(void)
 	 			GridVoltsRMSCalc();			
 				OutVoltsRMSCalc();	
 				TempAmbCalc();	
-				GridVoltsRMSCalc();
 				GridFrequencyCalc();
 
 				TemperatureCheck();
 			    GridVoltCheck();
 				GridFreqCheck();
+				SCRCheck();
 			}     
 		}                   
 	}//end of while (1) 
@@ -262,20 +262,20 @@ void GridVoltsRMSCalc(void)
 {
 	_iq20	i32temp1;
 
-	i32temp1 = _IQ10toIQ( _IQ10sqrt( _IQ10mpyIQX( AD_Sum.i32VGrid_RMS, 2, i32SumCounterBypass, 20) ) );
-	i32temp1 = _IQmpy(Calc_Result.i32VGrid_RMS, _IQ(0.2f)) + _IQmpy(i32temp1, _IQ(0.8f));	        
+	i32temp1 = _IQ10toIQ( _IQ10sqrt( _IQ10mpyIQX( AD_Sum.iq2VGrid_RMS, 2, i32SumCounterBypass, 20) ) );
+	i32temp1 = _IQmpy(Calc_Result.iq20VGrid_RMS, _IQ(0.2f)) + _IQmpy(i32temp1, _IQ(0.8f));
 
-	Calc_Result.i32VGrid_RMS = i32temp1;
+	Calc_Result.iq20VGrid_RMS = i32temp1;
 }
 
 void OutVoltsRMSCalc(void)
 {
 	_iq20	i32temp1;
 
-	i32temp1 = _IQ10toIQ( _IQ10sqrt( _IQ10mpyIQX(AD_Sum.i32VOut_RMS, 10, i32SumCounterBypass, 20) ) );
-	i32temp1 = _IQmpy(Calc_Result.i32VOut_RMS, _IQ(0.2f)) + _IQmpy(i32temp1, _IQ(0.8f));	        
+	i32temp1 = _IQ10toIQ( _IQ10sqrt( _IQ10mpyIQX(AD_Sum.iq2VOut_RMS, 10, i32SumCounterBypass, 20) ) );
+	i32temp1 = _IQmpy(Calc_Result.iq20VOut_RMS, _IQ(0.2f)) + _IQmpy(i32temp1, _IQ(0.8f));	        
 
-	Calc_Result.i32VOut_RMS = i32temp1;
+	Calc_Result.iq20VOut_RMS = i32temp1;
 }
 
 /*=============================================================================*
@@ -305,51 +305,51 @@ void TempAmbCalc(void)
 	int16 i16count = 1;
 	int16 i16length = 124;
 
-	i32temp1 = _IQmpyIQX(AD_Sum.i32TempAmb,10, i32SumCounterBypass, 20);
+	i32temp1 = _IQmpyIQX(AD_Sum.iq10TempAmb,10, i32SumCounterBypass, 20);
 	
 	if (i32temp1 <= i16TempTab[i16length])
-		Calc_Result.i32TempAmb = i32SCRTempHiValue;
+		Calc_Result.iq20TempAmb = i32SCRTempHiValue;
 	else if (i32temp1 > i16TempTab[0])
-		Calc_Result.i32TempAmb = i32SCRTempLowValue;
+		Calc_Result.iq20TempAmb = i32SCRTempLowValue;
 	else
 	{
 		for(i16count = i16length - 1; i16count >= 0; i16count--)
 		{
 			if( (i16TempTab[i16count] > i32temp1) && (i32temp1 >= i16TempTab[i16count + 1]) )
 			{
-				Calc_Result.i32TempAmb = i16count + 1;
+				Calc_Result.iq20TempAmb = i16count + 1;
 				break;
 			}
 		}
 	}
 
-	i32temp1 = Calc_Result.i32TempAmb;
-	i32temp1 = _IQmpy(Calc_Result.i32TempAmb, _IQ(0.4f)) + _IQmpy(i32temp1, _IQ(0.6f));
+	i32temp1 = Calc_Result.iq20TempAmb;
+	i32temp1 = _IQmpy(Calc_Result.iq20TempAmb, _IQ(0.4f)) + _IQmpy(i32temp1, _IQ(0.6f));
 
-	Calc_Result.i32TempAmb = i32temp1;
+	Calc_Result.iq20TempAmb = i32temp1;
 }
 
 void GridFrequencyCalc(void)
 {
     _iq	i32temp1;
-    i32temp1 = _IQmpyIQX(AD_Sum.i32GridFreq, 10, i32SumCounterBypass, 20);
-    i32temp1 = _IQmpy(Calc_Result.i32GridFreq, _IQ(0.4f)) + _IQmpy(i32temp1, _IQ(0.6f));
+    i32temp1 = _IQmpyIQX(AD_Sum.iq10GridFreq, 10, i32SumCounterBypass, 20);
+    i32temp1 = _IQmpy(Calc_Result.iq20GridFreq, _IQ(0.4f)) + _IQmpy(i32temp1, _IQ(0.6f));
 
-	Calc_Result.i32GridFreq = i32temp1;
+	Calc_Result.iq20GridFreq = i32temp1;
 }
 
 void AveCalc(void)
 {
 	 _iq	i32temp1, i32temp2;
 
-	i32temp1 = _IQmpy(AD_Sum.i32VGrid_ave, i32SumCounterBypass);
-	i32temp2 = _IQmpy(AD_Sum.i32VOut_ave, i32SumCounterBypass);
+	i32temp1 = _IQmpy(AD_Sum.iq20VGrid_ave, i32SumCounterBypass);
+	i32temp2 = _IQmpy(AD_Sum.iq20VOut_ave, i32SumCounterBypass);
 
-	i32temp1 = _IQmpy(Calc_Result.i32VGrid_ave, _IQ(0.7f)) + _IQmpy(i32temp1, _IQ( 0.3f));
-	i32temp2 = _IQmpy(Calc_Result.i32VOut_ave, _IQ(0.7f)) + _IQmpy(i32temp2, _IQ(0.3f));
+	i32temp1 = _IQmpy(Calc_Result.iq20VGrid_ave, _IQ(0.7f)) + _IQmpy(i32temp1, _IQ( 0.3f));
+	i32temp2 = _IQmpy(Calc_Result.iq20VOut_ave, _IQ(0.7f)) + _IQmpy(i32temp2, _IQ(0.3f));
 
-	Calc_Result.i32VGrid_ave = i32temp1;
-	Calc_Result.i32VOut_ave = i32temp2;
+	Calc_Result.iq20VGrid_ave = i32temp1;
+	Calc_Result.iq20VOut_ave = i32temp2;
 }
 //Digital I/O information
 //fan test I/O
@@ -395,19 +395,69 @@ void DcFanSpeedSense(void)
     }
 }
 
-void HwSwitchCheck(void)
+void DitherEliminate(void)
 {
-    static Uint16 s_u16Cnt_Switch = 0;
+	static Uint8 s_u8templockold = 0;
+	static Uint8 s_u8templockstart = 0;
+	static Uint8 s_u8templocktimes = 0;
+	static Uint8 s_u8tempswitchold  = 0;
+	static Uint8 s_u8tempswitchstart = 0;
+	static Uint8 s_u8tempswitchtimes = 0;
+	static Uint8 s_u8temp = 0;
 
-	if(1 == g_StateCheck.bit.OVP_InvL)
+	if (s_u8temp == 0)
 	{
-		s_u16Cnt_InvOVP++;
-		if(s_u16Cnt_InvOVP >= 1)
+		s_u8templockold = MODULE_LOCK;
+		s_u8tempswitchold = SWITCH_MODE;
+		s_u8temp = 1;
+	}
+
+	if (s_u8templockstart >= 1)
+	{
+		s_u8templocktimes ++;
+		if (s_u8templocktimes >= 1)
 		{
-			g_SysFaultMessage.bit.unrecoverHW_InvL_OVP = 1;
-			s_u16Cnt_InvOVP = 0;
+			if (MODULE_LOCK != s_u8templockold)
+			{
+				if (MODULE_LOCK == 1)
+					g_StateCheck.bit.Module_Lock = 1;
+				else
+					g_StateCheck.bit.Module_Lock = 0;
+
+				s_u8templockold = MODULE_LOCK;
+			}
+			s_u8templockstart = 0;
+			s_u8templocktimes = 0;
 		}
-		g_StateCheck.bit.OVP_InvL = 0;
+	}
+	else
+	{
+		if (MODULE_LOCK != s_u8templockold)
+			s_u8templockstart = 1;
+	}
+
+	if (s_u8tempswitchstart >= 1)
+	{
+		s_u8tempswitchtimes ++;
+		if (s_u8tempswitchtimes >= 1)
+		{
+			if (SWITCH_MODE != s_u8tempswitchold)
+			{
+				if (SWITCH_MODE == 1)
+					g_StateCheck.bit.Force_Switch = 1;
+				else
+					g_StateCheck.bit.Force_Switch = 0;
+
+				s_u8tempswitchold = SWITCH_MODE;
+			}
+			s_u8tempswitchstart = 0;
+			s_u8tempswitchtimes = 0;
+		}
+	}
+	else
+	{
+		if (SWITCH_MODE != s_u8tempswitchold)
+			s_u8tempswitchstart = 1;
 	}
 }
 //--- end of file -----------------------------------------------------

@@ -180,7 +180,7 @@ void InitGpio(void)
     GpioDataRegs.GPASET.bit.GPIO22 = 1;		// output 0 by default // disable by default
 
     // GPIO32  COM4_I/P.F.D
-	GpioCtrlRegs.GPADIR.bit.GPIO22  = 0;
+	GpioCtrlRegs.GPBDIR.bit.GPIO32  = 0;
 
 	//²¦Âë¿ª¹Ø
 	GpioCtrlRegs.AIODIR.bit.AIO2  = 0;

@@ -60,7 +60,8 @@ void GridVoltCheck(void)
     static  Uint16  s_u16Cnt_GridVolt_Fault_Back = 0;
     static  Uint8  s_u8Cnt_Griddip_Back = 0;
 
-    if(g_SysFaultMessage.bit.VGridOverRating == 0 && g_SysFaultMessage.bit.VGridUnderRating == 0)
+    if(g_SysFaultMessage.bit.VGridOverRating == 0 && g_SysFaultMessage.bit.VGridUnderRating == 0 \
+    		&& g_Sys_Current_State == NormalState)
     {
 		if(Calc_Result.f32VGrid_rms > SafetyReg.f32VGrid_HiLimit)  //289V
 		{

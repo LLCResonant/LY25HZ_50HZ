@@ -30,13 +30,7 @@
 /*=============================================================================*
  * 	Local Variables declaration
  *============================================================================*/
-/* Detect and check phase sequency */
-int32 g_i32PhaseSequencyTemp_Vvw = 0;
-int32 g_i32PhaseSequencyTemp_Vwu = 0; 
 
-/* Detect period of one Grid frequency */
-int32 i32GridFrequencyPriodTemp = 0;
-	
 /*=============================================================================*
  * FUNCTION: InitECap()
  * PURPOSE : eCAP hardware module initialization.

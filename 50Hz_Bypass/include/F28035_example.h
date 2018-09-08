@@ -101,10 +101,6 @@
 // Include Standard C Language Header Files
 //
 #include <string.h>
-/* Include DSP/BIOS related Header Files */
-//#include <gbl.h>
- //#include <hwi.h>
-
 //---------------------------------------------------------------------------
 // Include any other Header Files
 //
@@ -129,16 +125,12 @@
 #include "50Hz_Bypass_SwitchLogic.h"
 #include "50Hz_Bypass_Scib_PCOsc.h"
 #include "50Hz_Bypass_SwitchLogic.h"
-//#include "50Hz_Bypass_Scia_LCDs.h"
 #include "50Hz_Bypass_ECan_Basic.h"
 #include "50Hz_Bypass_EcanDataprotocol.h"
 #include "50Hz_Bypass_I2cEeprom.h"
-
+#include "50Hz_Bypass_Safety_EEprom.h"
 #include "Sci.h"
-#include "HRCap.h"
-
 #include "math.h"
-#include "Ecap.h"
 #include "Epwm.h"
 
 //---------------------------------------------------------------------------

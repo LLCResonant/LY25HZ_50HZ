@@ -55,7 +55,6 @@ void ADC_INT_Control(void)
 	g_StateCheck.bit.COM4 = COM4_LEVEL;
 	g_StateCheck.bit.COM2 = COM2_LEVEL;
 	g_StateCheck.bit.Fault = FaultCheck();
-	g_StateCheck.bit.Module_Lock =MODULE_LOCK;
 
 	Switch_Logic_Control();
 } // end
@@ -83,84 +82,72 @@ void Switch_Logic_Control(void)
 
 void GridPLLControl(void)
 {
-	_iq20 ThetaStep_Ref = GridTheta_StepRated;
-	static _iq20 Theta_Ref = Value_2Pi * 0.25f;  //2017.3.29 GX
-	static int i8temp = 0;
+	static Uint8 s_u8temp = 0;
 
-	_iq20 GridPLL_Kp = 5e-5f; //2017.8.14 GX //5e-6//2017.3.17 GX Kp1/40000/VGrid
-	_iq20 GridPLL_Ki = 2.5e-8f; //2017.8.14 GX//3e-9 2017.5.10 GX//2017.3.17 GX KI1/40000/40000/VGrid
-	_iq20 LPF_B0 = 0.00034605;//0.000346050740714038155762;
-	_iq20 LPF_B1 = 0.00069210;//0.000692101481428076311525;
-	_iq20 LPF_B2 = 0.00034605;//0.000346050740714038155762;
-	_iq20 LPF_A1 = 1.94721182;//1.947211823488243620516869;
-	_iq20 LPF_A2 = 0.94859602;//0.948596026451099749721152;
+	_iq20 GridPLL_Kp = 5e-5f;
+	_iq20 GridPLL_Ki = 2.5e-8f;
+	_iq20 LPF_B0 = 0.00034605;
+	_iq20 LPF_B1 = 0.00069210;
+	_iq20 LPF_B2 = 0.00034605;
+	_iq20 LPF_A1 = 1.94721182;
+	_iq20 LPF_A2 = 0.94859602;
 	_iq20 DELTA_ANGLE = GridTheta_StepRated;//2*pi*50/20000
 
-	/*------------------- dqPLL PID regulator process ----------------------------*/
-	Theta_Ref += ThetaStep_Ref;
-	if(Theta_Ref > Value_2Pi)
+	GridPLLReg.iq20Valpha = GetRealValue.iq20VGrid;
+	s_u8temp++;
+
+	if (4 == s_u8temp)
 	{
-		 Theta_Ref = Theta_Ref - Value_2Pi;
-	}
-	//GridPLLConReg.f32Valpha = sin(Theta_Ref) * 100;
+		 GridPLLReg.iq20Input[2] = GridPLLReg.iq20Input[1];																					// x(k-2) = x(k-1)
+		 GridPLLReg.iq20Input[1] = GridPLLReg.iq20Input[0];																					// x(k-1) = x(k)
+		 GridPLLReg.iq20Input[0] = _IQmpy(GridPLLReg.iq20Valpha, GridPLLReg.iq20Cos_Theta);						// x(k)
 
-	GridPLLReg.i32Valpha = GetRealValue.i32VGrid;
-	i8temp++;
+		 GridPLLReg.iq20Output[2] = GridPLLReg.iq20Output[1];																			// y(k-2) = y(k-1)
+		 GridPLLReg.iq20Output[1] = GridPLLReg.iq20Output[0];																			// y(k-1) = y(k)
 
-	if (4 == i8temp)
-	{
-		 GridPLLReg.i32Input[2] = GridPLLReg.i32Input[1];																					// x(k-2) = x(k-1)
-		 GridPLLReg.i32Input[1] = GridPLLReg.i32Input[0];																					// x(k-1) = x(k)
-		 GridPLLReg.i32Input[0] = _IQmpy(GridPLLReg.i32Valpha, GridPLLReg.i32Cos_Theta);						// x(k)
+		 GridPLLReg.iq20MAC =  _IQmpy(LPF_B0, GridPLLReg.iq20Input[0]);															// + b0 * x(k)
+		 GridPLLReg.iq20MAC +=  _IQmpy(LPF_B1, GridPLLReg.iq20Input[1]);														// + b1 * x(k-1)
+		 GridPLLReg.iq20MAC +=  _IQmpy(LPF_B2, GridPLLReg.iq20Input[2]);														// + b2 * x(k-2)
 
-		 GridPLLReg.i32Output[2] = GridPLLReg.i32Output[1];																			// y(k-2) = y(k-1)
-		 GridPLLReg.i32Output[1] = GridPLLReg.i32Output[0];																			// y(k-1) = y(k)
+		 GridPLLReg.iq20MAC +=  _IQmpy(LPF_A1, GridPLLReg.iq20Output[1]);													// + a11 * y(k-1)
+		 GridPLLReg.iq20MAC -=  _IQmpy(LPF_A2, GridPLLReg.iq20Output[2]);													// - a2 * y(k-2)
 
-		 //GridPLLReg.i32MAC -= ((S32)pllLPF.Output[0] << 16);																		// i32MAC Low 16bits
-
-		 GridPLLReg.i32MAC =  _IQmpy(LPF_B0, GridPLLReg.i32Input[0]);															// + b0 * x(k)
-		 GridPLLReg.i32MAC +=  _IQmpy(LPF_B1, GridPLLReg.i32Input[1]);														// + b1 * x(k-1)
-		 GridPLLReg.i32MAC +=  _IQmpy(LPF_B2, GridPLLReg.i32Input[2]);														// + b2 * x(k-2)
-
-		 GridPLLReg.i32MAC +=  _IQmpy(LPF_A1, GridPLLReg.i32Output[1]);													// + a11 * y(k-1)
-		 GridPLLReg.i32MAC -=  _IQmpy(LPF_A2, GridPLLReg.i32Output[2]);													// - a2 * y(k-2)
-
-		 GridPLLReg.i32Output[0] = GridPLLReg.i32MAC;
-		 i8temp= 0;
+		 GridPLLReg.iq20Output[0] = GridPLLReg.iq20MAC;
+		 s_u8temp= 0;
 	}
 
-	GridPLLReg.i32PIDErr_Old = GridPLLReg.i32PIDErr_New ;
-	GridPLLReg.i32PIDErr_New  = GridPLLReg.i32Output[0] - GridPLLReg.i32Refer;										// error(n) = y(k) - 0
+	GridPLLReg.iq20PIDErr_Old = GridPLLReg.iq20PIDErr_New ;
+	GridPLLReg.iq20PIDErr_New  = GridPLLReg.iq20Output[0] - GridPLLReg.iq20Refer;										// error(n) = y(k) - 0
 
-	GridPLLReg.i32PID_Output = GridPLLReg.i32PID_Output \
-		 						+  _IQmpy((GridPLL_Kp + GridPLL_Ki), GridPLLReg.i32PIDErr_New) \
-		 						-  _IQmpy(GridPLL_Kp, GridPLLReg.i32PIDErr_Old);                // u(n) = u(n-1) + alpha * error(n) - beta * error(n-1)
+	GridPLLReg.iq20PID_Output = GridPLLReg.iq20PID_Output \
+		 						+  _IQmpy((GridPLL_Kp + GridPLL_Ki), GridPLLReg.iq20PIDErr_New) \
+		 						-  _IQmpy(GridPLL_Kp, GridPLLReg.iq20PIDErr_Old);                // u(n) = u(n-1) + alpha * error(n) - beta * error(n-1)
 
-	GridPLLReg.i32Delta_Theta =  DELTA_ANGLE + GridPLLReg.i32PID_Output;
+	GridPLLReg.iq20Delta_Theta =  DELTA_ANGLE + GridPLLReg.iq20PID_Output;
 
-	if(GridPLLReg.i32Delta_Theta > GridTheta_Step_Hi_Limit)
+	if(GridPLLReg.iq20Delta_Theta > GridTheta_Step_Hi_Limit)
 	{
-		 GridPLLReg.i32Delta_Theta = GridTheta_Step_Hi_Limit;
+		 GridPLLReg.iq20Delta_Theta = GridTheta_Step_Hi_Limit;
 	}
-	if(GridPLLReg.i32Delta_Theta < GridTheta_Step_Low_Limit)
+	if(GridPLLReg.iq20Delta_Theta < GridTheta_Step_Low_Limit)
 	{
-		 GridPLLReg.i32Delta_Theta = GridTheta_Step_Low_Limit;
+		 GridPLLReg.iq20Delta_Theta = GridTheta_Step_Low_Limit;
 	}
 
-	GridPLLReg.i32Theta += GridPLLReg.i32Delta_Theta;
-	if ( GridPLLReg.i32Theta > Value_2Pi )
+	GridPLLReg.iq20Theta += GridPLLReg.iq20Delta_Theta;
+	if ( GridPLLReg.iq20Theta > Value_2Pi )
 	{
-		 GridPLLReg.i32Theta = GridPLLReg.i32Theta - Value_2Pi;
+		 GridPLLReg.iq20Theta = GridPLLReg.iq20Theta - Value_2Pi;
 		 g_StateCheck.bit.Zero_Crossing_Flag = 1;
 	}
-	GridPLLReg.i32Sin_Theta = _IQsin(GridPLLReg.i32Theta);
-	GridPLLReg.i32Cos_Theta = _IQcos(GridPLLReg.i32Theta);
+	GridPLLReg.iq20Sin_Theta = _IQsin(GridPLLReg.iq20Theta);
+	GridPLLReg.iq20Cos_Theta = _IQcos(GridPLLReg.iq20Theta);
 
 	if(1 == g_StateCheck.bit.SelfPhaseOut_EN)
 	{
-		if(GridPLLReg.i32Theta >= Value_Pi)
+		if(GridPLLReg.iq20Theta >= Value_Pi)
 			SYNC_COM1_ON;
-		if(GridPLLReg.i32Theta < Value_Pi)
+		if(GridPLLReg.iq20Theta < Value_Pi)
 			SYNC_COM1_OFF;
 	}
 }

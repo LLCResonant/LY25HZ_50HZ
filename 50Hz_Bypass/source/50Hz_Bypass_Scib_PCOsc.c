@@ -26,12 +26,6 @@
 #include "DSP2803x_Device.h"			// Peripheral address definitions
 #include "F28035_example.h"					// Main include file
 
-//#pragma CODE_SECTION(Scib_SnatchGraph, "ControlLoopInRAM") 
-//#pragma DATA_SECTION(u8Scib_UserDataBuf0, "ConstantsInRAM")
-//#pragma DATA_SECTION(u8Scib_RxBuffer0, "ConstantsInRAM")
-//#pragma DATA_SECTION(u16Scib_TransmitDataBuff, "ConstantsInRAM")
-//#pragma DATA_SECTION(u16Scib_GraphDataBuff, "ConstantsInRAM")
-
 typedef int (*pFunc1)(void);
 
 /******************************variable definition******************************/
@@ -88,23 +82,6 @@ Uint8 sbNumToAscii(Uint16 u16Number, int8 i8Exponent, Uint8 *pbBuffer);
 void Scib_WriteBinary(Uint16 *pstart, Uint16 u16Length);
 void Scib_Q1CommandIndex(void);
 /******************************fuciton list******************************/
-
-/*pFunc1 GetDataSubArray[10] =
-{
-    swGetRLineVolt,
-    swGetRLineVolt, swGetSLineVolt, swGetTLineVolt,
-    swGetRCurr,     swGetRLineVolt, swGetSLineVolt,
-    swGetTLineVolt, swGetRCurr,     swGetRLineVolt,
-} ;*/
-
-/*
-pFunc1 GetDataSubArray[9] =
-{
-    swGetVoltvw,
-    swGetVoltvw,swGetVoltuv,swGetThetaOut,
-    swGetCurra,swGetCurrb,swGetIDRef,
-    swGetIIDFeedback1,swGetIIQFeedback2
-} ;*/
 pFunc1 GetDataSubArray[30] =
 {
 	swGetFault0,swGetFault0,swGetFault1,swGetFault2,//3
@@ -252,31 +229,6 @@ void Scib_Parsing(void)
  *     //sbNumToAscii(); 
  *     //Scib_Write();
  *     
- *     extern int16 swGetGridVoltRMS_uv(void)
-extern int16 swGetGridVoltRMS_vw(void)
-extern int16 swGetGridVoltRMS_wu(void)
-extern int16 swGetOutputCurrRMS_u(void)
-extern int16 swGetOutputCurrRMS_v(void)
-extern int16 swGetOutputCurrRMS_w(void)
-extern int16 swGetInductionCurrRMS_a(void)
-extern int16 swGetInductionCurrRMS_b(void)
-extern int16 swGetInductionCurrRMS_c(void)
-extern int16 swGetInductionCurrDC_a(void)
-extern int16 swGetInductionCurrDC_b(void)
-extern int16 swGetInductionCurrDC_c(void)
-extern int16 swGetTempHeatsink(void)
-extern int16 swGetTempControlborad(void)
-extern int16 swGetTempTransformer(void)
-extern int16 swGetVoltPV(void)
-extern int16 swGetCurrPV(void)
-extern int16 swGetInsulationResistorP(void)
-extern int16 swGetInsulationResistorN(void)
-extern int16 swGetOutputWatt(void)
-extern int16 swGetInputWatt(void)
-extern int16 swGetGridFreq(void)
-
- *     
- *
  * CALLED BY: 
  *   //  INT32 Scib_Parsing() 
  * 
@@ -294,17 +246,17 @@ void Scib_Q1Command(void)          //  进行数据准备   存储到 u8Scib_UserDataBuf0
 	u8Scib_UserDataBuf0[bStrLen++] = 32;   //  各个数据段之间的间隔
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(_IQtoF(Calc_Result.i32VGrid_RMS) * 10, 0, pDataBuf);//4
+	bStrLen1 = sbNumToAscii(_IQtoF(Calc_Result.iq20VGrid_RMS) * 10, 0, pDataBuf);//4
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(_IQtoF(Calc_Result.i32IGrid_RMS) * 10, 0, pDataBuf);//5
+	bStrLen1 = sbNumToAscii(_IQtoF(Calc_Result.iq20IGrid_RMS) * 10, 0, pDataBuf);//5
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 		
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(_IQ10toF(Calc_Result.i32GridFreq) , 0, pDataBuf);//7  //GX 830
+	bStrLen1 = sbNumToAscii(_IQ10toF(Calc_Result.iq20GridFreq) , 0, pDataBuf);//7  //GX 830
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32; 
 
@@ -341,7 +293,7 @@ void Scib_Q1Command(void)          //  进行数据准备   存储到 u8Scib_UserDataBuf0
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(_IQint(SafetyReg.i32VGrid_LowLimit), 0, pDataBuf);//21
+	bStrLen1 = sbNumToAscii(_IQint(SafetyReg.iq20VGrid_LowLimit), 0, pDataBuf);//21
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
@@ -598,7 +550,7 @@ int16 swGetFault3(void)
 {
  //   return(BooostCon_Reg1.i32Boost_Duty);//4  
 //  return(CurrConReg.i32Bus_Error_k); //modified by Ken
-return(_IQtoF(GetRealValue.i32IGrid) * 100);
+return(_IQtoF(GetRealValue.iq20IGrid) * 100);
 }
 int16 swGetFault4(void)
 {  return ( AdcResult.ADCRESULT1);
@@ -611,27 +563,27 @@ int16 swGetFault5(void)
 
 int16 swGetFaultUnrecover1(void)
 {
-	return(GetRealValue.i32IGrid * 100);
+	return(GetRealValue.iq20IGrid * 100);
 }
 int16 swGetFaultUnrecover2(void)
 {
-	return(GetRealValue.i32IGrid * 100);
+	return(GetRealValue.iq20IGrid * 100);
 }
 int16 swGetRLineVolt(void)
 {
-	return(_IQint(GetRealValue.i32VGrid));
+	return(_IQint(GetRealValue.iq20VGrid));
 }
 int16 swGetSLineVolt(void)
 {
-	return(GetRealValue.i32IGrid * 100);
+	return(GetRealValue.iq20IGrid * 100);
 }
 int16 swGetTLineVolt(void)
 {
-	return(GetRealValue.i32IGrid * 100);
+	return(GetRealValue.iq20IGrid * 100);
 }
 int16 swGetRCurr(void)
 {
-	return(GetRealValue.i32IGrid * 100);
+	return(GetRealValue.iq20IGrid * 100);
 }
 
 /*=============================================================================*

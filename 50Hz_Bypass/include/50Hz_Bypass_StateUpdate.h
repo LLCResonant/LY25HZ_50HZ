@@ -19,6 +19,9 @@
 #ifndef STATE_UPDATE  //MAINSTATUSMACHINE_H
 #define STATE_UPDATE  //MAINSTATUSMACHINE_H
 
+#define NORMAL_EEPROM
+//#define RESET_EEPROM
+
 #define DC_Fan1_Enable				GpioDataRegs.GPASET.bit.GPIO3 = 1
 #define DC_Fan1_State					GpioDataRegs.GPADAT.bit.GPIO3
 #define DC_Fan1_Disable				GpioDataRegs.GPACLEAR.bit.GPIO3 = 1
@@ -34,6 +37,8 @@
 #define LED_Warning_OFF			GpioDataRegs.GPACLEAR.bit.GPIO17 = 1
 #define LED_Fault_ON					GpioDataRegs.GPASET.bit.GPIO8 = 1
 #define LED_Fault_OFF					GpioDataRegs.GPACLEAR.bit.GPIO8 = 1
+#define LED_Power_ON				GpioDataRegs.GPASET.bit.GPIO18 = 1
+
 //================ Global variables =====================================
 
 //System Status definition for StateMachine
@@ -52,30 +57,30 @@ union  STATE_CHECK
 {
     struct
     {
-        Uint16  byte0:8;
-        Uint16  byte1:8;
+        Uint8  byte0:8;
+        Uint8  byte1:8;
     }Word;
 
     struct
     {
 		//byte 0
-        Uint16  Zero_Crossing_Flag:1;    // B0
-        Uint16  SelfPhaseOut_EN:1;    // B1
-        Uint16  Time_Overflow:1;    // B2
-        Uint16  DcFan1Fault:1;    // B3
-        Uint16  DcFan2Fault:1;    // B4
-        Uint16  ECAN_Fault:1;    // B5
-        Uint16  ECAN_Noline:1;    // B6
-        Uint16  AD_initial:1;    // B7     0: hardware  interrupt   1:softwar force  interrupt
+        Uint8  Zero_Crossing_Flag:1;    // B0
+        Uint8  SelfPhaseOut_EN:1;    // B1
+        Uint8  Time_Overflow:1;    // B2
+        Uint8  DcFan1Fault:1;    // B3
+        Uint8  DcFan2Fault:1;    // B4
+        Uint8  ECAN_Fault:1;    // B5
+        Uint8  ECAN_Noline:1;    // B6
+        Uint8  AD_initial:1;    // B7     0: hardware  interrupt   1:softwar force  interrupt
 		//byte 1
-		Uint16  COM4:1;    // B0
-	    Uint16  COM2:1;    // B1
-	    Uint16  Fault:1;    // B2
-	    Uint16  Force_Switch:1;    // B3
-	    Uint16  Module_Lock:1;    // B4
-	    Uint16  :1;    // B5
-	    Uint16  :1;    // B6
-	    Uint16  :1;	// B7
+		Uint8  COM4:1;    // B0
+	    Uint8  COM2:1;    // B1
+	    Uint8  Fault:1;    // B2
+	    Uint8  Force_Switch:1;    // B3
+	    Uint8  Module_Lock:1;    // B4
+	    Uint8  :1;    // B5
+	    Uint8  :1;    // B6
+	    Uint8  :1;	// B7
     }bit;
 }; 
 extern union STATE_CHECK  g_StateCheck; 
@@ -84,30 +89,30 @@ union  SYS_WARN_MESSAGE
 {
     struct
     {
-        Uint16  byte0:8;
-        Uint16  byte1:8;
+        Uint8  byte0:8;
+        Uint8  byte1:8;
     }Word;
 
     struct
     {
 		//byte 0
-        Uint16  :1;    		// B0
-        Uint16  :1;    		// B1
-        Uint16  :1;    				// B2
-        Uint16  OverTemp:1;    				// B3
-        Uint16  Fan1Block:1; 				// B4
-        Uint16  Fan2Block:1;				// B5
-        Uint16  Fan_Fault:1;					// B6
-        Uint16  :1;    		// B7
+        Uint8 :1;    		// B0
+        Uint8 :1;    		// B1
+        Uint8 :1;    				// B2
+        Uint8 OverTemp:1;    				// B3
+        Uint8 Fan1Block:1; 				// B4
+        Uint8 Fan2Block:1;				// B5
+        Uint8 Fan_Fault:1;					// B6
+        Uint8 :1;    		// B7
 		//byte 1
-        Uint16  :1;    		// B0
-        Uint16  :1;      	// B1
-        Uint16  :1; 			// B2
-        Uint16  :1;  			// B3
-        Uint16  :1;			// B4
-        Uint16  :1;  //B5
-        Uint16  :1; //B6
-        Uint16  :1;    //B7
+        Uint8  :1;    		// B0
+        Uint8  :1;      	// B1
+        Uint8  :1; 			// B2
+        Uint8  :1;  			// B3
+        Uint8  :1;			// B4
+        Uint8  :1;  //B5
+        Uint8  :1; //B6
+        Uint8  :1;    //B7
     }bit;
 };
 extern union SYS_WARN_MESSAGE  g_SysWarningMessage;
@@ -116,8 +121,8 @@ union  SYS_FAULT_MESSAGE
 {
     struct
     {
-        Uint16  Bypass:8;
-        Uint16  Overall:8;
+        Uint16  byte0:8;
+        Uint16  byte1:8;
     }Word;  
    
     struct
@@ -134,8 +139,8 @@ union  SYS_FAULT_MESSAGE
 
         //byte1
         Uint16  OverTempFault:1;   //B0
-        Uint16  :1;    //B2          
-      	Uint16  :1;    //
+        Uint16  Bypass_SCR_Fault:1;    //B2
+      	Uint16  Inv_SCR_Fault:1;    //
        	Uint16  :1;    //
       	Uint16  :1;     //B6
         Uint16  :1;    //B7

@@ -25,12 +25,10 @@
  *									the basic data accumulate preprocess	*    
  *============================================================================*/
 
-
 #include "DSP2803x_Device.h"			// Peripheral address definitions
 #include "F28035_example.h"					// Main include file
 
 SAFETY_PARAMETER_REG	SafetyReg;
-//#pragma CODE_SECTION(EnergyAccCalc, "ControlLoopInRAM")
 
 //------------------
 void GridVoltCheck(void);
@@ -38,6 +36,7 @@ void GridFreqCheck(void);
 void TemperatureCheck(void);
 void DCFanCheck(void);
 void ADOffsetCheck(void);
+void SCRCheck(void);
 //--- end of local functions
 
 /**********************************************************************
@@ -59,19 +58,19 @@ void GridVoltCheck(void)
     static  Uint16  s_u16Cnt_GridVolt_Fault_Back = 0;
 	if(g_SysFaultMessage.bit.VGridOverRating == 0 && g_SysFaultMessage.bit.VGridUnderRating == 0)
 	{
-	    if(Calc_Result.i32VGrid_RMS > SafetyReg.i32VGrid_HiLimit)
+	    if(Calc_Result.iq20VGrid_RMS > SafetyReg.iq20VGrid_HiLimit)
 	    {
 			g_SysFaultMessage.bit.VGridOverRating = 1;
 			s_u16Cnt_GridVolt_Fault_Back = 0;
 		}
-		else if (Calc_Result.i32VGrid_RMS < SafetyReg.i32VGrid_LowLimit)
+		else if (Calc_Result.iq20VGrid_RMS < SafetyReg.iq20VGrid_LowLimit)
 		{
 			g_SysFaultMessage.bit.VGridUnderRating = 1;
 			s_u16Cnt_GridVolt_Fault_Back = 0;
 		}
 	}
 
-	if((Calc_Result.i32VGrid_RMS > SafetyReg.i32VGrid_LowLimitBack) && (Calc_Result.i32VGrid_RMS < SafetyReg.i32VGrid_HiLimitBack))
+	if((Calc_Result.iq20VGrid_RMS > SafetyReg.iq20VGrid_LowLimitBack) && (Calc_Result.iq20VGrid_RMS < SafetyReg.iq20VGrid_HiLimitBack))
 	{       
 		s_u16Cnt_GridVolt_Fault_Back++;
 		if(s_u16Cnt_GridVolt_Fault_Back >= 300)     //300*20ms =6s
@@ -86,7 +85,7 @@ void GridVoltCheck(void)
 }
 /**********************************************************************
 * FUNCION :  Grid  frequency Check
-* PURPOSE :  grid frequency range checked  for  safety rugulation
+* PURPOSE :  grid frequency range checked  for  safety regulation
 *                   
 * INPUT :
 *        void
@@ -107,19 +106,19 @@ void GridFreqCheck(void)
 	//----------------------------------------------------R----------------------------
 	if ( (0 == g_SysFaultMessage.bit.FreGridOverRating) && (0 == g_SysFaultMessage.bit.FreGridUnderRating) )
 	{
-	    if(Calc_Result.i32GridFreq > SafetyReg.i32FreGrid_HiLimit)
+	    if(Calc_Result.iq20GridFreq > SafetyReg.i32FreGrid_HiLimit)
 	    {
 	        s_u16Cnt_GridFreq_High_Fault++;
-	        if(s_u16Cnt_GridFreq_High_Fault >= SafetyReg.i32FreGrid_ProtectionTime)
+	        if(s_u16Cnt_GridFreq_High_Fault >= SafetyReg.u16FreGrid_ProtectionTime)
 	        {
 	            s_u16Cnt_GridFreq_High_Fault = 0;
 	            g_SysFaultMessage.bit.FreGridOverRating = 1;
 	        }
 	    }
-	    else if(Calc_Result.i32GridFreq < SafetyReg.i32FreGrid_LowLimit)
+	    else if(Calc_Result.iq20GridFreq < SafetyReg.i32FreGrid_LowLimit)
 	    {
 	        s_u16Cnt_GridFreq_Low_Fault++;
-	        if (s_u16Cnt_GridFreq_Low_Fault >= SafetyReg.i32FreGrid_ProtectionTime)
+	        if (s_u16Cnt_GridFreq_Low_Fault >= SafetyReg.u16FreGrid_ProtectionTime)
 	        {
 	            s_u16Cnt_GridFreq_Low_Fault = 0;
 	            g_SysFaultMessage.bit.FreGridUnderRating = 1;
@@ -133,7 +132,7 @@ void GridFreqCheck(void)
 	}
 	else
 	{
-	    if((Calc_Result.i32GridFreq < SafetyReg.i32FreGrid_HiLimit) && (Calc_Result.i32GridFreq > SafetyReg.i32FreGrid_LowLimit))
+	    if((Calc_Result.iq20GridFreq < SafetyReg.i32FreGrid_HiLimit) && (Calc_Result.iq20GridFreq > SafetyReg.i32FreGrid_LowLimit))
 	    {
 	        s_u16Cnt_GridFreq_Fault_Back++;
 	        if (s_u16Cnt_GridFreq_Fault_Back > 300)
@@ -155,7 +154,7 @@ void TemperatureCheck(void)
 
 	if(0 == g_SysFaultMessage.bit.OverTempFault)
 	{
-		if(Calc_Result.i32TempAmb >= TempAmbHiLimit)//85
+		if(Calc_Result.iq20TempAmb >= TempAmbHiLimit)//85
 		{
 			s_u8Cnt_HeatsinkTemp_High_Fault++;
 			if(s_u8Cnt_HeatsinkTemp_High_Fault > 5) //40ms*5=200ms
@@ -170,7 +169,7 @@ void TemperatureCheck(void)
 	}
 	else
 	{
-		if(Calc_Result.i32TempAmb < (TempAmbHiLimit - 30))//55
+		if(Calc_Result.iq20TempAmb < (TempAmbHiLimit - 30))//55
 		{
 			s_u8Cnt_HeatsinkTemp_Fault_Back++;
 			if(s_u8Cnt_HeatsinkTemp_Fault_Back > 50)//40ms*50=2s
@@ -188,16 +187,16 @@ void TemperatureCheck(void)
 void ADOffsetCheck(void)
 {
 	// Grid Voltage channel
-	if ((_IQabs(Calc_Result.i32VGrid_ave) > AD_Channel_Offset_VGridLimit))
+	if ((_IQabs(Calc_Result.iq20VGrid_ave) > AD_Channel_Offset_VGridLimit))
 		g_SysFaultMessage.bit.HWADFault_VGrid = 1;
 	else
-		ADChannelOffset.i32VGrid = Calc_Result.i32VGrid_ave;
+		ADChannelOffset.iq20VGrid = Calc_Result.iq20VGrid_ave;
 
 	// Out voltage channel
-	if (_IQabs(Calc_Result.i32VOut_ave) > AD_Channel_Offset_VOutLimit)
+	if (_IQabs(Calc_Result.iq20VOut_ave) > AD_Channel_Offset_VOutLimit)
 		g_SysFaultMessage.bit.HWADFault_VOut = 1;
 	else
-		ADChannelOffset.i32VOut = Calc_Result.i32VOut_ave;
+		ADChannelOffset.iq20VOut = Calc_Result.iq20VOut_ave;
 }
 
 void DCFanCheck(void)
@@ -213,5 +212,18 @@ void DCFanCheck(void)
 		g_SysWarningMessage.bit.Fan2Block = 0;
 
 	if((1 == g_StateCheck.bit.DcFan1Fault) && (1 == g_StateCheck.bit.DcFan2Fault))
-		g_SysFaultMessage.bit.Fan_Fault = 1;
+		g_SysWarningMessage.bit.Fan_Fault = 1;
+}
+
+void SCRCheck(void)
+{
+	if ( Calc_Result.iq20VOut_RMS <= 10 )
+	{
+		if ( g_Sys_State == NormalState )
+			g_SysFaultMessage.bit.Bypass_SCR_Fault = 1;
+		else if ( g_Sys_State == Standby )
+			g_SysFaultMessage.bit.Inv_SCR_Fault = 1;
+		else
+			;
+	}
 }
