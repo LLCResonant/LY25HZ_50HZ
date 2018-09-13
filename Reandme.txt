@@ -35,3 +35,5 @@ make the program suite the old 50Hz power board
 2018.9.8
 25Hz50HzUnification is revised
 50Hz bypass is revised
+2018.9.13
+50Hz bypass is revised
