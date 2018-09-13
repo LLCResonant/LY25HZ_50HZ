@@ -246,17 +246,17 @@ void Scib_Q1Command(void)          //  进行数据准备   存储到 u8Scib_UserDataBuf0
 	u8Scib_UserDataBuf0[bStrLen++] = 32;   //  各个数据段之间的间隔
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(_IQtoF(Calc_Result.iq20VGrid_RMS) * 10, 0, pDataBuf);//4
+	bStrLen1 = sbNumToAscii(_IQint(Calc_Result.iq20VGrid_RMS) * 10, 0, pDataBuf);//4
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(_IQtoF(Calc_Result.iq20IGrid_RMS) * 10, 0, pDataBuf);//5
+	bStrLen1 = sbNumToAscii(_IQint(Calc_Result.iq20IGrid_RMS) * 10, 0, pDataBuf);//5
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 		
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii(_IQ10toF(Calc_Result.iq20GridFreq) , 0, pDataBuf);//7  //GX 830
+	bStrLen1 = sbNumToAscii(_IQint(Calc_Result.iq20GridFreq) , 0, pDataBuf);//7  //GX 830
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32; 
 

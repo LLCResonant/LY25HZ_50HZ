@@ -125,6 +125,12 @@ void StateSwitch(void)
 			LED_Warning_OFF;
 		else
 			LED_Warning_ON;
+
+		if (g_Sys_State == NormalState)
+			g_StateCheck.bit.SelfPhaseOut_EN = 1;
+		else
+			g_StateCheck.bit.SelfPhaseOut_EN = 0;
+
     } // end of task main loop
 } // end of StateSwitch
 
@@ -170,15 +176,12 @@ void ProcessWaiting(void) // start of ProcessRUNNING
 		SCR_Bypass_Disable();
 	else
 		DelayTime ++;
-
-	g_StateCheck.bit.SelfPhaseOut_EN = 0;
 } // end of ProcessRUNNING
 
 void ProcessRunning(void) // start of ProcessRUNNING
 {
 	SCR_Bypass_Enable();
 	SCR_INV_Disable();
-	g_StateCheck.bit.SelfPhaseOut_EN = 1;
 } // end of ProcessRUNNING
 
 void ProcessForceRunning(void) // start of ProcessRUNNING
@@ -193,7 +196,6 @@ void ProcessForceRunning(void) // start of ProcessRUNNING
 		SCR_INV_Disable();
 		SCR_Bypass_Enable();
 	}
-	g_StateCheck.bit.SelfPhaseOut_EN = 1;
 } // end of ProcessRUNNING
 
 void ProcessLock(void) // start of ProcessRUNNING

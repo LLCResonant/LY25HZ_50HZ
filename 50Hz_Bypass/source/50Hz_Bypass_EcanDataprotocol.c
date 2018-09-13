@@ -188,7 +188,7 @@ void DataUpload(MAIL mailp)
 	id = Get_ID(DataLength, ModuleAdd);
 	Temp.Mailbox_id.all = id;
 	Temp.Mailbox_data.Byte.Current_frame = 0x01;//第一帧
-	Temp.Mailbox_data.Byte.Frames_num = 0x07;//3帧
+	Temp.Mailbox_data.Byte.Frames_num = 0x03;//3帧
 	Temp.Mailbox_data.Byte.Code = 0x00;
 
 	Temp.Mailbox_data.Word.Data1 = Ecan_ModuleData.u16VGrid_rms;

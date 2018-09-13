@@ -39,7 +39,7 @@
 #define DC_FAN1_FB_Level			GpioDataRegs.GPADAT.bit.GPIO5
 #define DC_FAN2_FB_Level			GpioDataRegs.GPADAT.bit.GPIO20
 
-/*=================struct define====================*/
+/*=================structure define====================*/
 struct	AD_Sample_Reg0 
 {
 	int32		i32IGrid;
