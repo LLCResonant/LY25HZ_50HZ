@@ -122,7 +122,7 @@ void InitEPwm(void)
 */
 //-----------------------------------------------------------------------------------------------------
 	// ePWM3 Configuration  用于Scr.Bypass的驱动
-	EPwm3Regs.TBPRD = PWM_PERIOD;						// actual period = 2*PWM_HALF_PERIOD
+	EPwm3Regs.TBPRD = PWM_HALF_PERIOD;						// actual period = 2*PWM_HALF_PERIOD
 	//EPwm3Regs.TBPHS.half.TBPHS = PWM_HALF_PERIOD;		// Phase = 180 Degree
 
 	EPwm3Regs.CMPA.half.CMPA = PWM_QUARTER_PERIOD;
