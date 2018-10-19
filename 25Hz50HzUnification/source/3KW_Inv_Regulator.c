@@ -439,7 +439,7 @@ void InvVoltSlowup(void)
 		 	}
 		}
 		else
-			InvHVoltConReg.f32VoltDutyUpLimit = 0.05f;
+			InvHVoltConReg.f32VoltDutyUpLimit = 0.95f;
 
 		InvLVoltConReg.f32VoltGain = InvHVoltConReg.f32VoltGain;
 		InvLVoltConReg.f32VoltDutyUpLimit = 0.6f * InvHVoltConReg.f32VoltDutyUpLimit;
