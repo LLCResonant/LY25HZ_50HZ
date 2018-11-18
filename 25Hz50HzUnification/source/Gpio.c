@@ -77,22 +77,22 @@ void InitGpio(void)
 												// 3=ADCSOCBO
 	GpioCtrlRegs.GPAMUX1.bit.GPIO11 = 1;		// 0=GPIO  1=EPWM6B     2=SCIRXDB    
 
-	// GPIO12 Output pin for Input Relay Control
+	// GPIO12 Output pin for FanCntl
 	GpioCtrlRegs.GPAMUX1.bit.GPIO12 = 0;		// 0=GPIO  1=TZ1        2=CANTXB
 												// 3=SPISIMOB
-	// GPIO13 Output pin for 220V Output Relay Control
+	// GPIO13 Output pin for 110V Output Relay Control, INVL for 25Hz and 50Hz
 	GpioCtrlRegs.GPAMUX1.bit.GPIO13 = 0;		// 0=GPIO  1=TZ2        2=CANRXB     
 												// 3=SPISOMIB
-	// GPIO14 Output pin for 220V Output SCR Control
+	// GPIO14 Output pin for 110V Output SCR Control, INVL for 25Hz and 50Hz
 	GpioCtrlRegs.GPAMUX1.bit.GPIO14 = 0;		// 0=GPIO  1=TZ3/XHOLD  2=SCITXDB
 												// 3=SPICLKB
-	// GPIO15 Output pin for 110V Output Relay Control
+	// GPIO15 Output pin for 220V Output SCR Control, INVH for 25Hz
 	GpioCtrlRegs.GPAMUX1.bit.GPIO15 = 0;		// 0=GPIO  1=TZ4/XHOLDA 2=SCIRXDB
 												// 3=SPISTEB
-	// GPIO16 Output pin for 110V Output SCR Control
+	// GPIO16 Output pin for 220V Output Relay Control, INVH for 25Hz
 	GpioCtrlRegs.GPAMUX2.bit.GPIO16 = 0;		// 0=GPIO  1=SPISIMOA   2=CANTXB
 		                             			// 3=TZ5
-	// GPIO17 Output pin for Fan Control
+	// GPIO17 Input pin for COM4IPF
 	GpioCtrlRegs.GPAMUX2.bit.GPIO17 = 0;		// 0=GPIO  1=SPISOMIA   2=CANRXB
 												// 3=TZ6
 	// GPIO18/19 are used as eCAN-A
@@ -103,7 +103,7 @@ void InitGpio(void)
 	// GPIO20 Output pin for Dry Contact
 	GpioCtrlRegs.GPAMUX2.bit.GPIO20 = 0;		// 0=GPIO  1=EQEP1A     2=MDXA
 												// 3=CANTXB
-	// GPIO21 Output pin for SCI-B Enable/Disable
+	// GPIO21 Output pin for Input Relay
 	GpioCtrlRegs.GPAMUX2.bit.GPIO21 = 0;		// 0=GPIO  1=EQEP1B     2=MDRA
 												// 3=CANRXB
 	// GPIO22/23, SCI-B to Communicate with Display Board
@@ -111,17 +111,16 @@ void InitGpio(void)
 												// 3=SCITXDB
 	GpioCtrlRegs.GPAMUX2.bit.GPIO23 = 3;		// 0=GPIO  1=EQEP1I     2=MFSXA
 												// 3=SCIRXDB
-	// GPIO24 Output pin for Inverter Operation Status
+	// GPIO24 ecap pin for COM1IPF
 	GpioCtrlRegs.GPAMUX2.bit.GPIO24 = 1;		// 0=GPIO  1=ECAP1      2=EQEP2A
 												// 3=MDXB
-	// GPIO25 Input pin for Capture Synchronization Signal
+	// GPIO25 Output pin for Cs_Cntl1
 	GpioCtrlRegs.GPAMUX2.bit.GPIO25 = 0;		// 0=GPIO  1=ECAP2      2=EQEP2B
 		                                        // 3=MDRB
-	//GpioCtrlRegs.GPADIR.bit.GPIO25 = 1;
-	// GPIO26 Input pin for Capture Inverter Operation Status
+	// GPIO26 Input pin for COM2IPF
 	GpioCtrlRegs.GPAMUX2.bit.GPIO26 = 0;		// 0=GPIO  1=ECAP3      2=EQEP2I
 												// 3=MCLKXB
-	// GPIO27 Output pin for Synchronization Signal
+	// GPIO27 Output pin for COM1OUT
 	GpioCtrlRegs.GPAMUX2.bit.GPIO27 = 0;		// 0=GPIO  1=ECAP4      2=EQEP2S
 												// 3=MFSXB
 	// GPIO28-31 are unused I/O, set input pins
@@ -169,8 +168,10 @@ void InitGpio(void)
 												// 2=XA0/XWE1   3=XA0/XWE1
 	GpioCtrlRegs.GPBMUX1.bit.GPIO41 = 0;		// 0=GPIO  1=rsvd      2=XA1        
 												// 3=XA1
+	//GPIO42 Bypass indication pin
 	GpioCtrlRegs.GPBMUX1.bit.GPIO42 = 0;		// 0=GPIO  1=rsvd      2=XA2        
 												// 3=XA2
+	//GPIO43 Single module indication pin
 	GpioCtrlRegs.GPBMUX1.bit.GPIO43 = 0;		// 0=GPIO  1=rsvd      2=XA3        
 												// 3=XA3
 
@@ -180,21 +181,22 @@ void InitGpio(void)
 	// GPIO45 Input pin for DC Bus Over Voltage Protection
 	GpioCtrlRegs.GPBMUX1.bit.GPIO45 = 0;		// 0=GPIO  1=rsvd      2=XA5        
 												// 3=XA5	
-	// GPIO46 Input pin for 220V Output AC Over Current Protection
+	// GPIO46 Input pin for 110V Output AC Over Current Protection
 	GpioCtrlRegs.GPBMUX1.bit.GPIO46 = 0;		// 0=GPIO  1=rsvd      2=XA6        
 												// 3=XA6
-	// GPIO47 Input pin for 220V Output AC Over Voltage Protection
+	// GPIO47 Input pin for 110V Output AC Over Voltage Protection
 	GpioCtrlRegs.GPBMUX1.bit.GPIO47 = 0;		// 0=GPIO  1=rsvd      2=XA7        
 												// 3=XA7
-	// GPIO48 Output pin for Bypass Relay/SCR Control
+	// GPIO48 Output pin for COM4OUT(50Hz) and Cs_Cntl3(25Hz)
 	GpioCtrlRegs.GPBMUX2.bit.GPIO48 = 0;		// 0=GPIO  1=ECAP5     2=XD31       
 												// 3=XD31
 	// GPIO49 Input pin for Output Voltages Capture
 	GpioCtrlRegs.GPBMUX2.bit.GPIO49 = 0;		// 0=GPIO  1=ECAP6     2=XD30       
 												// 3=XD30
-	// GPIO50/51 Output pin for Current Sharing Relay Control
+	// GPIO50 Output pin for SCIA-Enable/Disable
 	GpioCtrlRegs.GPBMUX2.bit.GPIO50 = 0;		// 0=GPIO  1=EQEP1A    2=XD29       
 												// 3=XD29
+	// GPIO51 Output pin for COM2OUT
 	GpioCtrlRegs.GPBMUX2.bit.GPIO51 = 0;		// 0=GPIO  1=EQEP1B    2=XD28       
 												// 3=XD28
 	// GPIO52-61 are unused I/O, set input pin.
@@ -257,23 +259,23 @@ void InitGpio(void)
 	GpioCtrlRegs.GPCMUX1.bit.GPIO75 = 0;		// 0=GPIO  1=GPIO      2=XD4        
 												// 3=XD4
 
-	// GPIO76 Input pin for Fan1 Speed Detection
+	// GPIO76 Input pin for Fan2 Speed Detection
 	GpioCtrlRegs.GPCMUX1.bit.GPIO76 = 0;		// 0=GPIO  1=GPIO      2=XD3        
 	GpioCtrlRegs.GPCDIR.bit.GPIO76 = 0;
 	// 3=XD3
-	// GPIO77 Input pin for Fan2 Speed Detection
+	// GPIO77 Input pin for Fan1 Speed Detection
 	GpioCtrlRegs.GPCMUX1.bit.GPIO77 = 0;		// 0=GPIO  1=GPIO      2=XD2        
 	GpioCtrlRegs.GPCDIR.bit.GPIO77 = 0;											// 3=XD2
 
-			// GPIO78/79 are unused I/O, set input pin
+	// GPIO78/79 are unused I/O, set input pin
 	GpioCtrlRegs.GPCMUX1.bit.GPIO78 = 0;		// 0=GPIO  1=GPIO      2=XD1        
 												// 3=XD1
 	GpioCtrlRegs.GPCMUX1.bit.GPIO79 = 0;		// 0=GPIO  1=GPIO      2=XD0        
 												// 3=XD0
-	// GPIO80 Input pin for 110V Output AC Over Current Protection
+	// GPIO80 Input pin for 220V Output AC Over Current Protection
 	GpioCtrlRegs.GPCMUX2.bit.GPIO80 = 0;		// 0=GPIO  1=GPIO      2=XA8        
 												// 3=XA8
-	// GPIO81 Input pin for 110V Output AC Over Voltage Protection
+	// GPIO81 Input pin for 220V Output AC Over Voltage Protection
 	GpioCtrlRegs.GPCMUX2.bit.GPIO81 = 0;		// 0=GPIO  1=GPIO      2=XA9        
 												// 3=XA9
 	// GPIO82 Output pin for Driver Reset
@@ -298,46 +300,39 @@ void InitGpio(void)
 
 	/* ------------Group A pins-----------*/
 
-	// GPIO12 Output pin for Input Relay Control
+	// GPIO12 Output pin for FanCntl
 	GpioDataRegs.GPACLEAR.bit.GPIO12 = 1;		// output 0 by default
 	GpioCtrlRegs.GPADIR.bit.GPIO12 = 1;			// Configures the GPIO pin as an output
 
-	// GPIO13 Output pin for 220V Output Relay Control
+	// GPIO13 Output pin for 110V Output Relay Control, INVL for 25Hz and 50Hz
 	GpioDataRegs.GPACLEAR.bit.GPIO13 = 1;		// output 0 by default
 	GpioCtrlRegs.GPADIR.bit.GPIO13 = 1;			// Configures the GPIO pin as an output
 
-	// GPIO14 Output pin for 220V Output SCR Control
-	GpioDataRegs.GPASET.bit.GPIO14 = 1;			// output 1 by default
+	// GPIO14 Output pin for 110V Output SCR Control, INVL for 25Hz and 50Hz
+	GpioDataRegs.GPACLEAR.bit.GPIO14 = 1;			// output 1 by default
 	GpioCtrlRegs.GPADIR.bit.GPIO14 = 1;			// Configures the GPIO pin as an output
 
-	// GPIO15 Output pin for 110V Output Relay Control
-	GpioDataRegs.GPASET.bit.GPIO15 = 1;			// output 1 by default
+	// GPIO15 Output pin for 220V Output SCR Control, INVH for 25Hz
+	GpioDataRegs.GPACLEAR.bit.GPIO15 = 1;			// output 1 by default
 	GpioCtrlRegs.GPADIR.bit.GPIO15 = 1;			// Configures the GPIO pin as an output
 
-	// GPIO16 Output pin for 110V Output SCR Control
+	// GPIO16 Output pin for 220V Output Relay Control, INVH for 25Hz
 	GpioDataRegs.GPACLEAR.bit.GPIO16 = 1;		// output 0 by default	 
 	GpioCtrlRegs.GPADIR.bit.GPIO16 = 1;			// Configures the GPIO pin as an output
-
-	// GPIO17 Output pin for Fan Control
-	GpioDataRegs.GPACLEAR.bit.GPIO17 = 1;		// output 0 by default	 
-	GpioCtrlRegs.GPADIR.bit.GPIO17 = 1;			// Configures the GPIO pin as an output
 
 	// GPIO20 Output pin for Dry Contact
 	GpioDataRegs.GPASET.bit.GPIO20 = 1;		// output 1 by default
 	GpioCtrlRegs.GPADIR.bit.GPIO20 = 1;			// Configures the GPIO pin as an output
 
-	// GPIO21 Output pin for SCI-B Enable/Disable
+	// GPIO21 Output pin for Input Relay
 	GpioDataRegs.GPACLEAR.bit.GPIO21 = 1;		// output 0 by default
 	GpioCtrlRegs.GPADIR.bit.GPIO21 = 1;			// Configures the GPIO pin as an output												// 3=CANRXB
 
-	// GPIO24 Output pin for Inverter Operation Status
-	//GpioDataRegs.GPASET.bit.GPIO24 = 1;			// output 1 by default
-	//GpioCtrlRegs.GPADIR.bit.GPIO24 = 1;			// Configures the GPIO pin as an output
-
-	GpioDataRegs.GPASET.bit.GPIO25 = 1;			// output 1 by default
+	// GPIO25 Output pin for Cs_Cntl1
+	GpioDataRegs.GPASET.bit.GPIO25 = 1;			// output 0 by default
     GpioCtrlRegs.GPADIR.bit.GPIO25 = 1;			// Configures the GPIO pin as an output
 
-	// GPIO27 Output pin for Synchronization Signal
+    // GPIO27 Output pin for COM1OUT
 	GpioDataRegs.GPASET.bit.GPIO27 = 1;			// output 1 by default
 	GpioCtrlRegs.GPADIR.bit.GPIO27 = 1;			// Configures the GPIO pin as an output
 
@@ -348,14 +343,15 @@ void InitGpio(void)
 	// GPIO43 Input for whether the system is single module. Set means more than one module, clear mean single module.
 	GpioCtrlRegs.GPBDIR.bit.GPIO43 = 0;			// Configures the GPIO pin as an input
 
-	// GPIO48 Output pin for Bypass Relay/SCR Control
-	GpioDataRegs.GPBSET.bit.GPIO48 = 1;		// output 1 by default
+	// GPIO48 Output pin for COM4OUT(50Hz) and Cs_Cntl3(25Hz)
+	GpioDataRegs.GPBCLEAR.bit.GPIO48 = 1;		// output 0 by default
 	GpioCtrlRegs.GPBDIR.bit.GPIO48 = 1;			// Configures the GPIO pin as an output
 
-	// GPIO50/51 Output pin for Current Sharing Relay Control
+	//GPIO50 Output pin for SCIA-Enable/Disable
 	GpioDataRegs.GPBCLEAR.bit.GPIO50 = 1;		// output 0 by default
 	GpioCtrlRegs.GPBDIR.bit.GPIO50 = 1;			// Configures the GPIO pin as an output
 
+	// GPIO51 Output pin for COM2OUT
 	GpioDataRegs.GPBSET.bit.GPIO51 = 1;		// output 1 by default
 	GpioCtrlRegs.GPBDIR.bit.GPIO51 = 1;			// Configures the GPIO pin as an output
 
@@ -371,7 +367,10 @@ void InitGpio(void)
  	(1) 6 samples;
  	(2) 00-Syn with SysClock, 01- 3 samples, 10- 6 samples, 11- Asyn  */
 
-	// GPIO26 Input pin for Capture Inverter Operation Status
+	// GPIO17 input pin for COM4IPF
+	GpioCtrlRegs.GPAQSEL2.bit.GPIO17 = 0x2;
+
+	// GPIO26 Input pin for COM2IPF
 	GpioCtrlRegs.GPAQSEL2.bit.GPIO26 = 0x2;
 
 	// GPIO44 Input pin for Input AC Over Current Protection
@@ -380,11 +379,17 @@ void InitGpio(void)
 	// GPIO45 Input pin for DC Bus Over Voltage Protection
 	GpioCtrlRegs.GPBQSEL1.bit.GPIO45 = 0x2;
 
-	// GPIO46 Input pin for 220V Output AC Over Current Protection
+	// GPIO46 Input pin for 110V Output AC Over Current Protection
 	GpioCtrlRegs.GPBQSEL1.bit.GPIO46 = 0x2;
 
-	// GPIO47 Input pin for 220V Output AC Over Voltage Protection
+	// GPIO47 Input pin for 110V Output AC Over Voltage Protection
 	GpioCtrlRegs.GPBQSEL1.bit.GPIO47 = 0x2;
+
+	// GPIO80 Input pin for 220V Output AC Over Current Protection
+	GpioCtrlRegs.GPCDIR.bit.GPIO80 = 0;
+
+	// GPIO81 Input pin for 220V Output AC Over Voltage Protection
+	GpioCtrlRegs.GPCDIR.bit.GPIO81 = 0;
 
 	// GPIO49 Input pin for Output Voltages Capture
 	GpioCtrlRegs.GPBQSEL2.bit.GPIO49 = 0x2;
@@ -410,10 +415,6 @@ void InitGpio(void)
 	XIntruptRegs.XINT6CR.all = 0x0000;			// XINT6 disabled
 	XIntruptRegs.XINT7CR.all = 0x0000;			// XINT7 disabled
 	XIntruptRegs.XNMICR.all = 0x0000;			// XNMI disabled
-
-	GpioCtrlRegs.GPBMUX2.bit.GPIO49 = 1;      //2017.5.25 GX
-	GpioCtrlRegs.GPBPUD.bit.GPIO49 = 0;      //2017.5.25 GX
-	GpioCtrlRegs.GPBQSEL2.bit.GPIO49 = 0;      //2017.5.25 GX
 
 	/* Low-power mode selection */
 	// Any one of GPIO 0-31 can be used as LPM wakeup pin.
