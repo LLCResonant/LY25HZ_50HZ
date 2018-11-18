@@ -130,36 +130,35 @@ void SyncLogic_Control(void)
 
 	Parallel_Reg.u16Cnt_COM1_Receive ++;
 
-	if((Parallel_Reg.u16Cnt_COM1_Receive >= 5))	// 5 * 40ms = 200ms
+	if((Parallel_Reg.u16Cnt_COM1_Receive >= 5))	// 5 * 20ms = 100ms
 	{
 		//if there are already output voltages or the module is slave one, the sync line may be broken
-		if(0 == g_ParaLogic_State.bit.SelfPhaseOut_EN)
-		{
-			// The module is the first one in bus, so it can send the native phase signal out
-			g_ParaLogic_State.bit.SelfPhaseOut_EN = 1;
-			SYNC_COM2_OFF;
-			Parallel_Reg.u16Cnt_COM1_Receive = 0;
-		}
-		else
-		{
-			if ( (Calc_Result.f32VOutH_rms >= 200 || Calc_Result.f32VOutL_rms >= 100 ))
+			if (Calc_Result.f32VOutH_rms >= 200 || Calc_Result.f32VOutL_rms >= 100 )
 			{
-				if(g_Sys_Current_State != FaultState  && g_Sys_Current_State != PermanentState)
+				if(g_Sys_Current_State != PermanentState && g_Sys_Current_State != FaultState)
 				{
-					g_StateCheck.bit.Sync_Fault1 = 1;
-					g_SysFaultMessage.bit.unrecoverHW_SynLine_cut = 1;
-					Parallel_Reg.u16Cnt_COM1_Receive = 0;
+				    g_StateCheck.bit.Sync_Fault1 = 1;
+				    g_SysFaultMessage.bit.unrecoverHW_SynLine_cut = 1;
+				    Parallel_Reg.u16Cnt_COM1_Receive = 0;
 				}
 			}
 			else
 			{
-				g_ParaLogic_State.bit. SyncProblem_Flag= 1;
-				g_ParaLogic_State.bit.SelfPhaseOut_EN = 0;
-				Parallel_Reg.u16Cnt_COM1_Receive = 0;
-				OutPLLConReg.f32Theta = 0;
-				SYNC_COM1_ON;
+				if(0 == g_ParaLogic_State.bit.SelfPhaseOut_EN && g_Sys_Current_State != PermanentState && g_Sys_Current_State != FaultState)
+				{
+					g_ParaLogic_State.bit.SelfPhaseOut_EN = 1;
+					SYNC_COM2_OFF;
+					Parallel_Reg.u16Cnt_COM1_Receive = 0;
+				}
+				else
+				{
+					g_ParaLogic_State.bit. SyncProblem_Flag= 1;
+					g_ParaLogic_State.bit.SelfPhaseOut_EN = 0;
+					Parallel_Reg.u16Cnt_COM1_Receive = 0;
+					OutPLLConReg.f32Theta = 0;
+					SYNC_COM1_ON;
+				}
 			}
-		}
 	}
 } // end of SyncLogic_Control
 
@@ -193,8 +192,7 @@ void InvParallel_Control(void)
 	 * when they discover the low voltage on COM2 bus.
 	 * This logic aims to prevent the slow protection module to bear all the load.
 	 */
-	if (1 == g_StateCheck.bit.Inv_SoftStart && Calc_Result.f32VGrid_rms < SafetyReg.f32VGrid_LowLimit && \
-			1==SYNC_COM2_LEVEL)
+	if (1 == g_StateCheck.bit.Inv_SoftStart && Calc_Result.f32VGrid_rms < SafetyReg.f32VGrid_LowLimit && 1==SYNC_COM2_LEVEL)
 	{
 		g_SysFaultMessage.bit.VGridUnderRating = 1;
 	}
@@ -207,8 +205,32 @@ void InvParallel_Control(void)
  *
  * CALLED BY:	void InvParallel_Control(void)
  *============================================================================*/
-void InvRelay_Control(void)
-{
+ void InvRelay_Control(void)
+ {
+	#ifdef LY50HZ
+	 if(Parallel_Reg.u16Cnt_SCR_ON < 400)
+	 {
+		 Parallel_Reg.u16Cnt_SCR_ON ++;
+		 if(Parallel_Reg.u16Cnt_SCR_ON > 100)
+		 {
+			 INVL_SCR_ON;
+			 INVL_RELY_ON;
+			 InvL_CurrShare_ON;
+		 }
+		 else
+		 {
+			 INVH_SCR_OFF;
+			 INVH_RELY_OFF;
+			 InvH_CurrShare_OFF;
+		 }
+	 }
+	 else
+	 {
+		 INVH_SCR_OFF;
+	 }
+	#endif
+
+	#ifdef LY25HZ
 	if(Parallel_Reg.u16Cnt_SCR_ON < 2400)
 	{
 		Parallel_Reg.u16Cnt_SCR_ON ++;
@@ -234,7 +256,8 @@ void InvRelay_Control(void)
 			INVH_RELY_OFF;
 		}
 	}
-} // end of InvRelay_Control
+	#endif
+} // end of InvRelay_Control*/
 
 //--- end of file -----------------------------------------------------
 

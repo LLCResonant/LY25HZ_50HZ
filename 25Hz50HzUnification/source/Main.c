@@ -96,7 +96,8 @@ void SysParamDefault(void)
 	InvPWMOutputsDisable();
 
 	HWI_disable();
-	i16Cnt_SysParaTemp = 0;
+	i16Cnt_SysParaTempGrid = 0;
+	i16Cnt_SysParaTempInv = 0;
 
 	ADGain.f32IGrid = IGridMeasureGain;
 	ADGain.f32VGrid = VGridMeasureGain;
@@ -253,6 +254,7 @@ void SysParamDefault(void)
 	Calc_Result.f32VInvH_ave = 0;
 	Calc_Result.f32VOutH_ave = 0;
 
+
 	Calc_Result.f32IInvL_ave = 0;
 	Calc_Result.f32VInvL_ave = 0;
 	Calc_Result.f32VOutL_ave = 0;
@@ -260,6 +262,7 @@ void SysParamDefault(void)
 	Calc_Result.f32IGrid_rms = 0;
 	Calc_Result.f32VGrid_rms = 0;
 	Calc_Result.f32VGrid_rms_instant = 0;
+
 
 	Calc_Result.f32IInvH_rms = 0;
 	Calc_Result.f32IOutH_rms = 0;
@@ -731,10 +734,18 @@ void TimeBase20msPRD(void)
 	if (s_u8temp == 100)
 	{
 		if (ModuleAdd == 0x00)
-			g_SysFaultMessage.bit.ECAN_Fault = 1;
+	    {
+		    g_SysFaultMessage.bit.ECAN_Fault = 1;
+	    }
+	    else
+	    {
+		    g_SysFaultMessage.bit.ECAN_Fault = 0;
+	    }
 	}
 	else
+	{
 		s_u8temp++;
+	}
 } // end of TimerBase20msPRD()
 
 void TimeBase100msPRD(void)

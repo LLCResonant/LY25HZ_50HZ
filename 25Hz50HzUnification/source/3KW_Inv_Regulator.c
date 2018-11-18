@@ -81,8 +81,8 @@ void ADC_INT_INV_Control(void)
 	#endif
 
 	#ifdef INV_OPEN_LOOP
-	InvH_VoltControl();
-	InvL_VoltControl();
+  		InvH_VoltControl();
+	    InvL_VoltControl();
 	#endif
 
   	ADAccInvCalc();
@@ -99,8 +99,7 @@ void ADC_INT_INV_Control(void)
 void InvH_VoltControl(void)
 {
 	// start of InvH_VoltControl
-
-	InvHVoltConReg.f32VoltInst_Ref = InvHVoltConReg.f32VoltRms_Ref * 1.414f * OutPLLConReg.f32Sin_Theta * InvHVoltConReg.f32VoltGain;
+	InvHVoltConReg.f32VoltInst_Ref = InvHVoltConReg.f32VoltRms_Ref * 1.414f * OutPLLConReg.f32Sin_Theta * InvHVoltConReg.f32VoltGain;//220
 	InvHVoltConReg.f32VoltInst_Fdb = GetRealValue.f32VInvH;
 
 	InvHVoltConReg.f32VoltInst_ErrOld = InvHVoltConReg.f32VoltInst_ErrNew;
@@ -147,10 +146,10 @@ void InvH_VoltControl(void)
   	 InvHVoltConReg.f32InvDuty = 0.76f * PWM_HALF_PERIOD * OutPLLConReg.f32Sin_Theta;
 	 #endif
 
-  	 EPwm5Regs.CMPA.half.CMPA = (Uint16)(-InvHVoltConReg.f32InvDuty);
-  	 EPwm5Regs.CMPB = (Uint16)(-InvHVoltConReg.f32InvDuty);
-  	 EPwm6Regs.CMPA.half.CMPA = (Uint16)(InvHVoltConReg.f32InvDuty);
-  	 EPwm6Regs.CMPB = (Uint16)(InvHVoltConReg.f32InvDuty);
+  	 EPwm3Regs.CMPA.half.CMPA = (Uint16)(-InvHVoltConReg.f32InvDuty);
+  	 EPwm3Regs.CMPB = (Uint16)(-InvHVoltConReg.f32InvDuty);
+  	 EPwm4Regs.CMPA.half.CMPA = (Uint16)(InvHVoltConReg.f32InvDuty);
+  	 EPwm4Regs.CMPB = (Uint16)(InvHVoltConReg.f32InvDuty);
 
  } // end of InvH_VoltControl
 
@@ -229,10 +228,10 @@ void InvL_VoltControl(void)
 	InvLVoltConReg.f32InvDuty = 0.38f * PWM_HALF_PERIOD * OutPLLConReg.f32Cos_Theta;
 	#endif
 
-    EPwm3Regs.CMPA.half.CMPA = (Uint16)(-InvLVoltConReg.f32InvDuty);
-    EPwm3Regs.CMPB = (Uint16)(-InvLVoltConReg.f32InvDuty);
-    EPwm4Regs.CMPA.half.CMPA = (Uint16)(InvLVoltConReg.f32InvDuty);
-    EPwm4Regs.CMPB = (Uint16)(InvLVoltConReg.f32InvDuty);
+    EPwm5Regs.CMPA.half.CMPA = (Uint16)(-InvLVoltConReg.f32InvDuty);
+    EPwm5Regs.CMPB = (Uint16)(-InvLVoltConReg.f32InvDuty);
+    EPwm6Regs.CMPA.half.CMPA = (Uint16)(InvLVoltConReg.f32InvDuty);
+    EPwm6Regs.CMPB = (Uint16)(InvLVoltConReg.f32InvDuty);
 
 } // end of InvL_VoltControl
 
@@ -418,7 +417,7 @@ void VOutHPLLcontoller(void)
   *============================================================================*/
 void InvVoltSlowup(void)
 {
-	if((NormalState==g_Sys_Current_State) && (1 == g_ParaLogic_State.bit.InvSoftStart_EN))
+	if(NormalState==g_Sys_Current_State && (1 == g_ParaLogic_State.bit.InvSoftStart_EN))
 	{
 		if (g_StateCheck.bit.InvDrvEnable == 0)
 		{
@@ -477,6 +476,7 @@ void InvVoltSlowup(void)
 				 InvLVoltConReg.f32VoltRms_Ref = SafetyReg.f32InvL_VoltRms_Ref;
 		 }
 	 }
+
  }
 
 /*=============================================================================*
@@ -527,12 +527,16 @@ void InvRestartCheck(void)
 {
 	static Uint16 s_u16temp1 = 0;
 
+
 	if((g_StateCheck.bit.Inv_SoftStart == 1) && (NormalState==g_Sys_Current_State))
 	{
 		if(SafetyReg.u16Short_Restart_times >=1)
 		{
 			if(s_u16temp1 < SafetyReg.u16Short_Detect_times)	//50Hz250  25Hz500
+			{
 				s_u16temp1++;
+			}
+
 			else
 			{
 				s_u16temp1=0;

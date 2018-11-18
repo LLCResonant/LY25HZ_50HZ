@@ -186,7 +186,8 @@ struct	AD_ACC_Reg1
 extern	struct	AD_Sample_Reg1	GeneralADbuffer,  GetRealValue,  ADGain,  ADChannelOffset,  ADCalibration;
 extern	struct	AD_ACC_Reg1		AD_Acc, 	AD_Sum, 	Calc_Result;
 extern	float32	f32SumCounterReci, 	f32SumCounterInv;
-extern	int16 	i16Cnt_SysParaTemp;
+extern	int16 	i16Cnt_SysParaTempGrid;
+extern	int16 	i16Cnt_SysParaTempInv;
 /*=================end of global variables declaration====================*/
 
 /*=================Global function declaration====================*/

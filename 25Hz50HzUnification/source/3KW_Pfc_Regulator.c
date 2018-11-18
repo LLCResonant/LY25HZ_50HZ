@@ -251,10 +251,10 @@ void VGridFeedForwardCntl(void)
 	CurrConReg.f32PfcDuty_ff = GetRealValue.f32VGrid * Calc_Result.f32Coff_Dforward;
 
 	// when Grid voltage is positive
-	if (BusCon_Reg.f32IGridAmp_Ref <= 2)
+	if (BusCon_Reg.f32IGridAmp_Ref <= 4)
 	{
 		//'CurrConReg.f32PfcDuty_ff_factor' is the square wave amplitude
-		CurrConReg.f32PfcDuty_ff_factor = 1 - 0.5 * BusCon_Reg.f32IGridAmp_Ref ;
+		CurrConReg.f32PfcDuty_ff_factor = 1 - 0.25 * BusCon_Reg.f32IGridAmp_Ref ;
 		if (GridPLLConReg.f32Sin_Theta >= 0)
 		{
 			/*

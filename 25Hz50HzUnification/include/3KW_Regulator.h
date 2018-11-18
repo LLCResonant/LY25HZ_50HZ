@@ -89,7 +89,7 @@
 
 #define PLL_Inv_Kp	1e-5f
 #define PLL_Inv_Ki	5e-9f
-#define DELTA_ANGLE_INV 2*Value_Pi * 24/(PWM_FREQ/2)
+#define DELTA_ANGLE_INV 2 * Value_Pi * 25 / ( PWM_FREQ / 2 )
 #endif
 
 #ifdef 	LY50HZ
@@ -107,10 +107,10 @@
 #define IGrid_RefAmp_Limit2 38
 #define IGrid_RefAmp_Limit3 34
 //Inv
-#define InvH_Volt_Kp1				0.01f
-#define InvH_Volt_Kr1				800 * 0.00005f
+#define InvH_Volt_Kp1				0.2f
+#define InvH_Volt_Kr1			    800 * 0.00005f
 
-#define InvH_Volt_Kp2				0.01f
+#define InvH_Volt_Kp2				0.2f
 #define InvH_Volt_Kr2				800 * 0.00005f
 
 #define InvL_Volt_Kp1				1.5f
@@ -119,8 +119,8 @@
 #define InvL_Volt_Kp2				0
 #define InvL_Volt_Kr2				0
 
-#define Inv_Volt_Coff_a2			0.0002467401f  	// (w0 * Ts) * (w0 * Ts), where w0 is 2 * pi * 25Hz; Ts is the sample period 1 / 20000Hz
-#define Inv_Volt_Coff_a3			0.2499846f   		// 1 / (4 + w0 * w0 * Ts * Ts)
+#define Inv_Volt_Coff_a2			0.00024674011f  	// (w0 * Ts) * (w0 * Ts), where w0 is 2 * pi * 25Hz; Ts is the sample period 1 / 20000Hz
+#define Inv_Volt_Coff_a3			0.24998457969f   		// 1 / (4 + w0 * w0 * Ts * Ts)
 
 #define LPF_B0_INV	0.00034605f
 #define LPF_B1_INV	0.00069210f
@@ -130,7 +130,7 @@
 
 #define PLL_Inv_Kp	5e-5f
 #define PLL_Inv_Ki	2.5e-8f
-#define DELTA_ANGLE_INV 2*Value_Pi * 50/(PWM_FREQ/2)
+#define DELTA_ANGLE_INV 2 * Value_Pi * 50 / ( PWM_FREQ / 2 )
 #endif
 
 /* General Purpose PID Controller, Data type */

@@ -60,8 +60,7 @@ void GridVoltCheck(void)
     static  Uint16  s_u16Cnt_GridVolt_Fault_Back = 0;
     static  Uint8  s_u8Cnt_Griddip_Back = 0;
 
-    if(g_SysFaultMessage.bit.VGridOverRating == 0 && g_SysFaultMessage.bit.VGridUnderRating == 0 \
-    		&& g_Sys_Current_State == NormalState)
+    if(g_SysFaultMessage.bit.VGridOverRating == 0 && g_SysFaultMessage.bit.VGridUnderRating == 0 && g_Sys_Current_State == NormalState)
     {
 		if(Calc_Result.f32VGrid_rms > SafetyReg.f32VGrid_HiLimit)  //289V
 		{
@@ -74,8 +73,7 @@ void GridVoltCheck(void)
             }
         }
 		//   for  short voltage dip
-		else if(Calc_Result.f32VGrid_rms < SafetyReg.f32VGridDipLimit && \
-				((Calc_Result.f32VBus) < SafetyReg.f32VGridDip_BusVoltLimit))
+		else if(Calc_Result.f32VGrid_rms < SafetyReg.f32VGridDipLimit && Calc_Result.f32VBus < SafetyReg.f32VGridDip_BusVoltLimit)//100V 660V
 		{
 			s_u16Cnt_GridVolt_Low_Fault1++;
             if(s_u16Cnt_GridVolt_Low_Fault1 >= 1)
@@ -88,7 +86,7 @@ void GridVoltCheck(void)
             }
         }
 		//  for   under voltage  protection
-		else if(Calc_Result.f32VGrid_rms < SafetyReg.f32VGrid_LowLimit )
+		else if( Calc_Result.f32VGrid_rms < SafetyReg.f32VGrid_LowLimit )// 149V
 		{
 			s_u16Cnt_GridVolt_Low_Fault2++;
 			if(s_u16Cnt_GridVolt_Low_Fault2 >= SafetyReg.u16VGrid_LowProtectionTime)//10*20ms
@@ -204,18 +202,19 @@ void InvHFreqCheck(void)
     static Uint16 s_u16Cnt_InvHFreq_High_Fault = 0;
     static Uint16 s_u16Cnt_InvHFreq_Low_Fault = 0;
 
-    if ((0 == g_SysFaultMessage.bit.FreInvOverRating) && (0 == g_SysFaultMessage.bit.FreInvUnderRating) )
+    if ((0 == g_SysFaultMessage.bit.FreInvOverRating) && (0 == g_SysFaultMessage.bit.FreInvUnderRating)&&\
+    (1 == g_StateCheck.bit.Inv_SoftStart) &&(g_Sys_Current_State == NormalState))
     {
-		if(Calc_Result.f32VOutHFreq > SafetyReg.f32FreVOut_HiLimit)
-        {
-            s_u16Cnt_InvHFreq_High_Fault ++;
-            if(s_u16Cnt_InvHFreq_High_Fault  >= 10) //10*40ms
-            {
-                g_SysFaultMessage.bit.FreInvOverRating = 1;
-                g_StateCheck.bit.FreVOutH_Fault = 1;
-                s_u16Cnt_InvHFreq_High_Fault = 0;
-            }
-        }
+    	if(Calc_Result.f32VOutHFreq > SafetyReg.f32FreVOut_HiLimit)
+    	{
+    		s_u16Cnt_InvHFreq_High_Fault ++;
+    		if(s_u16Cnt_InvHFreq_High_Fault  >= 10) //10*40ms
+    		{
+    			g_SysFaultMessage.bit.FreInvOverRating = 1;
+    			g_StateCheck.bit.FreVOutH_Fault = 1;
+    			s_u16Cnt_InvHFreq_High_Fault = 0;
+    		}
+    	}
         else if(Calc_Result.f32VOutHFreq < SafetyReg.f32FreVOut_LowLimit)
         {
         	s_u16Cnt_InvHFreq_Low_Fault++;
@@ -276,7 +275,7 @@ void InvLFreqCheck(void)
 * PURPOSE :  Check the ADC module of the DSP
 *******************************************************************************************/
 // AD channel check
-void ADOffsetCheck(void)
+void GridADOffsetCheck(void)
 {
 	// Grid Current channel
 	if ((fabs(Calc_Result.f32IGrid_ave) > AD_Channel_Offset_IGridLimit))
@@ -285,23 +284,8 @@ void ADOffsetCheck(void)
 		g_SysFaultMessage.bit.HWADFault = 1;
 	}
 	else
+	{
 		ADChannelOffset.f32IGrid = Calc_Result.f32IGrid_ave;
-
-	// Inv Current channel
-	if (fabs(Calc_Result.f32IInvH_ave) > AD_Channel_Offset_IInvLimit)
-	{
-		g_StateCheck.bit.HWADFault_IInvH_ave = 1;
-		g_SysFaultMessage.bit.HWADFault = 1;
-	}
-	else if (fabs(Calc_Result.f32IInvL_ave) > AD_Channel_Offset_IInvLimit)
-	{
-		g_StateCheck.bit.HWADFault_IInvL_ave = 1;
-		g_SysFaultMessage.bit.HWADFault = 1;
-	}
-	else
-	{
-		ADChannelOffset.f32IInvH = Calc_Result.f32IInvH_ave;
-		ADChannelOffset.f32IInvL = Calc_Result.f32IInvL_ave;
 	}
 
 	// Grid Voltage channel
@@ -311,39 +295,68 @@ void ADOffsetCheck(void)
 		g_SysFaultMessage.bit.HWADFault = 1;
 	}
 	else
+	{
 		ADChannelOffset.f32VGrid = Calc_Result.f32VGrid_ave;
+	}
+}
 
-	// INV voltage channel
+void InvADOffsetCheck(void)
+{
+	// Inv Current channel
+	if (fabs(Calc_Result.f32IInvH_ave) > AD_Channel_Offset_IInvLimit)
+	{
+		g_StateCheck.bit.HWADFault_IInvH_ave = 1;
+		g_SysFaultMessage.bit.HWADFault = 1;
+	}
+	else
+	{
+		ADChannelOffset.f32IInvH = Calc_Result.f32IInvH_ave; //cj.2018.11.11
+	}
+	if (fabs(Calc_Result.f32IInvL_ave) > AD_Channel_Offset_IInvLimit)
+	{
+		g_StateCheck.bit.HWADFault_IInvL_ave = 1;
+		g_SysFaultMessage.bit.HWADFault = 1;
+	}
+	else
+	{
+		ADChannelOffset.f32IInvL= Calc_Result.f32IInvL_ave;
+	}
+	//INV voltage channel
 	if (fabs(Calc_Result.f32VInvH_ave) > AD_Channel_Offset_VInvLimit)
 	{
 		g_StateCheck.bit.HWADFault_VInvH_ave = 1;
 		g_SysFaultMessage.bit.HWADFault = 1;
 	}
-	else if (fabs(Calc_Result.f32VInvL_ave) > AD_Channel_Offset_VInvLimit)
+	else
+	{
+		ADChannelOffset.f32VInvH = Calc_Result.f32VInvH_ave;
+	}
+	if (fabs(Calc_Result.f32VInvL_ave) > AD_Channel_Offset_VInvLimit)
 	{
 		g_StateCheck.bit.HWADFault_VInvL_ave = 1;
 		g_SysFaultMessage.bit.HWADFault = 1;
 	}
 	else
 	{
-		ADChannelOffset.f32VInvH = Calc_Result.f32VInvH_ave;
 		ADChannelOffset.f32VInvL = Calc_Result.f32VInvL_ave;
 	}
-
-	// Out voltage channel
+	//Out voltage channel
 	if (fabs(Calc_Result.f32VOutH_ave) > AD_Channel_Offset_VInvLimit)
 	{
 		g_StateCheck.bit.HWADFault_VOutH_ave = 1;
 		g_SysFaultMessage.bit.HWADFault = 1;
 	}
-	else if (fabs(Calc_Result.f32VOutL_ave) > AD_Channel_Offset_VInvLimit)
+	else
+	{
+		ADChannelOffset.f32VOutH = Calc_Result.f32VOutH_ave;
+	}
+	if (fabs(Calc_Result.f32VOutL_ave) > AD_Channel_Offset_VInvLimit)
 	{
 		g_StateCheck.bit.HWADFault_VOutL_ave = 1;
 		g_SysFaultMessage.bit.HWADFault = 1;
 	}
 	else
 	{
-		ADChannelOffset.f32VOutH = Calc_Result.f32VOutH_ave;
 		ADChannelOffset.f32VOutL = Calc_Result.f32VOutL_ave;
 	}
 }
@@ -414,9 +427,10 @@ void InvHCurrentCheck(void)
     	 else if(Calc_Result.f32IOutH_rms >=  SafetyReg.f32IInvH_Hi3Limit )//150% over load  5.5*1.5A
     	 {
     		 s_u16Cnt_InvHCurrent_High3_Fault++;
+
     		 if(s_u16Cnt_InvHCurrent_High3_Fault >= SafetyReg.u16IInv_WarningTime)//10*40ms
     			 g_SysWarningMessage.bit.InvH_OverLoad = 1;
-    		 if(s_u16Cnt_InvHCurrent_High3_Fault >= SafetyReg.u16IInvH_Hi3ProtectionTime)// 1s
+    		 if(s_u16Cnt_InvHCurrent_High3_Fault >= SafetyReg.u16IInvH_Hi3ProtectionTime)//140ms
     		 {
     			 g_SysFaultMessage.bit.InvH_OverLoad = 1;
     			 s_u16Cnt_InvHCurrent_High3_Fault = 0;
@@ -445,6 +459,7 @@ void InvHCurrentCheck(void)
 				g_SysFaultMessage.bit.InvH_OverLoad = 1;
 				s_u16Cnt_InvHCurrent_High1_Fault = 0;
 				s_u16Cnt_InvHCurrent_High_Fault_Back = 0;
+
 			}
 		}
 		else
@@ -814,14 +829,18 @@ void InvSyncCheck(void)
 		if (s_u8temp1 >= 20)  //20 * 40ms = 800ms
 		{
 			if(fabs(OutPLLConReg.f32Theta - VOutHPLLConReg.f32Theta) >=  s_f32phase_diff && \
-					g_ParaLogic_State.bit.SyncPhase_Flag == 1)
-				s_u8temp2 ++;
-			else
-				s_u8temp2 = 0;
-			if(s_u8temp2 >= 3)
+					g_ParaLogic_State.bit.SyncPhase_Flag == 1 && g_Sys_Current_State != PermanentState && g_Sys_Current_State != FaultState)
 			{
-				g_SysFaultMessage.bit.unrecoverHW_SynLine_cut = 1;
-				g_StateCheck.bit.Sync_Fault2 = 1;
+				s_u8temp2 ++;
+				if(s_u8temp2 >= 10)
+				{
+					g_SysFaultMessage.bit.unrecoverHW_SynLine_cut = 1;//failed PLL
+					g_StateCheck.bit.Sync_Fault2 = 1;
+					s_u8temp2 = 0;
+				}
+			}
+			else
+			{
 				s_u8temp2 = 0;
 			}
 		}
@@ -840,10 +859,12 @@ void InvSyncCheck(void)
 **********************************************************************/
 void InputPowerLimit(void)
 {
-	if (g_Sys_Current_State == NormalState)
+	if(g_Sys_Current_State == NormalState)
 	{
-		if(Calc_Result.f32VGrid_rms < VGridLowLimit2 )
+		if(Calc_Result.f32VGrid_rms < VGridLowLimit2 && Calc_Result.f32VGrid_rms > 149)  //165V
 			PowerDerate_Reg.f32ACPowerDerating_VRate = ACPowerDerating_VoltageRate - (VGridLowLimit2 - Calc_Result.f32VGrid_rms);
+		else if(Calc_Result.f32VGrid_rms <= 149)
+			PowerDerate_Reg.f32ACPowerDerating_VRate = ACPowerDerating_VoltageRate - (VGridLowLimit2 - 149);//10.9.Cj
 		else
 			PowerDerate_Reg.f32ACPowerDerating_VRate = ACPowerDerating_VoltageRate;
 	}

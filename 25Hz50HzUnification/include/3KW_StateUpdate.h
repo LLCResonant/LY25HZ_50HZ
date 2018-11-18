@@ -14,7 +14,7 @@
 #ifndef STATE_UPDATE
 #define STATE_UPDATE
 
-#define FAN_CHECK
+//#define FAN_CHECK
 //#define LY25HZ	0x05
 #define LY50HZ	0x07
 #define Module_Type     LY50HZ
@@ -46,6 +46,8 @@
  * INV CLOSE TEST
  * Warning: SOLDER THE BUS FUSE
 */
+#define Normal_condition
+//#define Some_speacial_condition
 #define	INV_CLOSE_LOOP
 #define	PFC_CLOSE_LOOP
 #define	PFC_PWM_ENABLE

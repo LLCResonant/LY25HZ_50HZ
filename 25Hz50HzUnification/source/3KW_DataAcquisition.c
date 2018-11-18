@@ -27,7 +27,8 @@ struct	AD_Sample_Reg1		GeneralADbuffer, GetRealValue, ADGain,ADChannelOffset, AD
 struct	AD_ACC_Reg1			AD_Acc, AD_Sum, Calc_Result;
 float32						f32SumCounterReci = 0;
 float32						f32SumCounterInv = 0;
-int16 						i16Cnt_SysParaTemp = 0;
+int16 						i16Cnt_SysParaTempGrid = 0;
+int16 						i16Cnt_SysParaTempInv = 0;
 extern	float32			f32TempTab[];
 
 /*=============================================================================*
@@ -88,8 +89,16 @@ void Get_ADC_Result1(void)
 	GeneralADbuffer.f32VBusN = (float32)AdcMirror.ADCRESULT4;	 // A2 result
 	GetRealValue.f32VBusN = GeneralADbuffer.f32VBusN * ADGain.f32VBusN * ADCalibration.f32VBusN - ADChannelOffset.f32VBusN;
 
+#ifdef LY25HZ
 	GeneralADbuffer.f32TempPFC = (float32)AdcMirror.ADCRESULT11;		// B5 result
 	GetRealValue.f32TempPFC = GeneralADbuffer.f32TempPFC * ADCalibration.f32TempPFC *ADGain.f32TempPFC;
+#endif
+
+#ifdef LY50HZ
+	GeneralADbuffer.f32TempPFC = (float32)AdcMirror.ADCRESULT9;		// B5 result
+	GetRealValue.f32TempPFC = GeneralADbuffer.f32TempPFC * ADCalibration.f32TempPFC *ADGain.f32TempPFC;
+#endif
+
 } // end of  Get_ADC_Result1
 
 /*=============================================================================*
@@ -102,6 +111,7 @@ void Get_ADC_Result1(void)
 void Get_ADC_Result2(void)//ZJX changed
 {
 	// start of function
+#ifdef LY25HZ
 	GeneralADbuffer.f32IInvH = (float32)AdcMirror.ADCRESULT6 - ADDefaultACOffset;	// A3 result
 	GetRealValue.f32IInvH = GeneralADbuffer.f32IInvH * ADGain.f32IInvH * ADCalibration.f32IInvH - ADChannelOffset.f32IInvH;
 	GeneralADbuffer.f32VInvH = (float32)AdcMirror.ADCRESULT10 - ADDefaultACOffset;	 // A5 result
@@ -118,8 +128,32 @@ void Get_ADC_Result2(void)//ZJX changed
 
 	GeneralADbuffer.f32TempInvH = (float32)AdcMirror.ADCRESULT9;	// B4 result
 	GetRealValue.f32TempInvH = GeneralADbuffer.f32TempInvH * ADCalibration.f32TempInvH * ADGain.f32TempInvH;
-	GeneralADbuffer.f32TempInvL = (float32)AdcMirror.ADCRESULT13;	// B6 result
+	GeneralADbuffer.f32TempInvL = (float32)AdcMirror.ADCRESULT9;	// B6 result
 	GetRealValue.f32TempInvL = GeneralADbuffer.f32TempInvL * ADCalibration.f32TempInvL * ADGain.f32TempInvL;
+
+#endif
+
+#ifdef LY50HZ
+	GeneralADbuffer.f32IInvH = (float32)AdcMirror.ADCRESULT6 - ADDefaultACOffset;	// A3 result
+	GetRealValue.f32IInvH = GeneralADbuffer.f32IInvH * ADGain.f32IInvH * ADCalibration.f32IInvH - ADChannelOffset.f32IInvH;
+	GeneralADbuffer.f32VInvH = (float32)AdcMirror.ADCRESULT10 - ADDefaultACOffset;	 // A5 result
+	GetRealValue.f32VInvH = GeneralADbuffer.f32VInvH * ADGain.f32VInvH * ADCalibration.f32VInvH * Parallel_Reg.f32VInvH_Comp_Coeff - ADChannelOffset.f32VInvH;
+	GeneralADbuffer.f32VOutH = (float32)AdcMirror.ADCRESULT8 - ADDefaultACOffset;	// A4 result
+	GetRealValue.f32VOutH = -(GeneralADbuffer.f32VOutH * ADGain.f32VOutH * ADCalibration.f32VOutH) - ADChannelOffset.f32VOutH ;
+
+	GeneralADbuffer.f32IInvL = (float32)AdcMirror.ADCRESULT3 - ADDefaultACOffset;	// B1 result
+	GetRealValue.f32IInvL = GeneralADbuffer.f32IInvL * ADGain.f32IInvL * ADCalibration.f32IInvL - ADChannelOffset.f32IInvL;
+	GeneralADbuffer.f32VInvL = (float32)AdcMirror.ADCRESULT7 - ADDefaultACOffset;	// B3 result
+	GetRealValue.f32VInvL = GeneralADbuffer.f32VInvL * ADGain.f32VInvL * ADCalibration.f32VInvL * Parallel_Reg.f32VInvL_Comp_Coeff - ADChannelOffset.f32VInvL;
+	GeneralADbuffer.f32VOutL = (float32)AdcMirror.ADCRESULT5 - ADDefaultACOffset;	// B2 result
+	GetRealValue.f32VOutL = GeneralADbuffer.f32VOutL * ADGain.f32VOutL * ADCalibration.f32VOutL - ADChannelOffset.f32VOutL;
+
+	GeneralADbuffer.f32TempInvH = (float32)AdcMirror.ADCRESULT11;	// B6 result
+	GetRealValue.f32TempInvH = GeneralADbuffer.f32TempInvH * ADCalibration.f32TempInvH * ADGain.f32TempInvH;
+
+#endif
+
+
 } // end of  Get_ADC_Result2
 
 /*=============================================================================*
@@ -252,7 +286,6 @@ void ADAccInvCalc(void)
 			AD_Sum.f32IInvH_ave = AD_Acc.f32IInvH_ave;
 			AD_Sum.f32VInvH_ave = AD_Acc.f32VInvH_ave;
 			AD_Sum.f32VOutH_ave = AD_Acc.f32VOutH_ave;
-
 			AD_Sum.f32IInvL_ave = AD_Acc.f32IInvL_ave;
 			AD_Sum.f32VInvL_ave = AD_Acc.f32VInvL_ave;
 			AD_Sum.f32VOutL_ave = AD_Acc.f32VOutL_ave;
@@ -275,7 +308,7 @@ void ADAccInvCalc(void)
 		AD_Acc.f32VOutHFreq = 0;
 		AD_Acc.f32VOutLFreq = 0;
 
-		if (1 == g_StateCheck.bit.InvAD_initial)
+		if (1 == g_StateCheck.bit.InvAD_initial  )
 		{
 			AD_Acc.f32IInvH_ave = 0;
 			AD_Acc.f32VInvH_ave = 0;
@@ -327,12 +360,12 @@ void TSK_GridPeriod(void)
 				{
 					GridCurrentsAveCalc();
 					GridVoltsAveCalc();
-					i16Cnt_SysParaTemp++;
-					if (i16Cnt_SysParaTemp == 25)  //20ms * 25 = 500ms
+					i16Cnt_SysParaTempGrid++;
+					if (i16Cnt_SysParaTempGrid == 25)  //20ms * 25 = 500ms
 					{		
 						g_StateCheck.bit.GridAD_initial = 0;
-						ADOffsetCheck();
-						i16Cnt_SysParaTemp = 0;
+						GridADOffsetCheck();
+						i16Cnt_SysParaTempGrid = 0;
 					}
 				}
 
@@ -346,12 +379,12 @@ void TSK_GridPeriod(void)
 				GridFrequencyCalc();
 
 				/*Software protection function*/
-				GridVoltCheck();
+			    GridVoltCheck();
 				GridFreqCheck();
 				GridCurrentCheck();
 				BusVoltCheck();
 				BusBalanceCheck();
-				InputPowerLimit();
+			    InputPowerLimit();
 
 				/*Controller related function*/
 				GridCurrentPIConfig();
@@ -388,9 +421,15 @@ void TSK_InvVoltPeriod(void)
 				*/
 				if (1 == g_StateCheck.bit.InvAD_initial)
 				{
-					GridVoltsAveCalc();
 					InvVoltsAveCalc();
 					OutVoltsAveCalc();
+					i16Cnt_SysParaTempInv ++;
+					if (i16Cnt_SysParaTempInv == 5)  //20ms * 25 = 500ms
+					{
+						g_StateCheck.bit.InvAD_initial = 0;
+						InvADOffsetCheck();
+						i16Cnt_SysParaTempInv = 0;
+					}
 				}
 
 				/*RMS Calculating function*/
@@ -401,6 +440,7 @@ void TSK_InvVoltPeriod(void)
 				InvTempCalc();
 				OutFrequencyCalc();
 
+				#ifdef Normal_condition
 				/*Software protection function*/
 				if (Module_Type == 0x05)
 				{
@@ -427,16 +467,20 @@ void TSK_InvVoltPeriod(void)
 
 
 				/*Controller related function*/
-         		if ( g_Sys_Structure_State == Single_noBypass )
-         		{
-         			InvVoltPRConfig();
-         		}
 				SyncLogic_Control();
 				InvVoltSlowup();
 				InvRestartCheck();
+ 	 	 	 	#endif
+
+				#ifdef Some_speacial_condition
+				InvHCurrentProtectionIdentify();
+				InvRestartCheck();
+				InvVoltSlowup();
+				#endif
 			}
 		}
 	}//end of while (1)
+
 
 }//end of TSK_InvVoltPeriod()
 

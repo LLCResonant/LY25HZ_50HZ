@@ -253,10 +253,10 @@ void ProcessFault(void)
 
 		if (temp2 == 0)
 		{
+			SYNC_COM2_ON;
 			Times_WriteToEEPROM();
 			VoltsRef_WriteToEEPROM();
 			Sample_WriteToEEPROM();
-			SYNC_COM2_ON;
 			temp2 =1;
 		}
         if (FaultBackCheck())
@@ -319,11 +319,14 @@ void ProcessPermanent(void)
 ******************************************************************************************/
 Uint16 FaultCheck(void)      
 {
-    if ((0 == g_SysFaultMessage.Word.byte0 ) && (0 == g_SysFaultMessage.Word.byte1) && (0 == g_SysFaultMessage.Word.byte2)
-     && (0 == g_SysFaultMessage.Word.byte3 ) && (0 == g_SysFaultMessage.Word.byte4))
-        return(0);
+    if ((0 == g_SysFaultMessage.Word.byte0 ) && (0 == g_SysFaultMessage.Word.byte1) && (0 == g_SysFaultMessage.Word.byte2) && (0 == g_SysFaultMessage.Word.byte3 ) && (0 == g_SysFaultMessage.Word.byte4))
+    {
+    	return(0);
+    }
     else
-        return(1);
+    {
+    	return(1);
+    }
 }
 
 /**********************************************************************
@@ -335,9 +338,14 @@ Uint16 FaultCheck(void)
 Uint16 PermanentFaultCheck(void)
 {
     if ((0 == g_SysFaultMessage.Word.unrecover1) && (0 == g_SysFaultMessage.Word.unrecover2) && (0 == g_SysFaultMessage.Word.unrecover3))
-        return(0);
+    {
+    	return(0);
+    }
     else
-        return(1);
+    {
+    	return(1);
+    }
+
 }
 
 /**********************************************************************
@@ -348,11 +356,14 @@ Uint16 PermanentFaultCheck(void)
 **********************************************************************/
 Uint16 FaultBackCheck(void)
 {
-	if ((0 == g_SysFaultMessage.Word.byte0) && (0 == g_SysFaultMessage.Word.byte1) &&(0 == g_SysFaultMessage.Word.byte2)
-   	&& (0 == g_SysFaultMessage.Word.byte3) && (0 == g_SysFaultMessage.Word.byte4))
-       	return(1);
+	if ((0 == g_SysFaultMessage.Word.byte0) && (0 == g_SysFaultMessage.Word.byte1) && (0 == g_SysFaultMessage.Word.byte2) && (0 == g_SysFaultMessage.Word.byte3) && (0 == g_SysFaultMessage.Word.byte4))
+    {
+		return(1);
+    }
    	else
-   	    return(0);
+   	{
+   		return(0);
+    }
 }
 
 void RelaysOFF(void)

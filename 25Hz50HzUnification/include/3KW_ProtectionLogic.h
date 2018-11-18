@@ -61,8 +61,8 @@
 #define 	InvTheta_StepRated				RatedInvFrequency*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Hi_Limit			50*1.1*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Low_Limit		50*0.9*Value_2Pi/PWM_FREQ*2
-#define 	InvFreq_Low_Limit					49.6
-#define 	InvFreq_High_Limit				50.4
+#define 	InvFreq_Low_Limit					49.2
+#define 	InvFreq_High_Limit				50.8
 
 #define 	VGridDipBusVoltLimit 				660
 #define	InvHParaCurDeviationLimit  		6.5
@@ -233,6 +233,7 @@ struct POWER_DERATE_REG
 
     float32	  f32Heatsink_OverTemperature_Limit;
     float32	  f32Heatsink_DeratingTemperature_Limit;
+
 };
 extern  struct POWER_DERATE_REG  PowerDerate_Reg;
 
@@ -254,7 +255,8 @@ extern void InvLParallelCurCheck(void);
 extern void BusVoltCheck(void);
 extern void BusBalanceCheck(void);//2017.3.24 GX BusBalance
 
-extern void ADOffsetCheck(void);
+extern void GridADOffsetCheck(void);
+extern void InvADOffsetCheck(void);
 
 extern void DcPreCharCheck(void);
 extern void RelayCheck(void);

@@ -136,8 +136,8 @@ void Broadcast(void)
  		if ( SafetyReg.u16Short_Restart_times == 0 && 0 == SYNC_COM2_LEVEL && NormalState == g_Sys_Current_State)
  		{
  			Output_Revise();
- 			EcanP2A_Tx.P2AMail_data.Word.Word1= (Uint16)(SafetyReg.f32InvH_VoltRms_Ref_LCD * 10);
- 			EcanP2A_Tx.P2AMail_data.Word.Word2 = (Uint16)(SafetyReg.f32InvL_VoltRms_Ref_LCD * 10);
+ 			EcanP2A_Tx.P2AMail_data.Word.Word1= (Uint16)(SafetyReg.f32InvL_VoltRms_Ref_LCD * 10);
+ 			EcanP2A_Tx.P2AMail_data.Word.Word2 = (Uint16)(SafetyReg.f32InvH_VoltRms_Ref_LCD * 10);
  			EcanP2A_Tx.P2AMail_data.Word.Word3 = (Uint16)(g_InvH_Load);
  			EcanP2A_Tx.P2AMail_data.Word.Word4 = (Uint16)(g_InvL_Load);
 
@@ -181,7 +181,7 @@ void Arbitrate(P2AMAIL P2A_RX)
 		}
 		else if (g_Mod_Status == Slave)
 		{
-			if ( ( SafetyReg.u16Short_Restart_times == 0 ) && 0 == SYNC_COM2_LEVEL && (NormalState == g_Sys_Current_State )  &&  P2A_RX.P2AMail_id.bit.bus == 0  )//
+			if ( (SafetyReg.u16Short_Restart_times == 0) && 0 == SYNC_COM2_LEVEL && (NormalState == g_Sys_Current_State)  &&  P2A_RX.P2AMail_id.bit.bus == 0  )//
 			{
 				if(P2A_RX.P2AMail_data.Word.Word1 > 1010 && P2A_RX.P2AMail_data.Word.Word1 < 1190 \
 					&& 	P2A_RX.P2AMail_data.Word.Word2> 2110 && P2A_RX.P2AMail_data.Word.Word2 < 2290)
