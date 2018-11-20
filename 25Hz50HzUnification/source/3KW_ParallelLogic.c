@@ -215,13 +215,13 @@ void InvParallel_Control(void)
 		 {
 			 INVL_SCR_ON;
 			 INVL_RELY_ON;
-			 InvL_CurrShare_ON;
+			 InvH_CurrShare_ON;
 		 }
 		 else
 		 {
 			 INVL_SCR_OFF;
 			 INVL_RELY_OFF;
-			 InvL_CurrShare_OFF;
+			 InvH_CurrShare_OFF;
 		 }
 	 }
 	 else

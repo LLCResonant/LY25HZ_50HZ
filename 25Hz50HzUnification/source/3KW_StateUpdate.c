@@ -372,7 +372,9 @@ void RelaysOFF(void)
 	INVL_RELY_OFF;
 
 	InvH_CurrShare_OFF;
+	#ifdef LY25HZ
 	InvL_CurrShare_OFF;
+	#endif
 }
 
 
