@@ -45,7 +45,7 @@
 #endif
 
 #ifdef		LY50HZ
-#define	Rated_InvH_OutputCurrentRms		13
+#define	Rated_InvH_OutputCurrentRms		13.6
 #define 	Rated_InvL_OutputCurrentRms 		0
 #define 	IInvHi1ProtectionTime       		30000
 #define 	IInvHi2ProtectionTime       		150
@@ -61,8 +61,8 @@
 #define 	InvTheta_StepRated				RatedInvFrequency*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Hi_Limit			50*1.1*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Low_Limit		50*0.9*Value_2Pi/PWM_FREQ*2
-#define 	InvFreq_Low_Limit					49.2
-#define 	InvFreq_High_Limit				50.8
+#define 	InvFreq_Low_Limit					48.8//49.8 WF 2018.12.05
+#define 	InvFreq_High_Limit				    51.2//50.8 WF 2018.12.05
 
 #define 	VGridDipBusVoltLimit 				660
 #define	InvHParaCurDeviationLimit  		6.5
@@ -96,8 +96,8 @@
 #define VInvLLowLimitBack 			105
 
 #define VInvLightRevise   				0.985
-#define VInvMiddleRevise 				1.0
-#define VInvHeavyRevise 				1.015
+#define VInvMiddleRevise 				0.995//1.0
+#define VInvHeavyRevise 				1.005//1.015
 
 #define 	Fan_Period_Cnt					90
 #define 	Fan_Cnt_Limit					19

@@ -419,13 +419,16 @@ void Para_Revised(MAIL mailp)
 		Ecan_SysParaCalibration.u16IGrid_rms = mailp.Mailbox_data.Word.Data1;
 		Ecan_SysParaCalibration.u16InvH_VoltRms_Ref = mailp.Mailbox_data.Word.Data2;
 		Ecan_SysParaCalibration.u16InvL_VoltRms_Ref = mailp.Mailbox_data.Word.Data3;
+		break;
 	case 6:
 		Ecan_SysParaCalibration.u16VInvH_Comp_Coeff = mailp.Mailbox_data.Word.Data1;
 		Ecan_SysParaCalibration.u16VInvL_Comp_Coeff = mailp.Mailbox_data.Word.Data2;
 		Ecan_SysParaCalibration.u16IInvH_para_ave = mailp.Mailbox_data.Word.Data3;
+		break;
 	case 7:
 		Ecan_SysParaCalibration.u16IInvL_para_ave = mailp.Mailbox_data.Word.Data1;
 		Ecan_SysParaCalibration.u16RestartTimes = mailp.Mailbox_data.Word.Data2;
+		break;
 	default:
 		break;
 	}
@@ -1031,7 +1034,7 @@ void Output_Revise (void)
 	}
 	else
 	{
-		if ((Output_VoltRe_Reg.u8InvH_Light_Flag == 1 && Calc_Result.f32IOutH_rms >= Rated_InvH_OutputCurrentRms * 0.5f) || \
+		if ((Output_VoltRe_Reg.u8InvH_Light_Flag == 1 && Calc_Result.f32IOutH_rms >= Rated_InvH_OutputCurrentRms * 0.5f)|| \
 				(Output_VoltRe_Reg.u8InvH_Heavy_Flag == 1 && Calc_Result.f32IOutH_rms <= Rated_InvH_OutputCurrentRms * 0.5f))
 		{
 			SafetyReg.f32InvH_VoltRms_Ref = SafetyReg.f32InvH_VoltRms_Ref_LCD * VInvMiddleRevise;

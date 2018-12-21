@@ -47,6 +47,7 @@ void InitECana(void)
 {
 	struct ECAN_REGS ECanaShadow;
 	Uint32 u32_Add = 0;
+	Uint32 u32_Type = 0;
 
 
 	//********************************************
@@ -95,7 +96,8 @@ void InitECana(void)
 	ECanaMboxes.MBOX0.MSGID.all=0x80000000;//Send mail box do not need mask bit
 	//	ECanaMboxes.MBOX0.MSGID.all=0x//extension identifier mode
 	u32_Add = ModuleAdd;
-	ECanaMboxes.MBOX1.MSGID.all=0xC1400000 | (u32_Add << 16);//Upload to computer
+	u32_Type = Module_Type;
+	ECanaMboxes.MBOX1.MSGID.all=(0xC0000000 | (u32_Type << 22)) | (u32_Add << 16);//Upload to computer
 	ECanaMboxes.MBOX2.MSGID.all=0x80000000; //Send mail box do not need mask bit
 	ECanaMboxes.MBOX3.MSGID.all=0xCFFF0007; //Broadcast
 
@@ -352,7 +354,7 @@ Uint8 ECANErrorCheck()
 		u8EACNCommFaultCnt++;
 		if(u8EACNCommFaultCnt>30)
 		{
-		    g_StateCheck.bit.ECAN_Fault = 1;
+			g_StateCheck.bit.ECAN_Fault = 1;
 			u8EACNCommFaultCnt=0;
 		}
 		return 1;

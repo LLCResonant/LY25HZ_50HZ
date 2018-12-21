@@ -78,7 +78,7 @@ void GridVoltCheck(void)
 			s_u16Cnt_GridVolt_Low_Fault1++;
             if(s_u16Cnt_GridVolt_Low_Fault1 >= 1)
             {
-            		SYNC_COM2_OFF;
+            		//SYNC_COM2_OFF;
                 	g_SysFaultMessage.bit.VGridUnderRating = 1;
     				s_u16Cnt_GridVolt_Low_Fault1 = 0;
     				s_u16Cnt_GridVolt_Fault_Back = 0;
@@ -145,7 +145,7 @@ void GridFreqCheck(void)
     static Uint16 s_u16Cnt_GridFreq_Fault_Back = 0;
 
 
-    if ( (0 == g_SysFaultMessage.bit.FreGridOverRating) && (0 == g_SysFaultMessage.bit.FreGridUnderRating) )
+    if ((0 == g_SysFaultMessage.bit.FreGridOverRating) && (0 == g_SysFaultMessage.bit.FreGridUnderRating))
     {
 		if(Calc_Result.f32GridFreq > SafetyReg.f32FreGrid_HiLimit)//65.2Hz
         {
@@ -208,7 +208,7 @@ void InvHFreqCheck(void)
     	if(Calc_Result.f32VOutHFreq > SafetyReg.f32FreVOut_HiLimit)
     	{
     		s_u16Cnt_InvHFreq_High_Fault ++;
-    		if(s_u16Cnt_InvHFreq_High_Fault  >= 10) //10*40ms
+    		if(s_u16Cnt_InvHFreq_High_Fault  >= 10) //10*20ms
     		{
     			g_SysFaultMessage.bit.FreInvOverRating = 1;
     			g_StateCheck.bit.FreVOutH_Fault = 1;
@@ -218,7 +218,7 @@ void InvHFreqCheck(void)
         else if(Calc_Result.f32VOutHFreq < SafetyReg.f32FreVOut_LowLimit)
         {
         	s_u16Cnt_InvHFreq_Low_Fault++;
-            if (s_u16Cnt_InvHFreq_Low_Fault >= 10) //10*40ms
+            if (s_u16Cnt_InvHFreq_Low_Fault >= 10) //10*20ms
             {
             	g_SysFaultMessage.bit.FreInvUnderRating = 1;
             	g_StateCheck.bit.FreVOutH_Fault = 1;
@@ -241,7 +241,8 @@ void InvLFreqCheck(void)
     static Uint16 s_u16Cnt_InvLFreq_High_Fault = 0;
     static Uint16 s_u16Cnt_InvLFreq_Low_Fault = 0;
 
-    if ((0 == g_SysFaultMessage.bit.FreInvOverRating) && (0 == g_SysFaultMessage.bit.FreInvUnderRating) )
+    if ((0 == g_SysFaultMessage.bit.FreInvOverRating) && (0 == g_SysFaultMessage.bit.FreInvUnderRating)&&\
+    	 (1 == g_StateCheck.bit.Inv_SoftStart) &&(g_Sys_Current_State == NormalState))
     {
 		if(Calc_Result.f32VOutLFreq > SafetyReg.f32FreVOut_HiLimit)//25.4Hz
         {

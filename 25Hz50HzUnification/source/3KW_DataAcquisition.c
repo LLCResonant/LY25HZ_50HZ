@@ -139,7 +139,7 @@ void Get_ADC_Result2(void)//ZJX changed
 	GeneralADbuffer.f32VInvH = (float32)AdcMirror.ADCRESULT10 - ADDefaultACOffset;	 // A5 result
 	GetRealValue.f32VInvH = GeneralADbuffer.f32VInvH * ADGain.f32VInvH * ADCalibration.f32VInvH * Parallel_Reg.f32VInvH_Comp_Coeff - ADChannelOffset.f32VInvH;
 	GeneralADbuffer.f32VOutH = (float32)AdcMirror.ADCRESULT8 - ADDefaultACOffset;	// A4 result
-	GetRealValue.f32VOutH = -(GeneralADbuffer.f32VOutH * ADGain.f32VOutH * ADCalibration.f32VOutH) - ADChannelOffset.f32VOutH ;
+	GetRealValue.f32VOutH = -(GeneralADbuffer.f32VOutH * ADGain.f32VOutH * ADCalibration.f32VOutH) - ADChannelOffset.f32VOutH;
 
 	GeneralADbuffer.f32IInvL = (float32)AdcMirror.ADCRESULT3 - ADDefaultACOffset;	// B1 result
 	GetRealValue.f32IInvL = GeneralADbuffer.f32IInvL * ADGain.f32IInvL * ADCalibration.f32IInvL - ADChannelOffset.f32IInvL;
@@ -424,7 +424,7 @@ void TSK_InvVoltPeriod(void)
 					InvVoltsAveCalc();
 					OutVoltsAveCalc();
 					i16Cnt_SysParaTempInv ++;
-					if (i16Cnt_SysParaTempInv == 5)  //20ms * 25 = 500ms
+					if (i16Cnt_SysParaTempInv == 25)  //20ms * 25 = 500ms
 					{
 						g_StateCheck.bit.InvAD_initial = 0;
 						InvADOffsetCheck();
