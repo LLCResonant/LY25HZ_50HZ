@@ -42,6 +42,8 @@ wire R_PWM_LH_w,R_PWM_RH_w;
 wire I_PWM1_LL_w,I_PWM1_LH_w,I_PWM1_RL_w,I_PWM1_RH_w;
 wire I_PWM2_LL_w,I_PWM2_LH_w,I_PWM2_RL_w,I_PWM2_RH_w;
 wire CPLD1_F;
+wire InvOcp1_Dy,InvOcp2_Dy,OP_Ovp1_Dy,OP_Ovp2_Dy;
+wire CP1;
 
 Protect_Filter PF1(.CLK_50M(CLK_50M),.Rst_n(DEV_CLRn),
                    .BusOvp(BusOvp),.IP_Ocp(IP_Ocp),.InvOcp1(InvOcp1),.OP_Ovp1(OP_Ovp1),.InvOcp2(InvOcp2),.OP_Ovp2(OP_Ovp2),
@@ -55,10 +57,11 @@ PWM_drive PD1(.CLK_50M(CLK_50M),.Rst_n(DEV_CLRn),
 				  .I_PWM1_LL_D(I_PWM1_LL_D),.I_PWM1_LH_D(I_PWM1_LH_D),.I_PWM1_RL_D(I_PWM1_RL_D),.I_PWM1_RH_D(I_PWM1_RH_D),
 				  .I_PWM2_LL_D(I_PWM2_LL_D),.I_PWM2_LH_D(I_PWM2_LH_D),.I_PWM2_RL_D(I_PWM2_RL_D),.I_PWM2_RH_D(I_PWM2_RH_D),
 				  .BusOvp(BusOvp_F),.IP_Ocp(IP_Ocp_F),.InvOcp1(InvOcp1_F),.OP_Ovp1(OP_Ovp1_F),.InvOcp2(InvOcp2_F),.OP_Ovp2(OP_Ovp2_F),
-				  .Reset_D(Reset_D),
+				  .Reset_D(Reset_D),.CPLD1(CPLD1),
 				  .R_PWM_LH(R_PWM_LH_w),.R_PWM_RH(R_PWM_RH_w),
 				  .I_PWM1_LL(I_PWM1_LL_w),.I_PWM1_LH(I_PWM1_LH_w),.I_PWM1_RL(I_PWM1_RL_w),.I_PWM1_RH(I_PWM1_RH_w),
-				  .I_PWM2_LL(I_PWM2_LL_w),.I_PWM2_LH(I_PWM2_LH_w),.I_PWM2_RL(I_PWM2_RL_w),.I_PWM2_RH(I_PWM2_RH_w)
+				  .I_PWM2_LL(I_PWM2_LL_w),.I_PWM2_LH(I_PWM2_LH_w),.I_PWM2_RL(I_PWM2_RL_w),.I_PWM2_RH(I_PWM2_RH_w),
+				  .CP1(CP1)
 				  );
 				  
 //CPLD1_Filter CF1(.CLK_50M(CLK_50M),.RST_n(DEV_CLRn),.CPLD1(CPLD1),.CPLD1_F(CPLD1_F));
@@ -78,18 +81,24 @@ Protect_CountVol PCV1(.CLK_50M(CLK_50M),.Rst_n(DEV_CLRn),.ResetD(Reset_D),.ProTe
 Protect_CountVol PCV2(.CLK_50M(CLK_50M),.Rst_n(DEV_CLRn),.ResetD(Reset_D),.ProTect(OP_Ovp2_F),.PWMEN(OP_Ovp2_D));
 
 //Protect_CountBus PCB1(.CLK_50M(CLK_50M),.Rst_n(DEV_CLRn),.ResetD(Reset_D),.ProTect(BusOvp_F),.PWMEN(BusOvp_D));
-					
+	
+Protect_delay pdya1(.clk(CLK_50M),.Rst_n(DEV_CLRn),.Prt(InvOcp1_D),.Prt_dly(InvOcp1_Dy));
+Protect_delay pdya2(.clk(CLK_50M),.Rst_n(DEV_CLRn),.Prt(OP_Ovp1_D),.Prt_dly(OP_Ovp1_Dy));
+
+Protect_delay pdyb1(.clk(CLK_50M),.Rst_n(DEV_CLRn),.Prt(InvOcp2_D),.Prt_dly(InvOcp2_Dy));
+Protect_delay pdyb2(.clk(CLK_50M),.Rst_n(DEV_CLRn),.Prt(OP_Ovp2_D),.Prt_dly(OP_Ovp2_Dy));
+	
  assign R_PWM_LH_C=(~EN1_4245) ? R_PWM_LH_w : 1'b0;//去掉！
  assign R_PWM_RH_C=(~EN1_4245) ? R_PWM_RH_w : 1'b0;
  
- assign I_PWM1_LL_C=(InvOcp1_D & OP_Ovp1_D) ? I_PWM1_LL_w : 1'b0;
+ assign I_PWM1_LL_C=I_PWM1_LL_w;
  assign I_PWM1_LH_C=(InvOcp1_D & OP_Ovp1_D) ? I_PWM1_LH_w : 1'b0; 
- assign I_PWM1_RL_C=(InvOcp1_D & OP_Ovp1_D) ? I_PWM1_RL_w : 1'b0;
+ assign I_PWM1_RL_C=I_PWM1_RL_w;
  assign I_PWM1_RH_C=(InvOcp1_D & OP_Ovp1_D) ? I_PWM1_RH_w : 1'b0; 
  
- assign I_PWM2_LL_C=(InvOcp2_D & OP_Ovp2_D) ? I_PWM2_LL_w : 1'b0;
+ assign I_PWM2_LL_C=I_PWM2_LL_w;
  assign I_PWM2_LH_C=(InvOcp2_D & OP_Ovp2_D) ? I_PWM2_LH_w : 1'b0; 
- assign I_PWM2_RL_C=(InvOcp2_D & OP_Ovp2_D) ? I_PWM2_RL_w : 1'b0;
+ assign I_PWM2_RL_C=I_PWM2_RL_w;
  assign I_PWM2_RH_C=(InvOcp2_D & OP_Ovp2_D) ? I_PWM2_RH_w : 1'b0; 
 //	
 
@@ -104,11 +113,12 @@ always @(posedge CLK_50M)
 //assign COM1_IPF_D=COM1_IPF_C; assign COM2_IPF_D=COM2_IPF_C; assign COM1_OUT_C=COM1_OUT_D; assign COM2_OUT_C=COM2_OUT_D;
 
 
-assign CPLD_Data=I_PWM1_LL_D;
-				  
-assign BusOvp_D=BusOvp_F; assign IP_Ocp_D=IP_Ocp_F; 
+//assign CPLD_Data=I_PWM1_LL_D;R_PWM_LH_D | R_PWM_LH_C
+
+assign CPLD_Data=IP_Ocp_F;				  
+assign BusOvp_D=BusOvp_F; assign IP_Ocp_D=CP1; 
 //assign InvOcp1_D=InvOcp1_F;assign OP_Ovp1_D=OP_Ovp1_F; 
 //assign InvOcp2_D=InvOcp2_F; assign OP_Ovp2_D=OP_Ovp2_F;
-assign CPLD2= I_PWM2_LL_D | I_PWM2_LL_C;
+//assign CPLD2= I_PWM2_LL_D | I_PWM2_LL_C;
 
 endmodule

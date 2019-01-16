@@ -3,20 +3,22 @@ module PWM_drive(CLK_50M,Rst_n,
 					  I_PWM1_LL_D,I_PWM1_LH_D,I_PWM1_RL_D,I_PWM1_RH_D,
 					  I_PWM2_LL_D,I_PWM2_LH_D,I_PWM2_RL_D,I_PWM2_RH_D,
 					  BusOvp,IP_Ocp,InvOcp1,OP_Ovp1,InvOcp2,OP_Ovp2,
-					  Reset_D,
+					  Reset_D,CPLD1,
 					  R_PWM_LH,R_PWM_RH,
 					  I_PWM1_LL,I_PWM1_LH,I_PWM1_RL,I_PWM1_RH,
-					  I_PWM2_LL,I_PWM2_LH,I_PWM2_RL,I_PWM2_RH
+					  I_PWM2_LL,I_PWM2_LH,I_PWM2_RL,I_PWM2_RH,
+					  CP1
 					  );
 input CLK_50M,Rst_n;
 input R_PWM_LH_D,R_PWM_RH_D;
 input I_PWM1_LL_D,I_PWM1_LH_D,I_PWM1_RL_D,I_PWM1_RH_D;
 input I_PWM2_LL_D,I_PWM2_LH_D,I_PWM2_RL_D,I_PWM2_RH_D;
-input BusOvp,IP_Ocp,InvOcp1,OP_Ovp1,InvOcp2,OP_Ovp2,Reset_D;
+input BusOvp,IP_Ocp,InvOcp1,OP_Ovp1,InvOcp2,OP_Ovp2,Reset_D,CPLD1;
 
 output R_PWM_LH,R_PWM_RH;
 output I_PWM1_LL,I_PWM1_LH,I_PWM1_RL,I_PWM1_RH;
 output I_PWM2_LL,I_PWM2_LH,I_PWM2_RL,I_PWM2_RH;
+output CP1;
 
 reg PFC_EN1,PFC_EN2;
 reg INV1_ENE,INV2_ENE;
@@ -122,8 +124,18 @@ always @(posedge CLK_50M)
 	    if(Reset_D)
 		  begin State_PFC1<=NormalState_PFC; PFC_EN1<=1'b1; end
 		 else
-		  begin State_PFC1<=ProtectState_PFC; PFC_EN1<=1'b0; end
-	   end
+		  begin
+		   if(CPLD1)
+			 begin
+			  if((Rec_pos)&(IP_Ocp))
+			   begin State_PFC1<=NormalState_PFC; PFC_EN1<=1'b1; end
+			  else
+			   begin State_PFC1<=ProtectState_PFC; PFC_EN1<=1'b0; end
+			 end
+			else
+          begin State_PFC1<=ProtectState_PFC; PFC_EN1<=1'b0; end
+	     end
+		 end
 	  default:
 	   begin State_PFC1<=NormalState_PFC;PFC_EN1<=1'b1; end
 	 endcase
@@ -281,16 +293,17 @@ always @(posedge CLK_50M)
  assign R_PWM_LH=(PFC_EN1 & PFC_EN2) ? R_PWM_LH_D : 1'b0;//去掉！
  assign R_PWM_RH=(PFC_EN1 & PFC_EN2) ? R_PWM_RH_D : 1'b0;
  
- assign I_PWM1_LL=(INV1_ENI & PWM_Pre1) ? I_PWM1_LL_D : 1'b0;
+ assign I_PWM1_LL=I_PWM1_LL_D;
  assign I_PWM1_LH=(INV1_ENE & PWM_Pre1) ? I_PWM1_LH_D : 1'b0; 
- assign I_PWM1_RL=(INV1_ENI & PWM_Pre1) ? I_PWM1_RL_D : 1'b0;
+ assign I_PWM1_RL=I_PWM1_RL_D;
  assign I_PWM1_RH=(INV1_ENE & PWM_Pre1) ? I_PWM1_RH_D : 1'b0; 
  
- assign I_PWM2_LL=(INV2_ENI & PWM_Pre2) ? I_PWM2_LL_D : 1'b0;
+ assign I_PWM2_LL=I_PWM2_LL_D;
  assign I_PWM2_LH=(INV2_ENE & PWM_Pre2) ? I_PWM2_LH_D : 1'b0; 
- assign I_PWM2_RL=(INV2_ENI & PWM_Pre2) ? I_PWM2_RL_D : 1'b0;
+ assign I_PWM2_RL=I_PWM2_RL_D;
  assign I_PWM2_RH=(INV2_ENE & PWM_Pre2) ? I_PWM2_RH_D : 1'b0; 
  
+ assign CP1=PFC_EN1;	 
 	 
 endmodule
  
