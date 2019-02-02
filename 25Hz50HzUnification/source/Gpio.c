@@ -309,11 +309,11 @@ void InitGpio(void)
 	GpioCtrlRegs.GPADIR.bit.GPIO13 = 1;			// Configures the GPIO pin as an output
 
 	// GPIO14 Output pin for 110V Output SCR Control, INVL for 25Hz and 50Hz
-	GpioDataRegs.GPACLEAR.bit.GPIO14 = 1;			// output 1 by default
+	GpioDataRegs.GPASET.bit.GPIO14 = 1;			// output 1 by default
 	GpioCtrlRegs.GPADIR.bit.GPIO14 = 1;			// Configures the GPIO pin as an output
 
 	// GPIO15 Output pin for 220V Output SCR Control, INVH for 25Hz
-	GpioDataRegs.GPACLEAR.bit.GPIO15 = 1;			// output 1 by default
+	GpioDataRegs.GPASET.bit.GPIO15 = 1;			// output 1 by default
 	GpioCtrlRegs.GPADIR.bit.GPIO15 = 1;			// Configures the GPIO pin as an output
 
 	// GPIO16 Output pin for 220V Output Relay Control, INVH for 25Hz
