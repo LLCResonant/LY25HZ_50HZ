@@ -2,15 +2,7 @@
 #ifndef DEFAULTISR_BIOS_H
 #define DEFAULTISR_BIOS_H
 
-
-
-
-
-
-
-
 #endif
-
 //--- end of file -----------------------------------------------------
 
 

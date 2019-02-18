@@ -24,8 +24,6 @@
 /* Detect period of one Grid frequency */
 int32 i32GridFrequencyPriodTemp = 0;
 	
-
-
 /*=============================================================================*
  * FUNCTION: InitECap()
  * PURPOSE : eCAP hardware module initialization.
@@ -76,7 +74,6 @@ void InitECap(void)
 	ECap1Regs.ECEINT.bit.CEVT1 = 1;
 
 	PieCtrlRegs.PIEIER4.bit.INTx1 = 1;		// Enable ECAP1_INT in PIE group 4
-
 
 //	Configure eCAP5 unit to test frequency
 //GpioCtrlRegs.GPBPUD.bit.GPIO48 = 0;    // Enable pull-up on GPIO48 (CAP5)

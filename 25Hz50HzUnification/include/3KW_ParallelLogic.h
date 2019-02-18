@@ -48,15 +48,24 @@
 #define InvL_CurrShare_OFF			GpioDataRegs.GPBSET.bit.GPIO48 = 1;
 
 #define 	SyncPhase_Hi1Limit          0.53f * 6.283185307
-#define	SyncPhase_Low1Limit         0.47f * 6.283185307
-#define	SyncPhase_Hi2Limit          0.508f * 6.283185307
-#define	SyncPhase_Low2Limit         0.492 * 6.283185307
+#define	    SyncPhase_Low1Limit         0.47f * 6.283185307
+#define	    SyncPhase_Hi2Limit          0.508f * 6.283185307
+#define	    SyncPhase_Low2Limit         0.492f * 6.283185307
 #define 	SyncPhase_Hi3Limit          0.515f * 6.283185307
-#define	SyncPhase_Low3Limit         0.485f * 6.283185307
-#define 	SyncPhase_ReguStep1         0.001f * 6.283185307
-#define 	SyncPhase_ReguStep2         0.01f * 6.283185307
+#define	    SyncPhase_Low3Limit         0.485f * 6.283185307
 #define 	SyncPhase_Hi4Limit          0.503f * 6.283185307
-#define	SyncPhase_Low4Limit         0.497f * 6.283185307
+#define	    SyncPhase_Low4Limit         0.497f * 6.283185307
+#define     SyncPhase_Low5Limit         0.44f * 6.283185307//WF 2018.12.29
+#define 	SyncPhase_Hi5Limit          0.56f * 6.283185307//WF 2018.12.29
+#define     SyncPhase_Low6Limit         0.465f * 6.283185307//WF 2018.12.29
+#define 	SyncPhase_Hi6Limit          0.535f * 6.283185307//WF 2018.12.29
+
+
+#define 	SyncPhase_ReguStep1         0.003f * 6.283185307
+#define 	SyncPhase_ReguStep2         0.01f * 6.283185307
+#define 	SyncPhase_ReguStep3         0.03f * 6.283185307
+
+
 
 //******************************************************************************
 struct PARALLEL_REG
@@ -69,6 +78,9 @@ struct PARALLEL_REG
 
 	float32	f32IInvH_para_ave;
 	float32	f32IInvL_para_ave;
+
+	float32 f32Theta;
+	float32 f32Theta1;
 };
 extern  struct PARALLEL_REG  Parallel_Reg;
 
@@ -85,7 +97,7 @@ union  PARALLEL_STATE
     {
         Uint16  SyncPhase_Flag:1;    // B0		1: SyncPhase is Ok
         Uint16  InvSoftStart_EN:1;    // B1
-        Uint16  B2:1;    // B2
+        Uint16  OffSyncPhase_Flag1:1;    // B2 //WF 2019.01.07
         Uint16  B3:1;    // B3
         Uint16  B4:1;    // B4
         Uint16  B5:1;    // B5

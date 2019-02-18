@@ -397,7 +397,7 @@ void Scib_Q1Command(void)
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
 	pDataBuf = &u8Scib_UserDataBuf0[bStrLen];
-	bStrLen1 = sbNumToAscii( BusCon_Reg.f32IGridAmp_Ref * 100, 0, pDataBuf);//17
+	bStrLen1 = sbNumToAscii(Calc_Result.f32GridFreq, 0, pDataBuf);//17
 	bStrLen += bStrLen1;
 	u8Scib_UserDataBuf0[bStrLen++] = 32;
 
@@ -811,7 +811,7 @@ int16 swGetFault1(void)
 int16 swGetFault2(void)
 {
  
-  return (GetRealValue.f32VBusP);// 3 //2017.2.21 GX
+  return (GridPLLConReg.f32Sin_Theta * 1000);// 3 //2017.2.21 GX
 }
 int16 swGetFault3(void)
 {

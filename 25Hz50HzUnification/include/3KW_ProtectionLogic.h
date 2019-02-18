@@ -28,6 +28,9 @@
 #define 	InvHParallelCurrentLimit  				8
 #define 	InvLParallelCurrentLimit  				10
 
+#define   InvH_Volt_ProtectionTime				5
+#define   InvL_Volt_ProtectionTime				5
+
 #define 	InvTheta_StepRated				RatedInvFrequency*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Hi_Limit			25*1.1*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Low_Limit		25*0.9*Value_2Pi/PWM_FREQ*2
@@ -57,6 +60,8 @@
 #define 	OverRated_InputCurrentPeak  	OverRated_InputCurrentRms * 1.414
 #define 	InvHParallelCurrentLimit  				15
 #define 	InvLParallelCurrentLimit  				15
+#define   InvH_Volt_ProtectionTime				10
+#define   InvL_Volt_ProtectionTime				5
 
 #define 	InvTheta_StepRated				RatedInvFrequency*Value_2Pi/PWM_FREQ*2
 #define 	InvTheta_Step_Hi_Limit			50*1.1*Value_2Pi/PWM_FREQ*2
@@ -81,12 +86,12 @@
 #define VGridLowLimit2 					165
 #define VGridLowLimitBack  			159
 #define VGridHighProtectionTime	6
-#define VGridLowProtectionTime	 	10
+#define VGridLowProtectionTime	 	13
 #define VGridDipLimit	 					100
 
 #define FreGridHiLimit						65.2
 #define FreGridLowLimit 					44.8
-#define FreGridProtectionTime		10
+#define FreGridProtectionTime		25
 
 #define VInvHHiLimit   					242
 #define VInvHLowLimit 					202
@@ -196,6 +201,9 @@ typedef struct
 	Uint16  u16IInvL_HiLimitBackTime;
 	float32 f32IInvL_Hi1LimitBack;
 
+	Uint16	u16InvH_Volt_ProtectionTime;
+	Uint16	u16InvL_Volt_ProtectionTime;
+
 	Uint16 	u16IInv_WarningTime;
 
 	float32	f32FreVOut_HiLimit;
@@ -205,7 +213,7 @@ typedef struct
 
 	float32	f32VBus_HiLimit;
 	float32 f32VBus_LowLimit;
-	Uint16	u16VBusProtectionTime;
+	Uint16  u16VBusProtectionTime;
 
 	float32 f32InvTemp_HiLimit;
 	float32 f32InvH_VoltRms_Ref;

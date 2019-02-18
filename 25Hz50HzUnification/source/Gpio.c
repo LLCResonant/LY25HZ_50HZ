@@ -339,7 +339,7 @@ void InitGpio(void)
 	/* ------------Group B pins-----------*/
 
 	// GPIO42 Input for whether there is a bypass module. Set means no bypass, Clear means existing bypass
-	GpioCtrlRegs.GPBDIR.bit.GPIO42 = 0;			// Configures the GPIO pin as an input
+	GpioCtrlRegs.GPBDIR.bit.GPIO42 = 0;	 // Configures the GPIO pin as an input
 	// GPIO43 Input for whether the system is single module. Set means more than one module, clear mean single module.
 	GpioCtrlRegs.GPBDIR.bit.GPIO43 = 0;			// Configures the GPIO pin as an input
 

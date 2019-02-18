@@ -89,7 +89,7 @@ void GridVoltCheck(void)
 		else if( Calc_Result.f32VGrid_rms < SafetyReg.f32VGrid_LowLimit )// 149V
 		{
 			s_u16Cnt_GridVolt_Low_Fault2++;
-			if(s_u16Cnt_GridVolt_Low_Fault2 >= SafetyReg.u16VGrid_LowProtectionTime)//10*20ms
+			if(s_u16Cnt_GridVolt_Low_Fault2 >= SafetyReg.u16VGrid_LowProtectionTime)//20ms*13=260ms
 			{
 				   	g_SysFaultMessage.bit.VGridUnderRating = 1;
 			    	s_u16Cnt_GridVolt_Low_Fault2 = 0;
@@ -150,7 +150,7 @@ void GridFreqCheck(void)
 		if(Calc_Result.f32GridFreq > SafetyReg.f32FreGrid_HiLimit)//65.2Hz
         {
             s_u16Cnt_GridFreq_High_Fault++;
-            if(s_u16Cnt_GridFreq_High_Fault >= SafetyReg.u16FreGrid_ProtectionTime) //  10*20ms
+            if(s_u16Cnt_GridFreq_High_Fault >= SafetyReg.u16FreGrid_ProtectionTime) //20ms*25=500ms
             {
                 g_SysFaultMessage.bit.FreGridOverRating = 1;
                 s_u16Cnt_GridFreq_High_Fault = 0;
@@ -160,7 +160,7 @@ void GridFreqCheck(void)
         else if(Calc_Result.f32GridFreq < SafetyReg.f32FreGrid_LowLimit) //44.8Hz
         {
             s_u16Cnt_GridFreq_Low_Fault++;
-            if (s_u16Cnt_GridFreq_Low_Fault >= SafetyReg.u16FreGrid_ProtectionTime) //  10*20ms
+            if (s_u16Cnt_GridFreq_Low_Fault >= SafetyReg.u16FreGrid_ProtectionTime) //20ms*25=500ms
             {
                g_SysFaultMessage.bit.FreGridUnderRating = 1;
                s_u16Cnt_GridFreq_Low_Fault = 0;
@@ -173,7 +173,6 @@ void GridFreqCheck(void)
             s_u16Cnt_GridFreq_Low_Fault = 0;
         }
     }
-
     else
     {
         if((Calc_Result.f32GridFreq < SafetyReg.f32FreGrid_HiLimit) && (Calc_Result.f32GridFreq > SafetyReg.f32FreGrid_LowLimit))
@@ -704,7 +703,7 @@ void  InvHVoltCheck(void)
 		if (Calc_Result.f32VInvH_rms > SafetyReg.f32VInvH_HiLimit ) //242V
 		{
 			s_u16Cnt_InvVoltH_Ovr_Fault++;
-			if (s_u16Cnt_InvVoltH_Ovr_Fault >= 5)      //200ms
+			if (s_u16Cnt_InvVoltH_Ovr_Fault >= SafetyReg.u16InvH_Volt_ProtectionTime) //200ms
 			{
 				s_u16Cnt_InvVoltH_Ovr_Fault = 0;
 				g_SysFaultMessage.bit.unrecoverSW_InvH_OVP = 1;
@@ -719,7 +718,7 @@ void  InvHVoltCheck(void)
 		if (Calc_Result.f32VInvH_rms < SafetyReg.f32VInvH_LowLimit && (1 == g_StateCheck.bit.Inv_SoftStart)) //202V
 		{
 			s_u16Cnt_InvVoltH_Low_Fault++;
-			if (s_u16Cnt_InvVoltH_Low_Fault > 5)//200ms
+			if (s_u16Cnt_InvVoltH_Low_Fault > SafetyReg.u16InvH_Volt_ProtectionTime)//200ms
 			{
 				s_u16Cnt_InvVoltH_Low_Fault = 0;
 				g_StateCheck.bit.VInvHUnderRating = 1;
@@ -766,7 +765,7 @@ void  InvLVoltCheck(void)
 		if (Calc_Result.f32VInvL_rms > SafetyReg.f32VInvL_HiLimit) //121V
 		{
 			s_u16Cnt_InvVoltL_Ovr_Fault++;
-			if (s_u16Cnt_InvVoltL_Ovr_Fault >= 5 )      //200ms
+			if (s_u16Cnt_InvVoltL_Ovr_Fault >= SafetyReg.u16InvL_Volt_ProtectionTime )      //200ms
 			{
 				s_u16Cnt_InvVoltL_Ovr_Fault = 0;
 				g_SysFaultMessage.bit.unrecoverSW_InvL_OVP = 1;
@@ -775,13 +774,12 @@ void  InvLVoltCheck(void)
 		else
 			s_u16Cnt_InvVoltL_Ovr_Fault = 0;
 	}
-
 	if (g_StateCheck.bit.VInvLUnderRating == 0)
 	{
 		if (Calc_Result.f32VInvL_rms < SafetyReg.f32VInvL_LowLimit && (1 == g_StateCheck.bit.Inv_SoftStart))//101V
 		{
 			s_u16Cnt_InvVoltL_Low_Fault++;
-			if (s_u16Cnt_InvVoltL_Low_Fault > 5)//200ms
+			if (s_u16Cnt_InvVoltL_Low_Fault > SafetyReg.u16InvL_Volt_ProtectionTime)//200ms
 			{
 				s_u16Cnt_InvVoltL_Low_Fault = 0;
 				g_StateCheck.bit.VInvLUnderRating = 1;
@@ -934,7 +932,8 @@ void OutputCurrentLimit(void)
 void OverTemperatureLimit(void)
 {
     static	Uint16 s_u16Cnt_HeatsinkTemp_High_Fault = 0;
-    static  	Uint16 s_u16Cnt_HeatsinkTemp_Fault_Back = 0;
+    static  Uint16 s_u16Cnt_HeatsinkTemp_Fault_Back = 0;
+    static  Uint16 s_u16Cnt_HeatsinkTemp_High_Fault1 = 0;
     float32 f32tempMax;
 
     if(Calc_Result.f32TempInvMax > Calc_Result.f32TempPFC)
@@ -947,7 +946,7 @@ void OverTemperatureLimit(void)
 		if(f32tempMax >= PowerDerate_Reg.f32Heatsink_OverTemperature_Limit)//85
 		{
 			s_u16Cnt_HeatsinkTemp_High_Fault++;
-			if(s_u16Cnt_HeatsinkTemp_High_Fault > 5) //40ms*5=200ms
+			if(s_u16Cnt_HeatsinkTemp_High_Fault > 25) //20ms*25=500ms
 			{
 				 if(Calc_Result.f32TempInvMax > Calc_Result.f32TempPFC)
 					 g_SysFaultMessage.bit.InvTempOverLimit = 1;
@@ -961,13 +960,18 @@ void OverTemperatureLimit(void)
 		}
 		else if(f32tempMax >= PowerDerate_Reg.f32Heatsink_DeratingTemperature_Limit)//75
 		{
-			s_u16Cnt_HeatsinkTemp_High_Fault = 0;
-			g_SysWarningMessage.bit.OverTemp = 1;
-			PowerDerate_Reg.f32ACPowerDerating_HTRate = ACPowerDerating_HeathinkTempRate - (f32tempMax - PowerDerate_Reg.f32Heatsink_DeratingTemperature_Limit) * 5;
+			s_u16Cnt_HeatsinkTemp_High_Fault1++;
+			if(s_u16Cnt_HeatsinkTemp_High_Fault1 > 25)//20ms*25=500ms
+			{
+				s_u16Cnt_HeatsinkTemp_High_Fault1 = 0;
+				g_SysWarningMessage.bit.OverTemp = 1;
+				PowerDerate_Reg.f32ACPowerDerating_HTRate = ACPowerDerating_HeathinkTempRate - (f32tempMax - PowerDerate_Reg.f32Heatsink_DeratingTemperature_Limit) * 5;
+			}
 		}
 		else
 		{
 			s_u16Cnt_HeatsinkTemp_High_Fault = 0;
+			s_u16Cnt_HeatsinkTemp_High_Fault1 = 0;
 			g_SysWarningMessage.bit.OverTemp = 0;
 			PowerDerate_Reg.f32ACPowerDerating_HTRate = ACPowerDerating_HeathinkTempRate;
 		}
@@ -977,13 +981,14 @@ void OverTemperatureLimit(void)
 		if(f32tempMax < (PowerDerate_Reg.f32Heatsink_OverTemperature_Limit - 30))//55
 		{
 			s_u16Cnt_HeatsinkTemp_Fault_Back++;
-			if(s_u16Cnt_HeatsinkTemp_Fault_Back > 50)//40ms*50=2s
+			if(s_u16Cnt_HeatsinkTemp_Fault_Back > 50)//20ms*50=1s
 			{
 				g_SysFaultMessage.bit.InvTempOverLimit = 0;
 				g_SysFaultMessage.bit.PfcOverTempFault = 0;
 				g_SysWarningMessage.bit.OverTemp = 0;
 				s_u16Cnt_HeatsinkTemp_Fault_Back = 0;
 				s_u16Cnt_HeatsinkTemp_High_Fault = 0;
+				s_u16Cnt_HeatsinkTemp_High_Fault1 = 0;
 			}
 		}
 		else
@@ -998,6 +1003,8 @@ void OverTemperatureLimit(void)
 ********************************************************************************************************************/
 void DcPreCharCheck(void)
 {
+	static Uint16 s_u16Cnt_DcFuseFault = 0;
+
 	if(0 == g_StateCheck.bit.DcPreCharCheckOver)
 	{
 		if((Calc_Result.f32VBus) >= (Calc_Result.f32VGrid_rms * 2 * 1.13))
@@ -1006,7 +1013,19 @@ void DcPreCharCheck(void)
 			GRID_RELY_ON;
 		}
 		else
-			g_SysFaultMessage.bit.DcFuseFault = 1;
+		{
+			s_u16Cnt_DcFuseFault ++;
+			if(s_u16Cnt_DcFuseFault > 1000)//2ms*1000=2s
+			{
+				g_SysFaultMessage.bit.DcFuseFault = 1;
+				s_u16Cnt_DcFuseFault = 0;
+			}
+			else
+			{
+				g_SysFaultMessage.bit.DcFuseFault = 0;
+				s_u16Cnt_DcFuseFault = 0;
+			}
+		}
 	}
 }
 
@@ -1016,25 +1035,53 @@ void DcPreCharCheck(void)
 ******************************************************************************************************/
 void DCFanCheck(void)
 {
+	static Uint16 s_u16Cnt_DcFan1_Error_Fault = 0;
+	static Uint16 s_u16Cnt_DcFan2_Error_Fault = 0;
+	static Uint16 s_u16Cnt_DcFan_Error_Fault = 0;
+
 	if(1 == g_StateCheck.bit.DcFan1Fault)
-		g_SysWarningMessage.bit.Fan1Block = 1;
+	{
+		s_u16Cnt_DcFan1_Error_Fault ++;
+		if(s_u16Cnt_DcFan1_Error_Fault > 250)//2ms*250=500ms
+		{
+			s_u16Cnt_DcFan1_Error_Fault = 0;
+			g_SysWarningMessage.bit.Fan1Block = 1;
+		}
+	}
 	else
+	{
 		g_SysWarningMessage.bit.Fan1Block = 0;
-
+		s_u16Cnt_DcFan1_Error_Fault = 0;
+	}
 	if(1 == g_StateCheck.bit.DcFan2Fault)
-		g_SysWarningMessage.bit.Fan2Block = 1;
+	{
+		s_u16Cnt_DcFan2_Error_Fault ++;
+		if(s_u16Cnt_DcFan2_Error_Fault > 250)//2ms*250=500ms
+		{
+			s_u16Cnt_DcFan2_Error_Fault = 0;
+			g_SysWarningMessage.bit.Fan2Block = 1;
+		}
+	}
 	else
+	{
 		g_SysWarningMessage.bit.Fan2Block = 0;
-
+		s_u16Cnt_DcFan2_Error_Fault = 0;
+	}
 	if((1 == g_StateCheck.bit.DcFan1Fault) && (1 == g_StateCheck.bit.DcFan2Fault))
 	{
-		g_StateCheck.bit.DcFanFault = 1;
-		g_SysFaultMessage.bit.DcFanFault = 1;
+		s_u16Cnt_DcFan_Error_Fault ++;
+		if(s_u16Cnt_DcFan_Error_Fault > 250)//2ms*250=500ms
+		{
+			g_StateCheck.bit.DcFanFault = 1;
+			g_SysFaultMessage.bit.DcFanFault = 1;
+			s_u16Cnt_DcFan_Error_Fault = 0;
+		}
 	}
-	else if ((0 == g_StateCheck.bit.DcFan1Fault) && (0 == g_StateCheck.bit.DcFan2Fault))
-		g_StateCheck.bit.DcFanFault = 0;
 	else
-		g_StateCheck.bit.DcFanFault = 1;
+	{
+		g_StateCheck.bit.DcFanFault = 0;
+		s_u16Cnt_DcFan_Error_Fault = 0;
+	}
 }
 
 // 220V Output Inverter Over Current Hardware Protection

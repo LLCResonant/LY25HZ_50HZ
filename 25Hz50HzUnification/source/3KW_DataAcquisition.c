@@ -424,13 +424,14 @@ void TSK_InvVoltPeriod(void)
 					InvVoltsAveCalc();
 					OutVoltsAveCalc();
 					i16Cnt_SysParaTempInv ++;
-					if (i16Cnt_SysParaTempInv == 25)  //20ms * 25 = 500ms
+					if (i16Cnt_SysParaTempInv == 25)
 					{
 						g_StateCheck.bit.InvAD_initial = 0;
 						InvADOffsetCheck();
 						i16Cnt_SysParaTempInv = 0;
 					}
 				}
+			}
 
 				/*RMS Calculating function*/
 				InvCurrentsRMSCalc();
@@ -479,10 +480,10 @@ void TSK_InvVoltPeriod(void)
 				#endif
 			}
 		}
-	}//end of while (1)
+}//end of while (1)
 
 
-}//end of TSK_InvVoltPeriod()
+//end of TSK_InvVoltPeriod()
 
 /*=============================================================================*
  * FUNCTION:	void GridCurrentsRMSCalc(void)

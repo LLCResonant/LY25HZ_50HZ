@@ -264,7 +264,7 @@ void ProcessFault(void)
 			i16Cnt_backChangeTemp++;
 			if(i16Cnt_backChangeTemp >= 500)// 2ms * 500 = 1s
 			{
-				g_StateCheck.bit.InvAD_initial = 1;
+				//g_StateCheck.bit.InvAD_initial = 1;//2019.2.18
 				ADChannelOffset.f32VGrid = 0;
 				ADChannelOffset.f32IGrid = 0;
 				ADChannelOffset.f32VInvH = 0;
@@ -278,6 +278,7 @@ void ProcessFault(void)
 				SYNC_COM2_OFF;
 				g_ParaLogic_State.bit.SelfPhaseOut_EN = 0;
 				g_ParaLogic_State.bit.SyncPhase_Flag = 0;
+				g_ParaLogic_State.bit.OffSyncPhase_Flag1 = 0;
 				DryCrtl_ON;
 				i16Cnt_backChangeTemp = 0;
 				temp2 = 0;

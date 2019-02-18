@@ -162,6 +162,8 @@ void SysParamDefault(void)
 	AD_Acc.f32TempPFC = 0;
 	AD_Acc.f32TempInvH = 0;
 	AD_Acc.f32TempInvL = 0;
+	Parallel_Reg.f32Theta = 0;//WF 2018.12.25
+	Parallel_Reg.f32Theta1 = 0;//WF 2018.12.25
 
 	AD_Acc.f32GridFreq = 0;
 	AD_Acc.f32VOutFreq = 0;
@@ -337,6 +339,8 @@ void SysParamDefault(void)
 	SafetyReg.u16IInvL_HiLimitBackTime = IInvHiLimitBackTime;
 	SafetyReg.u16IInv_WarningTime = IInvWarningTime;
 	SafetyReg.f32IInvL_Hi1LimitBack = SafetyReg.f32IInvL_Hi1Limit - 2;
+	SafetyReg.u16InvH_Volt_ProtectionTime = InvH_Volt_ProtectionTime;
+	SafetyReg.u16InvL_Volt_ProtectionTime = InvL_Volt_ProtectionTime;
 
 	SafetyReg.f32InvH_Para_CurrentLimit = InvHParallelCurrentLimit * 100;
 	SafetyReg.f32InvL_Para_CurrentLimit = InvLParallelCurrentLimit * 100;
