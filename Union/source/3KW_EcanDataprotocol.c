@@ -222,6 +222,11 @@ void Arbitrate(P2AMAIL P2A_RX)
 				}
 			}
 		}
+
+		if (u8_hostdrop >= 100)
+			u8_hostdrop = 0;
+		else
+			u8_hostdrop++;
 	}
 	else
 		g_Mod_Status = idle;
@@ -250,11 +255,6 @@ void Arbitrate(P2AMAIL P2A_RX)
 			Calc_Result.f32flag = 0;
 		}
 	}
-
-	if (u8_hostdrop >= 100)
-		u8_hostdrop = 0;
-	else
-		u8_hostdrop++;
 }
 
 /*=============================================================================*
