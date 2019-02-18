@@ -162,6 +162,8 @@ void SysParamDefault(void)
 	AD_Acc.f32IInvH_ave = 0;
 	AD_Acc.f32VInvH_ave = 0;
 	AD_Acc.f32VOutH_ave = 0;
+	Parallel_Reg.f32Theta = 0;//WF 2018.12.25
+	Parallel_Reg.f32Theta1 = 0;//WF 2018.12.25
 
 	AD_Acc.f32IInvL_ave = 0;
 	AD_Acc.f32VInvL_ave = 0;
@@ -313,6 +315,8 @@ void SysParamDefault(void)
 	SafetyReg.u16IInvH_Hi4ProtectionTime = IInvHi4ProtectionTime;
 	SafetyReg.u16IInvH_HiLimitBackTime = IInvHiLimitBackTime;
 	SafetyReg.f32IInvH_Hi1LimitBack = SafetyReg.f32IInvH_Hi1Limit - 2;
+	SafetyReg.u16InvH_Volt_ProtectionTime = InvH_Volt_ProtectionTime; //2019.2.18 GX
+	SafetyReg.u16InvL_Volt_ProtectionTime = InvL_Volt_ProtectionTime;
 
 	SafetyReg.f32IInvL_Hi1Limit = Rated_InvL_OutputCurrentRms * 1.2;
 	SafetyReg.f32IInvL_Hi2Limit = Rated_InvL_OutputCurrentRms * 1.3;
@@ -601,7 +605,7 @@ void SysParamDefault(void)
 	RunningTime.OverFlow = 0;
 	RunningTime.TimeCheck = 0;
 
- 	/*if (Single_Module_Level == 1)
+ 	if (Single_Module_Level == 1)
  		g_Sys_Structure_State = Multiple;
  	else
  		g_Sys_Structure_State = Single;
@@ -609,27 +613,23 @@ void SysParamDefault(void)
  	if (Bypass_Module_Level == 1)
  		g_Sys_Bypass_State = noBypass;
  	else
- 		g_Sys_Bypass_State = Bypass;*/ //2018.12.23 GX
+ 		g_Sys_Bypass_State = Bypass;
 
-	g_Sys_Structure_State = Multiple; //2018.12.23 GX
-	g_Sys_Bypass_State = Bypass;
 
 	if (g_Sys_Bypass_State == Bypass)
 	{
 		SYNC_COM2_OFF;
 		InvL_CurrShare_or_COM4_ON;
 		g_StateCheck.bit.Bypmes = 1;
-		//g_StateCheck.bit.Bypwork = 1;
-		//g_StateCheck.bit.BypToInv = 0;
 	}
 	else
 	{
 		SYNC_COM2_ON;
 		InvL_CurrShare_or_COM4_OFF;
-		//g_StateCheck.bit.BypToInv = 1;
 	}
 
 	Calc_Result.f32flag = 0;
+
 	#ifdef LY25HZ
  	if (g_Sys_Bypass_State == Bypass)
  		g_SysFaultMessage.bit.HWADFault = 1;

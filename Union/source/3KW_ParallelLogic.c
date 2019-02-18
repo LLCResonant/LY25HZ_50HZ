@@ -46,6 +46,7 @@ void ECAP1_INT_SyncPhase_Control(void)
 	// start of ECAP2_INT_SyncPhase_Control
 
 	static  Uint16  s_u16Cnt_SyncPhase_Fault = 0;
+	static  Uint16  s_u16Cnt_SyncPhase_Fault1 = 0;
 	static  Uint16  s_u16Cnt_SyncPhase_Fault_Back = 0;
 
 	Parallel_Reg.u16Cnt_COM1_Receive = 0;
@@ -58,20 +59,52 @@ void ECAP1_INT_SyncPhase_Control(void)
 			SYNC_COM2_OFF;
 	}
 
-	/*
+/*
 	 * the function will be executed when synchronizing signal reaches pi
 	 * if native phase does not reaches pi, it need to be adjusted
 	 */
-	if(OutPLLConReg.f32Theta <= SyncPhase_Low1Limit)
-		OutPLLConReg.f32Theta = OutPLLConReg.f32Theta + SyncPhase_ReguStep2;
-	else if(OutPLLConReg.f32Theta >= SyncPhase_Hi1Limit)
-		OutPLLConReg.f32Theta = OutPLLConReg.f32Theta - SyncPhase_ReguStep2;
-	else if(OutPLLConReg.f32Theta <= SyncPhase_Low4Limit)
-		OutPLLConReg.f32Theta = OutPLLConReg.f32Theta + SyncPhase_ReguStep1;
-	else if(OutPLLConReg.f32Theta >= SyncPhase_Hi4Limit)
-		OutPLLConReg.f32Theta = OutPLLConReg.f32Theta - SyncPhase_ReguStep1;
+	if(fabs(OutPLLConReg.f32Theta - Value_Pi) >= 0.07 * Value_2Pi && 1 == g_ParaLogic_State.bit.SyncPhase_Flag)//25
+	{
+		g_ParaLogic_State.bit.OffSyncPhase_Flag1 = 1;
+	}
+	else
+	{
+		g_ParaLogic_State.bit.OffSyncPhase_Flag1 = 0;
+	}
+
+	if(0 == g_ParaLogic_State.bit.OffSyncPhase_Flag1)
+	{
+		/*if(OutPLLConReg.f32Theta <= SyncPhase_Low5Limit)
+				OutPLLConReg.f32Theta = OutPLLConReg.f32Theta + SyncPhase_ReguStep3;//WF 2018.12.20
+		else if(OutPLLConReg.f32Theta >= SyncPhase_Hi5Limit)
+				OutPLLConReg.f32Theta = OutPLLConReg.f32Theta - SyncPhase_ReguStep3;//WF 2018.12.20*/
+		if(OutPLLConReg.f32Theta <= SyncPhase_Low1Limit)
+				OutPLLConReg.f32Theta = OutPLLConReg.f32Theta + SyncPhase_ReguStep2;
+		else if(OutPLLConReg.f32Theta >= SyncPhase_Hi1Limit)
+				OutPLLConReg.f32Theta = OutPLLConReg.f32Theta - SyncPhase_ReguStep2;
+		else if(OutPLLConReg.f32Theta <= SyncPhase_Low4Limit)
+				OutPLLConReg.f32Theta = OutPLLConReg.f32Theta + SyncPhase_ReguStep1;
+		else if(OutPLLConReg.f32Theta >= SyncPhase_Hi4Limit)
+				OutPLLConReg.f32Theta = OutPLLConReg.f32Theta - SyncPhase_ReguStep1;
+	}
 	else
 		;
+
+/*	if(OutPLLConReg.f32Theta <= SyncPhase_Low5Limit)
+			OutPLLConReg.f32Theta = OutPLLConReg.f32Theta + SyncPhase_ReguStep3;//WF 2018.12.20
+	else if(OutPLLConReg.f32Theta >= SyncPhase_Hi5Limit)
+			OutPLLConReg.f32Theta = OutPLLConReg.f32Theta + SyncPhase_ReguStep3;//WF 2018.12.20
+	else if(OutPLLConReg.f32Theta <= SyncPhase_Low1Limit)
+			OutPLLConReg.f32Theta = OutPLLConReg.f32Theta + SyncPhase_ReguStep2;
+	else if(OutPLLConReg.f32Theta >= SyncPhase_Hi1Limit)
+			OutPLLConReg.f32Theta = OutPLLConReg.f32Theta - SyncPhase_ReguStep2;
+	else if(OutPLLConReg.f32Theta <= SyncPhase_Low4Limit)
+			OutPLLConReg.f32Theta = OutPLLConReg.f32Theta + SyncPhase_ReguStep1;
+	else if(OutPLLConReg.f32Theta >= SyncPhase_Hi4Limit)
+			OutPLLConReg.f32Theta = OutPLLConReg.f32Theta - SyncPhase_ReguStep1;
+	else
+		;
+*/
 
 	/*
 	 * The native phase are estimated.
@@ -80,40 +113,64 @@ void ECAP1_INT_SyncPhase_Control(void)
 	 * If it is in sync, 'g_ParaLogic_State.bit.SelfPhaseOut_EN' will be set and the native phase signal will be
 	 * send to sync bus.
 	 */
-	if(0 == g_ParaLogic_State.bit.SyncPhase_Flag)
-	{
-		if((OutPLLConReg.f32Theta >= SyncPhase_Low2Limit) && (OutPLLConReg.f32Theta <= SyncPhase_Hi2Limit))
-		{
-			s_u16Cnt_SyncPhase_Fault_Back++;
-			if(s_u16Cnt_SyncPhase_Fault_Back > 4)
-			{
-				g_ParaLogic_State.bit.SelfPhaseOut_EN = 1;
-				g_ParaLogic_State.bit.SyncPhase_Flag = 1;
-				g_SysWarningMessage.bit.InvAsyn = 0;
-				s_u16Cnt_SyncPhase_Fault_Back = 0;
-				s_u16Cnt_SyncPhase_Fault = 0;
-			}
-		}
-		else
-			s_u16Cnt_SyncPhase_Fault_Back = 0;
-	}
-	else
-	{
-		if((OutPLLConReg.f32Theta <= SyncPhase_Low3Limit) || (OutPLLConReg.f32Theta >= SyncPhase_Hi3Limit))
-		{
-			s_u16Cnt_SyncPhase_Fault++;
-			if(s_u16Cnt_SyncPhase_Fault > 20)
-			{
-				g_ParaLogic_State.bit.SelfPhaseOut_EN = 0;
-				g_ParaLogic_State.bit.SyncPhase_Flag = 0;
-				g_SysWarningMessage.bit.InvAsyn = 1;
-				s_u16Cnt_SyncPhase_Fault = 0;
-				s_u16Cnt_SyncPhase_Fault_Back = 0;
-			}
-		}
-		else
-			s_u16Cnt_SyncPhase_Fault = 0;
-	}
+    if(0 ==  g_ParaLogic_State.bit.OffSyncPhase_Flag1)
+    {
+    	if(0 == g_ParaLogic_State.bit.SyncPhase_Flag)
+    	{
+    		if((OutPLLConReg.f32Theta >= SyncPhase_Low2Limit) && (OutPLLConReg.f32Theta <= SyncPhase_Hi2Limit))
+    		{
+    			s_u16Cnt_SyncPhase_Fault_Back++;
+    			if(s_u16Cnt_SyncPhase_Fault_Back > 4)
+    			{
+    				g_ParaLogic_State.bit.SelfPhaseOut_EN = 1;
+    				g_ParaLogic_State.bit.SyncPhase_Flag = 1;
+    				g_SysWarningMessage.bit.InvAsyn = 0;
+    				s_u16Cnt_SyncPhase_Fault_Back = 0;
+    				s_u16Cnt_SyncPhase_Fault = 0;
+    				s_u16Cnt_SyncPhase_Fault1 = 0;
+    			}
+    		}
+    			else
+    				s_u16Cnt_SyncPhase_Fault_Back = 0;
+    	}
+    	else
+    	{
+    		if((OutPLLConReg.f32Theta <= SyncPhase_Low3Limit) || (OutPLLConReg.f32Theta >= SyncPhase_Hi3Limit))
+    		{
+    			s_u16Cnt_SyncPhase_Fault++;
+    			if(s_u16Cnt_SyncPhase_Fault > 250)
+    			{
+    				g_ParaLogic_State.bit.SelfPhaseOut_EN = 0;
+    				g_ParaLogic_State.bit.SyncPhase_Flag = 0;
+    				Parallel_Reg.f32Theta = OutPLLConReg.f32Theta ;
+    				g_SysWarningMessage.bit.InvAsyn = 1;
+    				s_u16Cnt_SyncPhase_Fault = 0;
+    				s_u16Cnt_SyncPhase_Fault_Back = 0;
+    			}
+    		}
+    		else if((OutPLLConReg.f32Theta <= SyncPhase_Low6Limit) || (OutPLLConReg.f32Theta >= SyncPhase_Hi6Limit))
+    		{
+    			s_u16Cnt_SyncPhase_Fault1++;
+    			if(s_u16Cnt_SyncPhase_Fault1 > 10)
+    			{
+    				g_ParaLogic_State.bit.SelfPhaseOut_EN = 0;
+    				g_ParaLogic_State.bit.SyncPhase_Flag = 0;
+    				Parallel_Reg.f32Theta1 = OutPLLConReg.f32Theta;
+    				g_SysWarningMessage.bit.InvAsyn = 1;
+    				s_u16Cnt_SyncPhase_Fault1 = 0;
+    				s_u16Cnt_SyncPhase_Fault_Back = 0;
+    			}
+    		}
+    		else
+    		{
+    			s_u16Cnt_SyncPhase_Fault = 0;
+    			s_u16Cnt_SyncPhase_Fault1 = 0;
+    		}
+
+    	}
+    }
+    else
+    	;
 } // end of ECAP1_INT_SyncPhase_Control
 
 

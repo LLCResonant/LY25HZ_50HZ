@@ -106,11 +106,11 @@ void TSK_ECAN(void)
 			{
 				if (ModuleAdd != 0X00 && g_Sys_Current_State != FaultState  && g_Sys_Current_State != PermanentState)
 					Broadcast();
-				if (b_count >= 2)
-				{
-					//DataUpload();
+				//if (b_count >= 2)
+				//{
+					DataUpload();
 					b_count = 0;
-				}
+				//}
 			}
 			if(ECanaRegs.CANGIF0.bit.BOIF0 == 1)
 			{

@@ -467,10 +467,7 @@ void TSK_InvVoltPeriod(void)
 
 
 				/*Controller related function*/
-         		//if (g_Sys_Bypass_State == noBypass)
-         		//{
-         			SyncLogic_Control();
-         		//}
+         		SyncLogic_Control();
 				InvVoltSlowup();
 				InvRestartCheck();
  	 	 	 	#endif

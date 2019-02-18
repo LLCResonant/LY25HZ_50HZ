@@ -406,6 +406,7 @@ void FaultRecover(void)
 	ADChannelOffset.f32VBusN = 0;
 	g_ParaLogic_State.bit.SelfPhaseOut_EN = 0;
 	g_ParaLogic_State.bit.SyncPhase_Flag = 0;
+	g_ParaLogic_State.bit.OffSyncPhase_Flag1 = 0;
 	g_StateCheck.bit.InvOut = 0;
 
 	SYNC_COM2_OFF;
